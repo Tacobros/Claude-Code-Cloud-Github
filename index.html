@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GoalKit — Camisolas Deportivas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container header-inner">
+      <div class="logo">
+        <span class="logo-icon">⚽</span>
+        <span class="logo-text">GoalKit</span>
+      </div>
+      <nav class="nav">
+        <a href="#catalogo">Catálogo</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#contacto" class="btn-nav">Contactar</a>
+      </nav>
+      <button class="burger" id="burger" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#catalogo" onclick="closeMobileMenu()">Catálogo</a>
+      <a href="#nosotros" onclick="closeMobileMenu()">Nosotros</a>
+      <a href="#contacto" onclick="closeMobileMenu()">Contactar</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-content">
+        <span class="hero-badge">Nueva colección 2025</span>
+        <h1>Camisolas oficiales y réplicas premium</h1>
+        <p>Las mejores camisolas de los equipos que amas. Calidad premium, tallas para todos, entrega en toda Guatemala.</p>
+        <div class="hero-actions">
+          <a href="#catalogo" class="btn-primary">Ver catálogo</a>
+          <a href="https://wa.me/50200000000?text=Hola!%20Vi%20su%20catálogo%20y%20me%20interesa%20una%20camisola" class="btn-whatsapp" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="jersey-showcase">
+          <div class="jersey-card-hero" style="--hue: 210;">
+            <div class="jersey-visual">🥇</div>
+            <span>Real Madrid</span>
+          </div>
+          <div class="jersey-card-hero" style="--hue: 0;">
+            <div class="jersey-visual">⭐</div>
+            <span>Manchester United</span>
+          </div>
+          <div class="jersey-card-hero" style="--hue: 240;">
+            <div class="jersey-visual">🏆</div>
+            <span>PSG</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="container stats-grid">
+      <div class="stat">
+        <strong>200+</strong>
+        <span>Modelos disponibles</span>
+      </div>
+      <div class="stat">
+        <strong>50+</strong>
+        <span>Equipos del mundo</span>
+      </div>
+      <div class="stat">
+        <strong>5 tallas</strong>
+        <span>XS hasta XXL</span>
+      </div>
+      <div class="stat">
+        <strong>Entrega</strong>
+        <span>En todo Guatemala</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATÁLOGO -->
+  <section class="catalog" id="catalogo">
+    <div class="container">
+      <div class="section-header">
+        <h2>Catálogo</h2>
+        <p>Encuentra la camisola de tu equipo favorito</p>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="laliga">LaLiga</button>
+        <button class="filter-btn" data-filter="premier">Premier League</button>
+        <button class="filter-btn" data-filter="ligue1">Ligue 1</button>
+        <button class="filter-btn" data-filter="selecciones">Selecciones</button>
+        <button class="filter-btn" data-filter="local">Liga Nacional</button>
+      </div>
+
+      <!-- BÚSQUEDA -->
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Buscar equipo o jugador..." />
+        <span class="search-icon">🔍</span>
+      </div>
+
+      <!-- GRID DE PRODUCTOS -->
+      <div class="products-grid" id="productsGrid">
+        <!-- JS generará las tarjetas -->
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <span>😕</span>
+        <p>No encontramos esa camisola. <br/><a href="https://wa.me/50200000000?text=Busco una camisola específica" target="_blank">Consultanos por WhatsApp</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOSOTROS -->
+  <section class="about" id="nosotros">
+    <div class="container about-inner">
+      <div class="about-content">
+        <h2>¿Por qué GoalKit?</h2>
+        <ul class="about-list">
+          <li>
+            <div class="about-icon">✅</div>
+            <div>
+              <strong>Calidad garantizada</strong>
+              <p>Camisolas de calidad premium con materiales transpirables y costuras duraderas.</p>
+            </div>
+          </li>
+          <li>
+            <div class="about-icon">🚚</div>
+            <div>
+              <strong>Entrega a domicilio</strong>
+              <p>Enviamos a toda Guatemala. Recibe en 1-3 días hábiles en la capital.</p>
+            </div>
+          </li>
+          <li>
+            <div class="about-icon">💬</div>
+            <div>
+              <strong>Atención personalizada</strong>
+              <p>Pedidos personalizados, estampados y consultas por WhatsApp en minutos.</p>
+            </div>
+          </li>
+          <li>
+            <div class="about-icon">🔁</div>
+            <div>
+              <strong>Cambios sin problema</strong>
+              <p>Si la talla no es la correcta, te ayudamos a cambiarla sin costo adicional.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="about-visual">
+        <div class="leagues-display">
+          <div class="league-badge">
+            <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <small>Premier League</small>
+          </div>
+          <div class="league-badge">
+            <span>🇪🇸</span>
+            <small>LaLiga</small>
+          </div>
+          <div class="league-badge">
+            <span>🇫🇷</span>
+            <small>Ligue 1</small>
+          </div>
+          <div class="league-badge">
+            <span>🇩🇪</span>
+            <small>Bundesliga</small>
+          </div>
+          <div class="league-badge">
+            <span>🇮🇹</span>
+            <small>Serie A</small>
+          </div>
+          <div class="league-badge">
+            <span>🌎</span>
+            <small>Selecciones</small>
+          </div>
+          <div class="league-badge">
+            <span>🇬🇹</span>
+            <small>Liga Nacional</small>
+          </div>
+          <div class="league-badge">
+            <span>🏆</span>
+            <small>Champions</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO / CTA -->
+  <section class="contact" id="contacto">
+    <div class="container contact-inner">
+      <h2>¿Listo para pedir tu camisola?</h2>
+      <p>Escríbenos por WhatsApp y te atendemos al instante. También puedes pedir estampados personalizados con el nombre y número que quieras.</p>
+      <a href="https://wa.me/50200000000?text=Hola!%20Vi%20el%20catálogo%20de%20GoalKit%20y%20quiero%20hacer%20un%20pedido" class="btn-whatsapp-big" target="_blank">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Escribir por WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="logo">
+        <span class="logo-icon">⚽</span>
+        <span class="logo-text">GoalKit</span>
+      </div>
+      <p>© 2025 GoalKit Guatemala · Camisolas deportivas premium</p>
+    </div>
+  </footer>
+
+  <!-- MODAL DETALLE PRODUCTO -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="productModal">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div class="modal-content" id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- WHATSAPP FLOTANTE -->
+  <a href="https://wa.me/50200000000?text=Hola!%20Vi%20el%20catálogo%20de%20GoalKit" class="whatsapp-float" target="_blank" title="Contactar por WhatsApp">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+
+  <script src="app.js"></script>
+</body>
+</html>

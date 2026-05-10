@@ -1,7 +1,7 @@
 -- Run this in: Supabase → SQL Editor → New query → Paste → Run
 
 -- Products table
-create table products (
+create table if not exists products (
   id bigserial primary key,
   user_id uuid references auth.users(id) on delete cascade,
   name text not null,
@@ -16,7 +16,7 @@ create table products (
 );
 
 -- Stores table
-create table stores (
+create table if not exists stores (
   id bigserial primary key,
   user_id uuid references auth.users(id) on delete cascade unique,
   name text,
@@ -31,17 +31,20 @@ create table stores (
 alter table products enable row level security;
 alter table stores enable row level security;
 
+drop policy if exists "Users manage own products" on products;
 create policy "Users manage own products"
   on products for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+drop policy if exists "Users manage own store" on stores;
 create policy "Users manage own store"
   on stores for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
 -- Allow public catalog to read visible products (needed for index.html)
+drop policy if exists "Public read available products" on products;
 create policy "Public read available products"
   on products for select
   using (available = true);

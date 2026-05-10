@@ -420,6 +420,7 @@ body {
   font-size: 5rem;
   position: relative;
   overflow: hidden;
+  background: var(--gray-50);
 }
 
 .product-body {
@@ -843,7 +844,9 @@ body {
 .product-image img.product-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 8px;
+  background: #f9fafb;
 }
 
 /* MODAL IMAGE GALLERY */
@@ -854,9 +857,11 @@ body {
 
 .modal-main-img {
   width: 100%;
-  height: 260px;
-  object-fit: cover;
+  height: 300px;
+  object-fit: contain;
   display: block;
+  background: #f9fafb;
+  padding: 12px;
 }
 
 .modal-thumbs-row {
@@ -870,7 +875,8 @@ body {
 .modal-thumb-img {
   width: 56px;
   height: 56px;
-  object-fit: cover;
+  object-fit: contain;
+  background: #f9fafb;
   border-radius: 6px;
   cursor: pointer;
   border: 2px solid transparent;

@@ -177,14 +177,43 @@ const products = [
   },
 ];
 
+const categoryLabels = {
+  laliga: "LaLiga",
+  premier: "Premier League",
+  ligue1: "Ligue 1",
+  selecciones: "Selecciones",
+  local: "Liga Nacional",
+};
+
 let activeFilter = "all";
 let searchQuery = "";
+let liveProducts = null; // populated from Supabase if configured
+
+async function loadFromSupabase() {
+  try {
+    if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) return;
+    const { data } = await sb.from("products").select("*").eq("available", true).order("created_at", { ascending: false });
+    if (data && data.length > 0) {
+      liveProducts = data.map((p) => ({
+        ...p,
+        price: `Q${p.price}`,
+        league: categoryLabels[p.category] || p.category,
+        bg: "linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)",
+        badgeText: p.badge === "popular" ? "Más vendida" : p.badge === "new" ? "Nueva" : "",
+        desc: p.description || "",
+        colors: [],
+      }));
+      renderProducts();
+    }
+  } catch (_) {}
+}
 
 function renderProducts() {
   const grid = document.getElementById("productsGrid");
   const empty = document.getElementById("emptyState");
 
-  const filtered = products.filter((p) => {
+  const source = liveProducts || products;
+  const filtered = source.filter((p) => {
     const matchCat = activeFilter === "all" || p.category === activeFilter;
     const q = searchQuery.toLowerCase();
     const matchSearch =
@@ -328,3 +357,4 @@ document.addEventListener("keydown", (e) => {
 });
 
 renderProducts();
+loadFromSupabase();

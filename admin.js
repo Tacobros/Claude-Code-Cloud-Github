@@ -182,7 +182,7 @@ function renderTable() {
 
   const rows = filtered.map((p) => `
     <tr>
-      <td class="td-emoji">${(p.image_urls && p.image_urls.length > 0) ? `<img src="${p.image_urls[0]}" class="td-img" alt="" />` : p.image_url ? `<img src="${p.image_url}" class="td-img" alt="" />` : (p.emoji || "📦")}</td>
+      <td class="td-emoji">${(p.image_urls && p.image_urls.length > 0) ? `<img src="${p.image_urls[0]}" class="td-img" alt="" />` : p.image_url ? `<img src="${p.image_url}" class="td-img" alt="" />` : "📦"}</td>
       <td class="td-name">
         <strong>${p.name}</strong>
         <small>Q${p.price} GTQ · ${(p.sizes || []).join(", ")}</small>
@@ -237,7 +237,6 @@ function openEditModal(id) {
   document.getElementById("pCategory").value = p.category || "";
   document.getElementById("pPrice").value = p.price || "";
   document.getElementById("pDesc").value = p.description || "";
-  document.getElementById("pEmoji").value = p.emoji || "";
   document.getElementById("pBadge").value = p.badge || "";
   document.getElementById("pAvailable").checked = p.available !== false;
   currentImageUrls = [...(p.image_urls || [])];
@@ -278,7 +277,6 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     category: document.getElementById("pCategory").value,
     price: parseInt(document.getElementById("pPrice").value),
     description: document.getElementById("pDesc").value.trim(),
-    emoji: document.getElementById("pEmoji").value.trim() || "⚽",
     badge: document.getElementById("pBadge").value || null,
     available: document.getElementById("pAvailable").checked,
     sizes,

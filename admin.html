@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin — GoalKit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <span>⚽</span>
+        <strong>GoalKit Admin</strong>
+      </div>
+      <h2>Iniciar sesión</h2>
+      <p>Accede a tu panel de administración</p>
+      <form id="loginForm">
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" id="loginEmail" placeholder="tu@correo.com" required />
+        </div>
+        <div class="field">
+          <label>Contraseña</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required />
+        </div>
+        <div id="loginError" class="error-msg" style="display:none;"></div>
+        <button type="submit" class="btn-login" id="loginBtn">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN APP -->
+  <div id="adminApp" class="admin-app" style="display:none;">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <span>⚽</span>
+        <strong>GoalKit</strong>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="products">
+          <span class="nav-icon">📦</span>
+          <span>Productos</span>
+        </a>
+        <a href="#" class="nav-item" data-page="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>Mi tienda</span>
+        </a>
+        <a href="index.html" class="nav-item" target="_blank">
+          <span class="nav-icon">👁️</span>
+          <span>Ver catálogo</span>
+        </a>
+      </nav>
+      <div class="sidebar-user" id="sidebarUser"></div>
+      <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+      <!-- TOP BAR -->
+      <div class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <h1 class="topbar-title" id="topbarTitle">Productos</h1>
+        <div class="topbar-actions" id="topbarActions"></div>
+      </div>
+
+      <!-- PAGES -->
+      <div id="pageProducts" class="page active">
+        <div class="page-header">
+          <div>
+            <h2>Mis productos</h2>
+            <p id="productCount">Cargando...</p>
+          </div>
+          <button class="btn-primary" id="btnAddProduct">+ Agregar producto</button>
+        </div>
+
+        <!-- PRODUCT SEARCH -->
+        <div class="table-toolbar">
+          <input type="text" id="adminSearch" placeholder="Buscar producto..." class="search-input" />
+          <select id="adminFilter" class="select-filter">
+            <option value="all">Todas las categorías</option>
+            <option value="laliga">LaLiga</option>
+            <option value="premier">Premier League</option>
+            <option value="ligue1">Ligue 1</option>
+            <option value="selecciones">Selecciones</option>
+            <option value="local">Liga Nacional</option>
+          </select>
+        </div>
+
+        <div id="productsTable" class="products-table">
+          <div class="loading">Cargando productos...</div>
+        </div>
+      </div>
+
+      <div id="pageSettings" class="page">
+        <div class="page-header">
+          <div>
+            <h2>Mi tienda</h2>
+            <p>Personaliza tu catálogo digital</p>
+          </div>
+          <button class="btn-primary" id="btnSaveSettings">Guardar cambios</button>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>Información general</h3>
+            <div class="field">
+              <label>Nombre de la tienda</label>
+              <input type="text" id="storeName" placeholder="GoalKit Guatemala" />
+            </div>
+            <div class="field">
+              <label>Número de WhatsApp</label>
+              <input type="text" id="storeWhatsapp" placeholder="502XXXXXXXX" />
+              <small>Incluye el código de país. Ej: 50212345678</small>
+            </div>
+            <div class="field">
+              <label>Descripción de la tienda</label>
+              <textarea id="storeDesc" rows="3" placeholder="Camisolas deportivas premium en Guatemala..."></textarea>
+            </div>
+          </div>
+          <div class="settings-card">
+            <h3>Apariencia</h3>
+            <div class="field">
+              <label>Emoji / Ícono de la tienda</label>
+              <input type="text" id="storeEmoji" placeholder="⚽" maxlength="4" />
+            </div>
+            <div class="field">
+              <label>Color principal</label>
+              <div class="color-picker-row">
+                <input type="color" id="storeAccent" value="#e94560" />
+                <span id="storeAccentHex">#e94560</span>
+              </div>
+            </div>
+            <div class="settings-preview" id="settingsPreview">
+              <div class="preview-header" id="previewHeader">
+                <span id="previewEmoji">⚽</span>
+                <strong id="previewName">GoalKit</strong>
+              </div>
+              <div class="preview-badge" id="previewBadge">Vista previa</div>
+            </div>
+          </div>
+          <div class="settings-card full-width">
+            <h3>Enlace de tu catálogo</h3>
+            <div class="link-display">
+              <span id="catalogLink">https://tutienda.github.io/catalogo</span>
+              <button class="btn-copy" id="btnCopyLink">Copiar enlace</button>
+            </div>
+            <p class="hint">Comparte este enlace con tus clientes para que vean tu catálogo.</p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- PRODUCT MODAL (Add / Edit) -->
+  <div class="modal-overlay" id="productModalOverlay">
+    <div class="modal product-form-modal" id="productFormModal">
+      <div class="modal-header">
+        <h3 id="productModalTitle">Nuevo producto</h3>
+        <button class="modal-close" id="productModalClose">✕</button>
+      </div>
+      <form id="productForm" class="product-form">
+        <input type="hidden" id="productId" />
+        <div class="form-grid">
+          <div class="field span-2">
+            <label>Nombre del producto *</label>
+            <input type="text" id="pName" placeholder="Ej: Real Madrid — Local 2024/25" required />
+          </div>
+          <div class="field">
+            <label>Liga / Categoría *</label>
+            <select id="pCategory" required>
+              <option value="">Seleccionar...</option>
+              <option value="laliga">LaLiga</option>
+              <option value="premier">Premier League</option>
+              <option value="ligue1">Ligue 1</option>
+              <option value="selecciones">Selecciones</option>
+              <option value="local">Liga Nacional</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Precio (GTQ) *</label>
+            <input type="number" id="pPrice" placeholder="220" min="1" required />
+          </div>
+          <div class="field span-2">
+            <label>Descripción</label>
+            <textarea id="pDesc" rows="2" placeholder="Descripción breve del producto..."></textarea>
+          </div>
+          <div class="field">
+            <label>Emoji representativo</label>
+            <input type="text" id="pEmoji" placeholder="⚽" maxlength="4" />
+          </div>
+          <div class="field">
+            <label>Insignia (opcional)</label>
+            <select id="pBadge">
+              <option value="">Sin insignia</option>
+              <option value="popular">Más vendida</option>
+              <option value="new">Nueva</option>
+            </select>
+          </div>
+          <div class="field span-2">
+            <label>Tallas disponibles</label>
+            <div class="sizes-selector">
+              <label class="size-toggle"><input type="checkbox" value="XS"> XS</label>
+              <label class="size-toggle"><input type="checkbox" value="S"> S</label>
+              <label class="size-toggle"><input type="checkbox" value="M"> M</label>
+              <label class="size-toggle"><input type="checkbox" value="L"> L</label>
+              <label class="size-toggle"><input type="checkbox" value="XL"> XL</label>
+              <label class="size-toggle"><input type="checkbox" value="XXL"> XXL</label>
+            </div>
+          </div>
+          <div class="field span-2">
+            <label>Disponible en catálogo</label>
+            <div class="toggle-row">
+              <input type="checkbox" id="pAvailable" checked class="toggle-input" />
+              <label for="pAvailable" class="toggle-label">Mostrar este producto en el catálogo</label>
+            </div>
+          </div>
+        </div>
+        <div id="formError" class="error-msg" style="display:none;"></div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="cancelProductBtn">Cancelar</button>
+          <button type="submit" class="btn-primary" id="saveProductBtn">Guardar producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM -->
+  <div class="modal-overlay" id="deleteOverlay">
+    <div class="modal confirm-modal">
+      <h3>¿Eliminar producto?</h3>
+      <p>Esta acción no se puede deshacer.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" id="cancelDelete">Cancelar</button>
+        <button class="btn-danger" id="confirmDelete">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="supabase.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

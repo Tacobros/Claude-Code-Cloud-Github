@@ -10,7 +10,7 @@ let allProducts = [];
 let deleteTargetId = null;
 let storeSettings = {};
 let customCategories = [];
-let currentImageUrl = null;
+let currentImageUrls = [];
 
 function getCategoryLabel(cat) {
   return DEFAULT_CATEGORIES[cat] || cat;
@@ -34,23 +34,21 @@ function populateCategorySelects() {
 }
 
 // ===== IMAGE UPLOAD =====
-function setImagePreview(url) {
-  const preview = document.getElementById("imagePreview");
-  const placeholder = document.getElementById("imageUploadPlaceholder");
-  const removeBtn = document.getElementById("btnRemoveImage");
-  if (url) {
-    preview.src = url;
-    preview.style.display = "block";
-    placeholder.style.display = "none";
-    removeBtn.style.display = "inline-block";
-    currentImageUrl = url;
-  } else {
-    preview.src = "";
-    preview.style.display = "none";
-    placeholder.style.display = "flex";
-    removeBtn.style.display = "none";
-    currentImageUrl = null;
-  }
+function renderImageGrid() {
+  const grid = document.getElementById("imageGrid");
+  if (currentImageUrls.length === 0) { grid.innerHTML = ""; return; }
+  grid.innerHTML = currentImageUrls.map((url, i) => `
+    <div class="image-thumb">
+      <img src="${url}" alt="" />
+      <button type="button" class="image-thumb-remove" onclick="removeImage(${i})" title="Eliminar">✕</button>
+      ${i === 0 ? '<span class="thumb-primary-badge">Principal</span>' : ""}
+    </div>
+  `).join("");
+}
+
+function removeImage(index) {
+  currentImageUrls.splice(index, 1);
+  renderImageGrid();
 }
 
 document.getElementById("imageUploadArea").addEventListener("click", () => {
@@ -70,14 +68,10 @@ document.getElementById("pImage").addEventListener("change", async (e) => {
   const { error } = await sb.storage.from("product-images").upload(path, file, { upsert: true });
   if (error) { showToast("Error al subir imagen: " + error.message, "error"); return; }
   const { data } = sb.storage.from("product-images").getPublicUrl(path);
-  setImagePreview(data.publicUrl);
-  showToast("Imagen subida ✓", "success");
-});
-
-document.getElementById("btnRemoveImage").addEventListener("click", (e) => {
-  e.stopPropagation();
-  document.getElementById("pImage").value = "";
-  setImagePreview(null);
+  currentImageUrls.push(data.publicUrl);
+  e.target.value = "";
+  renderImageGrid();
+  showToast("Imagen agregada ✓", "success");
 });
 
 // ===== AUTH =====
@@ -188,7 +182,7 @@ function renderTable() {
 
   const rows = filtered.map((p) => `
     <tr>
-      <td class="td-emoji">${p.image_url ? `<img src="${p.image_url}" class="td-img" alt="" />` : (p.emoji || "📦")}</td>
+      <td class="td-emoji">${(p.image_urls && p.image_urls.length > 0) ? `<img src="${p.image_urls[0]}" class="td-img" alt="" />` : p.image_url ? `<img src="${p.image_url}" class="td-img" alt="" />` : (p.emoji || "📦")}</td>
       <td class="td-name">
         <strong>${p.name}</strong>
         <small>Q${p.price} GTQ · ${(p.sizes || []).join(", ")}</small>
@@ -228,7 +222,8 @@ function openAddModal() {
   document.getElementById("productId").value = "";
   document.getElementById("pAvailable").checked = true;
   document.getElementById("formError").style.display = "none";
-  setImagePreview(null);
+  currentImageUrls = [];
+  renderImageGrid();
   document.getElementById("productModalOverlay").classList.add("open");
 }
 
@@ -245,7 +240,9 @@ function openEditModal(id) {
   document.getElementById("pEmoji").value = p.emoji || "";
   document.getElementById("pBadge").value = p.badge || "";
   document.getElementById("pAvailable").checked = p.available !== false;
-  setImagePreview(p.image_url || null);
+  currentImageUrls = [...(p.image_urls || [])];
+  if (!currentImageUrls.length && p.image_url) currentImageUrls = [p.image_url];
+  renderImageGrid();
 
   document.querySelectorAll(".size-toggle input").forEach((cb) => {
     cb.checked = (p.sizes || []).includes(cb.value);
@@ -285,7 +282,8 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     badge: document.getElementById("pBadge").value || null,
     available: document.getElementById("pAvailable").checked,
     sizes,
-    image_url: currentImageUrl,
+    image_urls: currentImageUrls,
+    image_url: currentImageUrls[0] || null,
   };
 
   const id = document.getElementById("productId").value;

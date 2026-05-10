@@ -12,6 +12,7 @@ const products = [
     desc: "Camisola oficial temporada 2024/25. Tela climachill, corte slim.",
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["#ffffff", "#d4af37", "#1a1a2e"],
+    images: [],
     available: true,
   },
   {
@@ -27,6 +28,7 @@ const products = [
     desc: "Diseño a rayas clásicas azulgrana. Escudo bordado.",
     sizes: ["S", "M", "L", "XL"],
     colors: ["#a8001c", "#004d98"],
+    images: [],
     available: true,
   },
   {
@@ -41,6 +43,7 @@ const products = [
     desc: "Camisola visitante temporada 24/25. Color negro con detalles rojos.",
     sizes: ["M", "L", "XL", "XXL"],
     colors: ["#c8102e", "#1a1a2e"],
+    images: [],
     available: true,
   },
   {
@@ -56,6 +59,7 @@ const products = [
     desc: "Camisola de local del United 2024/25. Rojo clásico con cuello redondo.",
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
     colors: ["#c8102e", "#fbd700"],
+    images: [],
     available: true,
   },
   {
@@ -70,6 +74,7 @@ const products = [
     desc: "Celeste cielo del City, temporada 24/25. Diseño moderno.",
     sizes: ["S", "M", "L", "XL"],
     colors: ["#6cabdd", "#1c2c5b"],
+    images: [],
     available: true,
   },
   {
@@ -84,6 +89,7 @@ const products = [
     desc: "Rojo y blanco clásico de los Gunners. Tela dri-fit.",
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["#ef0107", "#ffffff"],
+    images: [],
     available: true,
   },
   {
@@ -99,6 +105,7 @@ const products = [
     desc: "Azul oscuro con detalle rojo. Escudo bordado del Paris Saint-Germain.",
     sizes: ["S", "M", "L", "XL"],
     colors: ["#004170", "#c0392b", "#d4af37"],
+    images: [],
     available: true,
   },
   {
@@ -114,6 +121,7 @@ const products = [
     desc: "Camisola visitante blanca con detalles dorados y rojos.",
     sizes: ["M", "L", "XL"],
     colors: ["#ffffff", "#c0392b", "#d4af37"],
+    images: [],
     available: true,
   },
   {
@@ -129,6 +137,7 @@ const products = [
     desc: "Camisola de la Selección Nacional. Azul y blanco. ¡Apoya a Guatemala!",
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["#4997d0", "#ffffff"],
+    images: [],
     available: true,
   },
   {
@@ -143,6 +152,7 @@ const products = [
     desc: "La canarinha, temporada 24/25. Verde y amarillo icónicos.",
     sizes: ["S", "M", "L", "XL"],
     colors: ["#ffd700", "#009c3b"],
+    images: [],
     available: true,
   },
   {
@@ -158,6 +168,7 @@ const products = [
     desc: "La scaloneta. Rayas celestes y blancas con las 3 estrellas.",
     sizes: ["XS", "S", "M", "L", "XL", "XXL"],
     colors: ["#74acdf", "#ffffff", "#d4af37"],
+    images: [],
     available: true,
   },
   {
@@ -173,6 +184,7 @@ const products = [
     desc: "El Campeón de Guatemala. Camisola blanca local 2024/25.",
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["#ffffff", "#c0392b"],
+    images: [],
     available: true,
   },
 ];
@@ -202,6 +214,7 @@ async function loadFromSupabase() {
         badgeText: p.badge === "popular" ? "Más vendida" : p.badge === "new" ? "Nueva" : "",
         desc: p.description || "",
         colors: [],
+        images: p.image_urls && p.image_urls.length > 0 ? p.image_urls : (p.image_url ? [p.image_url] : []),
       }));
       renderProducts();
     }
@@ -234,11 +247,13 @@ function renderProducts() {
 
   grid.innerHTML = filtered
     .map(
-      (p) => `
+      (p) => {
+        const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
+        return `
     <div class="product-card" onclick="openModal(${p.id})">
       ${p.badge ? `<div class="product-badge ${p.badge}">${p.badgeText}</div>` : ""}
-      <div class="product-image" style="background:${p.bg}">
-        ${p.emoji}
+      <div class="product-image" style="${thumb ? "" : `background:${p.bg}`}">
+        ${thumb ? `<img src="${thumb}" alt="${p.name}" class="product-img" />` : (p.emoji || "⚽")}
       </div>
       <div class="product-body">
         <div class="product-league">${p.league}</div>
@@ -256,8 +271,8 @@ function renderProducts() {
         </div>
       </div>
     </div>
-  `
-    )
+  `;
+      })
     .join("");
 }
 
@@ -269,12 +284,27 @@ function waLink(p, size = "") {
 }
 
 function openModal(id) {
-  const p = products.find((x) => x.id === id);
+  const source = liveProducts || products;
+  const p = source.find((x) => x.id === id) || products.find((x) => x.id === id);
   if (!p) return;
+
+  const images = p.images && p.images.length > 0 ? p.images : (p.image_urls && p.image_urls.length > 0 ? p.image_urls : (p.image_url ? [p.image_url] : []));
+
+  const imageHtml = images.length > 0
+    ? `<div class="modal-gallery">
+        <img id="modalMainImg" src="${images[0]}" alt="${p.name}" class="modal-main-img" />
+        ${images.length > 1 ? `<div class="modal-thumbs-row">${images.map((url, i) => `<img src="${url}" class="modal-thumb-img${i === 0 ? " active" : ""}" onclick="setMainImg(this,'${url}')" />`).join("")}</div>` : ""}
+      </div>`
+    : `<div class="modal-product-image" style="background:${p.bg}">${p.emoji}</div>`;
+
+  const colorHtml = p.colors && p.colors.length > 0
+    ? `<div class="modal-section-title">Colores</div>
+       <div class="modal-colors">${p.colors.map((c, i) => `<div class="modal-color ${i === 0 ? "selected" : ""}" style="background:${c}" onclick="selectColor(this)"></div>`).join("")}</div>`
+    : "";
 
   const content = document.getElementById("modalContent");
   content.innerHTML = `
-    <div class="modal-product-image" style="background:${p.bg}">${p.emoji}</div>
+    ${imageHtml}
     <div class="modal-body">
       <div class="modal-league">${p.league}</div>
       <div class="modal-name">${p.name}</div>
@@ -285,10 +315,7 @@ function openModal(id) {
         ${p.sizes.map((s) => `<button class="modal-size" onclick="selectSize(this,'${s}')">${s}</button>`).join("")}
       </div>
 
-      <div class="modal-section-title">Colores</div>
-      <div class="modal-colors">
-        ${p.colors.map((c, i) => `<div class="modal-color ${i === 0 ? "selected" : ""}" style="background:${c}" onclick="selectColor(this)"></div>`).join("")}
-      </div>
+      ${colorHtml}
 
       <div class="modal-price-row">
         <div class="modal-price">${p.price} <small style="font-size:.75rem;color:#9ca3af;font-weight:500">GTQ</small></div>
@@ -302,8 +329,13 @@ function openModal(id) {
 
   document.getElementById("modalOverlay").classList.add("open");
   document.body.style.overflow = "hidden";
-
   window._currentProduct = p;
+}
+
+function setMainImg(thumb, url) {
+  document.getElementById("modalMainImg").src = url;
+  document.querySelectorAll(".modal-thumb-img").forEach((t) => t.classList.remove("active"));
+  thumb.classList.add("active");
 }
 
 function selectSize(btn, size) {

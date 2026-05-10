@@ -838,3 +838,49 @@ body {
   .jersey-card-hero { min-width: 90px; padding: 20px 12px; }
   .jersey-visual { font-size: 2.2rem; }
 }
+
+/* PRODUCT CARD IMAGE */
+.product-image img.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* MODAL IMAGE GALLERY */
+.modal-gallery {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
+}
+
+.modal-main-img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  display: block;
+}
+
+.modal-thumbs-row {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f9fafb;
+  overflow-x: auto;
+}
+
+.modal-thumb-img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  opacity: 0.6;
+  flex-shrink: 0;
+  transition: all .15s;
+}
+
+.modal-thumb-img.active,
+.modal-thumb-img:hover {
+  border-color: var(--accent);
+  opacity: 1;
+}

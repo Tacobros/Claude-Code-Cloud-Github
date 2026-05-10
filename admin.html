@@ -184,17 +184,16 @@
             <input type="text" id="pName" placeholder="Ej: Real Madrid — Local 2024/25" required />
           </div>
           <div class="field span-2">
-            <label>Imagen del producto</label>
+            <label>Imágenes del producto <small style="font-weight:400;color:#9ca3af;">(la primera será la principal)</small></label>
+            <div id="imageGrid" class="image-grid"></div>
             <div class="image-upload-area" id="imageUploadArea">
-              <img id="imagePreview" src="" alt="" style="display:none;" />
               <div id="imageUploadPlaceholder">
                 <span>📷</span>
-                <p>Haz clic para subir imagen</p>
-                <small>JPG, PNG o WEBP · Máx 2MB</small>
+                <p>Haz clic para agregar imagen</p>
+                <small>JPG, PNG o WEBP · Máx 2MB por imagen</small>
               </div>
               <input type="file" id="pImage" accept="image/jpeg,image/png,image/webp" style="display:none;" />
             </div>
-            <button type="button" class="btn-remove-image" id="btnRemoveImage" style="display:none;">✕ Quitar imagen</button>
           </div>
           <div class="field">
             <label>Liga / Categoría *</label>

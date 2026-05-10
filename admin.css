@@ -681,3 +681,117 @@ tr:hover td { background: var(--gray-50); }
   .table-toolbar { flex-direction: column; }
   .search-input { min-width: unset; }
 }
+
+/* CUSTOM CATEGORIES */
+.categories-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  min-height: 24px;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  color: #3730a3;
+  border-radius: 20px;
+  padding: 4px 10px 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.category-chip button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6366f1;
+  font-size: 12px;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.category-chip button:hover { opacity: 1; }
+
+.add-category-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.add-category-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.add-category-row input:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+/* IMAGE UPLOAD */
+.image-upload-area {
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius);
+  cursor: pointer;
+  overflow: hidden;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-50);
+  transition: border-color .15s;
+}
+
+.image-upload-area:hover { border-color: var(--accent); }
+
+.image-upload-area img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  display: block;
+}
+
+#imageUploadPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--gray-400);
+  padding: 24px;
+  text-align: center;
+}
+
+#imageUploadPlaceholder span { font-size: 2rem; }
+#imageUploadPlaceholder p { font-size: .85rem; font-weight: 500; margin: 0; }
+#imageUploadPlaceholder small { font-size: .75rem; }
+
+.btn-remove-image {
+  margin-top: 6px;
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: .8rem;
+  cursor: pointer;
+  padding: 2px 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-remove-image:hover { text-decoration: underline; }
+
+.td-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+  margin: 0 auto;
+}

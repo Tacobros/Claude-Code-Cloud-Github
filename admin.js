@@ -10,6 +10,7 @@ let allProducts = [];
 let deleteTargetId = null;
 let storeSettings = {};
 let customCategories = [];
+let currentImageUrl = null;
 
 function getCategoryLabel(cat) {
   return DEFAULT_CATEGORIES[cat] || cat;
@@ -20,12 +21,10 @@ function populateCategorySelects() {
     (c) => `<option value="${c}">${c}</option>`
   ).join("");
 
-  // product form select — keep default options, replace custom ones
   const pCat = document.getElementById("pCategory");
   [...pCat.options].filter((o) => !DEFAULT_CATEGORIES[o.value] && o.value !== "").forEach((o) => o.remove());
   pCat.insertAdjacentHTML("beforeend", customOptions);
 
-  // filter select — rebuild fully
   const filterSel = document.getElementById("adminFilter");
   const defaultFilterOptions = `
     <option value="all">Todas las categorías</option>
@@ -33,6 +32,53 @@ function populateCategorySelects() {
   `;
   filterSel.innerHTML = defaultFilterOptions + customOptions;
 }
+
+// ===== IMAGE UPLOAD =====
+function setImagePreview(url) {
+  const preview = document.getElementById("imagePreview");
+  const placeholder = document.getElementById("imageUploadPlaceholder");
+  const removeBtn = document.getElementById("btnRemoveImage");
+  if (url) {
+    preview.src = url;
+    preview.style.display = "block";
+    placeholder.style.display = "none";
+    removeBtn.style.display = "inline-block";
+    currentImageUrl = url;
+  } else {
+    preview.src = "";
+    preview.style.display = "none";
+    placeholder.style.display = "flex";
+    removeBtn.style.display = "none";
+    currentImageUrl = null;
+  }
+}
+
+document.getElementById("imageUploadArea").addEventListener("click", () => {
+  document.getElementById("pImage").click();
+});
+
+document.getElementById("pImage").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    showToast("La imagen no puede superar 2MB", "error");
+    return;
+  }
+  const { data: { user } } = await sb.auth.getUser();
+  const ext = file.name.split(".").pop();
+  const path = `${user.id}/${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from("product-images").upload(path, file, { upsert: true });
+  if (error) { showToast("Error al subir imagen: " + error.message, "error"); return; }
+  const { data } = sb.storage.from("product-images").getPublicUrl(path);
+  setImagePreview(data.publicUrl);
+  showToast("Imagen subida ✓", "success");
+});
+
+document.getElementById("btnRemoveImage").addEventListener("click", (e) => {
+  e.stopPropagation();
+  document.getElementById("pImage").value = "";
+  setImagePreview(null);
+});
 
 // ===== AUTH =====
 async function init() {
@@ -142,7 +188,7 @@ function renderTable() {
 
   const rows = filtered.map((p) => `
     <tr>
-      <td class="td-emoji">${p.emoji || "📦"}</td>
+      <td class="td-emoji">${p.image_url ? `<img src="${p.image_url}" class="td-img" alt="" />` : (p.emoji || "📦")}</td>
       <td class="td-name">
         <strong>${p.name}</strong>
         <small>Q${p.price} GTQ · ${(p.sizes || []).join(", ")}</small>
@@ -182,6 +228,7 @@ function openAddModal() {
   document.getElementById("productId").value = "";
   document.getElementById("pAvailable").checked = true;
   document.getElementById("formError").style.display = "none";
+  setImagePreview(null);
   document.getElementById("productModalOverlay").classList.add("open");
 }
 
@@ -198,6 +245,7 @@ function openEditModal(id) {
   document.getElementById("pEmoji").value = p.emoji || "";
   document.getElementById("pBadge").value = p.badge || "";
   document.getElementById("pAvailable").checked = p.available !== false;
+  setImagePreview(p.image_url || null);
 
   document.querySelectorAll(".size-toggle input").forEach((cb) => {
     cb.checked = (p.sizes || []).includes(cb.value);
@@ -237,6 +285,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     badge: document.getElementById("pBadge").value || null,
     available: document.getElementById("pAvailable").checked,
     sizes,
+    image_url: currentImageUrl,
   };
 
   const id = document.getElementById("productId").value;

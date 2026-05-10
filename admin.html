@@ -183,6 +183,19 @@
             <label>Nombre del producto *</label>
             <input type="text" id="pName" placeholder="Ej: Real Madrid — Local 2024/25" required />
           </div>
+          <div class="field span-2">
+            <label>Imagen del producto</label>
+            <div class="image-upload-area" id="imageUploadArea">
+              <img id="imagePreview" src="" alt="" style="display:none;" />
+              <div id="imageUploadPlaceholder">
+                <span>📷</span>
+                <p>Haz clic para subir imagen</p>
+                <small>JPG, PNG o WEBP · Máx 2MB</small>
+              </div>
+              <input type="file" id="pImage" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+            </div>
+            <button type="button" class="btn-remove-image" id="btnRemoveImage" style="display:none;">✕ Quitar imagen</button>
+          </div>
           <div class="field">
             <label>Liga / Categoría *</label>
             <select id="pCategory" required>

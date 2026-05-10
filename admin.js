@@ -1,4 +1,4 @@
-const categoryLabels = {
+const DEFAULT_CATEGORIES = {
   laliga: "LaLiga",
   premier: "Premier League",
   ligue1: "Ligue 1",
@@ -9,6 +9,30 @@ const categoryLabels = {
 let allProducts = [];
 let deleteTargetId = null;
 let storeSettings = {};
+let customCategories = [];
+
+function getCategoryLabel(cat) {
+  return DEFAULT_CATEGORIES[cat] || cat;
+}
+
+function populateCategorySelects() {
+  const customOptions = customCategories.map(
+    (c) => `<option value="${c}">${c}</option>`
+  ).join("");
+
+  // product form select — keep default options, replace custom ones
+  const pCat = document.getElementById("pCategory");
+  [...pCat.options].filter((o) => !DEFAULT_CATEGORIES[o.value] && o.value !== "").forEach((o) => o.remove());
+  pCat.insertAdjacentHTML("beforeend", customOptions);
+
+  // filter select — rebuild fully
+  const filterSel = document.getElementById("adminFilter");
+  const defaultFilterOptions = `
+    <option value="all">Todas las categorías</option>
+    ${Object.entries(DEFAULT_CATEGORIES).map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}
+  `;
+  filterSel.innerHTML = defaultFilterOptions + customOptions;
+}
 
 // ===== AUTH =====
 async function init() {
@@ -123,7 +147,7 @@ function renderTable() {
         <strong>${p.name}</strong>
         <small>Q${p.price} GTQ · ${(p.sizes || []).join(", ")}</small>
       </td>
-      <td><span class="badge badge-${p.category}">${categoryLabels[p.category] || p.category}</span></td>
+      <td><span class="badge badge-${p.category}">${getCategoryLabel(p.category)}</span></td>
       <td class="${p.available ? 'status-on' : 'status-off'}">${p.available ? "✓ Visible" : "✗ Oculto"}</td>
       <td class="td-actions">
         <button class="btn-edit" onclick="openEditModal(${p.id})">Editar</button>
@@ -275,6 +299,9 @@ async function loadSettings() {
     document.getElementById("storeEmoji").value = data.emoji || "⚽";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";
     document.getElementById("storeAccentHex").textContent = data.accent_color || "#e94560";
+    customCategories = data.custom_categories || [];
+    populateCategorySelects();
+    renderCustomCategories();
     updateSettingsPreview();
   }
 }
@@ -308,6 +335,7 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     description: document.getElementById("storeDesc").value.trim(),
     emoji: document.getElementById("storeEmoji").value.trim() || "⚽",
     accent_color: document.getElementById("storeAccent").value,
+    custom_categories: customCategories,
   };
 
   const { error } = storeSettings?.id
@@ -325,6 +353,45 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
 document.getElementById("btnCopyLink").addEventListener("click", () => {
   const link = document.getElementById("catalogLink").textContent;
   navigator.clipboard.writeText(link).then(() => showToast("Enlace copiado ✓", "success"));
+});
+
+// ===== CUSTOM CATEGORIES =====
+function renderCustomCategories() {
+  const list = document.getElementById("customCategoriesList");
+  if (customCategories.length === 0) {
+    list.innerHTML = `<p class="hint" style="margin:0">Aún no tienes categorías personalizadas.</p>`;
+    return;
+  }
+  list.innerHTML = customCategories.map((c, i) => `
+    <span class="category-chip">
+      ${c}
+      <button type="button" onclick="removeCategory(${i})" title="Eliminar">✕</button>
+    </span>
+  `).join("");
+}
+
+function removeCategory(index) {
+  customCategories.splice(index, 1);
+  renderCustomCategories();
+  populateCategorySelects();
+}
+
+document.getElementById("btnAddCategory").addEventListener("click", () => {
+  const input = document.getElementById("newCategoryInput");
+  const name = input.value.trim();
+  if (!name) return;
+  if (customCategories.includes(name) || Object.values(DEFAULT_CATEGORIES).includes(name)) {
+    showToast("Esa categoría ya existe", "error");
+    return;
+  }
+  customCategories.push(name);
+  input.value = "";
+  renderCustomCategories();
+  populateCategorySelects();
+});
+
+document.getElementById("newCategoryInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); document.getElementById("btnAddCategory").click(); }
 });
 
 // ===== TOAST =====

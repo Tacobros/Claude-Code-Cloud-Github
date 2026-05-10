@@ -24,8 +24,12 @@ create table if not exists stores (
   description text,
   emoji text default '⚽',
   accent_color text default '#e94560',
+  custom_categories text[] default '{}',
   created_at timestamptz default now()
 );
+
+-- Migration: add custom_categories if table already exists
+alter table stores add column if not exists custom_categories text[] default '{}';
 
 -- Row Level Security: each user sees only their own data
 alter table products enable row level security;

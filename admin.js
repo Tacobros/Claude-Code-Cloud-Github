@@ -7,17 +7,25 @@ function slugify(str) {
 }
 
 function updateCatalogLink(slug) {
-  const el = document.getElementById("catalogLink");
-  if (!el) return;
-  if (!slug) { el.textContent = "— ingresa un slug para ver tu enlace —"; return; }
   const host = window.location.hostname;
   const parts = host.split(".");
-  // On the real platform: build subdomain URL
-  if (parts.length >= 2) {
-    const rootDomain = parts.length >= 3 ? parts.slice(1).join(".") : host;
-    el.textContent = `https://${slug}.${rootDomain}/`;
-  } else {
-    el.textContent = `${window.location.origin}/index.html?s=${slug}`;
+  let url;
+  if (slug) {
+    if (parts.length >= 2) {
+      const rootDomain = parts.length >= 3 ? parts.slice(1).join(".") : host;
+      url = `https://${slug}.${rootDomain}/`;
+    } else {
+      url = `${window.location.origin}/index.html?s=${slug}`;
+    }
+  }
+
+  const el = document.getElementById("catalogLink");
+  if (el) el.textContent = url || "— ingresa un slug para ver tu enlace —";
+
+  // Keep sidebar "Ver catálogo" link in sync
+  const sidebarLink = document.querySelector('.nav-item[data-catalog]');
+  if (sidebarLink && slug) {
+    sidebarLink.href = `index.html?s=${slug}`;
   }
 }
 

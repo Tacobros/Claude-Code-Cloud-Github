@@ -3,24 +3,135 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel Admin — CAS</title>
+  <title>Panel Admin — ProductSpot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="admin.css" />
+  <style>
+    /* ── Plan page ── */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 860px;
+    }
+    .plan-card-box {
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    .plan-card-box.current {
+      border-color: var(--accent);
+      background: #f0f7ff;
+    }
+    .plan-card-box.highlighted {
+      border-color: #5b8ab5;
+    }
+    .plan-current-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 14px;
+    }
+    .plan-name {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    .plan-price-row {
+      margin-bottom: 16px;
+    }
+    .plan-price-row strong {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #1f2937;
+    }
+    .plan-price-row span {
+      font-size: .85rem;
+      color: #9ca3af;
+    }
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 24px;
+      flex: 1;
+    }
+    .plan-features li {
+      font-size: .85rem;
+      color: #374151;
+      padding: 5px 0;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .plan-features li::before {
+      content: '✓';
+      color: #059669;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .btn-plan-upgrade {
+      width: 100%;
+      padding: 11px;
+      border-radius: 10px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      transition: all .15s;
+    }
+    .btn-plan-upgrade.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-plan-upgrade.primary:hover { opacity: .9; }
+    .btn-plan-upgrade.outline {
+      background: #fff;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+    .btn-plan-upgrade.outline:hover { background: #f0f7ff; }
+    .btn-plan-upgrade.muted {
+      background: #f3f4f6;
+      color: #9ca3af;
+      cursor: default;
+    }
+    .plan-manage-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: .85rem;
+      color: #6b7280;
+    }
+    .plan-manage-link a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    @media (max-width: 700px) {
+      .plan-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 
   <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
-      <div class="login-logo">
-        <span>
-          <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <path d="M4 8 L11 5 C11 5 13 10 16 10 C19 10 21 5 21 5 L28 8 L25 17 L21 15 L21 27 L11 27 L11 15 L7 17 Z" fill="currentColor"/>
-          </svg>
-        </span>
-        <strong>CAS Admin</strong>
+      <div class="login-logo" style="justify-content:center;margin-bottom:8px;">
+        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
+             alt="ProductSpot" style="height:40px;width:auto;" />
       </div>
       <h2>Iniciar sesión</h2>
       <p>Accede a tu panel de administración</p>
@@ -37,7 +148,7 @@
         <button type="submit" class="btn-login" id="loginBtn">Entrar</button>
       </form>
       <p style="text-align:center;margin-top:16px;font-size:.875rem;color:#6b7280;">
-        ¿No tienes cuenta? <a href="register.html" style="color:#e94560;text-decoration:none;">Crear catálogo gratis →</a>
+        ¿No tienes cuenta? <a href="register.html" style="color:#5b8ab5;text-decoration:none;">Crear catálogo gratis →</a>
       </p>
     </div>
   </div>
@@ -48,12 +159,8 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
-        <span>
-          <svg width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none">
-            <path d="M4 8 L11 5 C11 5 13 10 16 10 C19 10 21 5 21 5 L28 8 L25 17 L21 15 L21 27 L11 27 L11 15 L7 17 Z" fill="currentColor" opacity="0.9"/>
-          </svg>
-        </span>
-        <strong>CAS</strong>
+        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
+             alt="ProductSpot" style="height:24px;width:auto;filter:brightness(0) invert(1);" />
       </div>
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="products">
@@ -63,6 +170,10 @@
         <a href="#" class="nav-item" data-page="settings">
           <span class="nav-icon">⚙️</span>
           <span>Mi tienda</span>
+        </a>
+        <a href="#" class="nav-item" data-page="plan">
+          <span class="nav-icon">💳</span>
+          <span>Mi plan</span>
         </a>
         <a href="index.html" class="nav-item" data-catalog target="_blank">
           <span class="nav-icon">👁️</span>
@@ -292,6 +403,13 @@
             <p class="hint">Comparte este enlace con tus clientes para que vean tu catálogo.</p>
           </div>
         </div>
+      </div>
+
+      <div id="pagePlan" class="page">
+        <div class="page-header">
+          <div><h2>Mi plan</h2><p>Gestiona tu suscripción y beneficios</p></div>
+        </div>
+        <div id="planContent" class="loading">Cargando...</div>
       </div>
 
     </main>

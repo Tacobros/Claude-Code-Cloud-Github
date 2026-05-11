@@ -42,6 +42,7 @@ let deleteTargetId = null;
 let storeSettings = {};
 let customCategories = [];
 let currentImageUrls = [];
+let currentPlan = 'free';
 
 function getCategoryLabel(cat) {
   return DEFAULT_CATEGORIES[cat] || cat;
@@ -112,6 +113,18 @@ async function init() {
   else showLogin();
 }
 
+function handleUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('upgraded') === '1') {
+    history.replaceState({}, '', window.location.pathname);
+    showToast('¡Suscripción activada! Bienvenido a tu nuevo plan.', 'success');
+  }
+  if (params.get('page') === 'plan') {
+    history.replaceState({}, '', window.location.pathname);
+    document.querySelector('.nav-item[data-page="plan"]')?.click();
+  }
+}
+
 function showLogin() {
   document.getElementById("loginScreen").style.display = "flex";
   document.getElementById("adminApp").style.display = "none";
@@ -136,6 +149,7 @@ async function showApp(user) {
   loadProducts();
   loadSettings();
   initDesignUploads();
+  handleUrlParams();
 }
 
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
@@ -431,6 +445,8 @@ async function loadSettings() {
     populateCategorySelects();
     renderCustomCategories();
     updateSettingsPreview();
+    currentPlan = data.plan || 'free';
+    loadPlanPage();
   }
 }
 
@@ -611,6 +627,110 @@ async function uploadDesignImage(file, type, urlFieldId, previewId) {
     container.innerHTML = `<img src="${data.publicUrl}" style="max-height:56px;max-width:100%;object-fit:${isHero ? "cover" : "contain"};border-radius:4px;" />`;
   }
   showToast("Imagen subida ✓", "success");
+}
+
+// ===== PLAN PAGE =====
+function loadPlanPage() {
+  const el = document.getElementById('planContent');
+  if (!el) return;
+
+  const plans = [
+    {
+      id: 'free',
+      name: 'Free',
+      price: '$0',
+      period: '/ siempre gratis',
+      features: [
+        'Hasta 10 productos',
+        'Catálogo digital público',
+        'Pedidos por WhatsApp',
+        'Personalización básica',
+      ],
+    },
+    {
+      id: 'starter',
+      name: 'Starter',
+      price: '$15',
+      period: '/ mes',
+      features: [
+        'Hasta 100 productos',
+        'Todo lo del plan Free',
+        'Categorías ilimitadas',
+        'Imagen hero personalizada',
+        'Soporte por email',
+      ],
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: '$35',
+      period: '/ mes',
+      features: [
+        'Productos ilimitados',
+        'Todo lo del plan Starter',
+        'Dominio personalizado',
+        'Analytics de visitas',
+        'Soporte prioritario',
+      ],
+    },
+  ];
+
+  const cards = plans.map(p => {
+    const isCurrent = currentPlan === p.id;
+    const isHigher  = (p.id === 'pro' && currentPlan === 'starter') ||
+                      (p.id === 'starter' && currentPlan === 'free') ||
+                      (p.id === 'pro' && currentPlan === 'free');
+
+    let btn = '';
+    if (isCurrent) {
+      btn = `<button class="btn-plan-upgrade muted" disabled>Plan actual</button>`;
+    } else if (isHigher) {
+      btn = `<button class="btn-plan-upgrade primary" onclick="upgradePlan('${p.id}')">Actualizar a ${p.name}</button>`;
+    } else {
+      btn = `<button class="btn-plan-upgrade outline" onclick="upgradePlan('${p.id}')">Cambiar a ${p.name}</button>`;
+    }
+
+    return `
+      <div class="plan-card-box ${isCurrent ? 'current' : ''}">
+        ${isCurrent ? '<span class="plan-current-badge">Plan actual</span>' : ''}
+        <div class="plan-name">${p.name}</div>
+        <div class="plan-price-row"><strong>${p.price}</strong><span> ${p.period}</span></div>
+        <ul class="plan-features">
+          ${p.features.map(f => `<li>${f}</li>`).join('')}
+        </ul>
+        ${btn}
+      </div>`;
+  }).join('');
+
+  const manageLink = currentPlan !== 'free'
+    ? `<p class="plan-manage-link">¿Necesitas cambiar tu método de pago o cancelar? <a href="#" onclick="openBillingPortal();return false;">Gestionar suscripción →</a></p>`
+    : '';
+
+  el.innerHTML = `<div class="plan-grid">${cards}</div>${manageLink}`;
+}
+
+async function upgradePlan(plan) {
+  showToast('Redirigiendo a Stripe…');
+  const { data, error } = await sb.functions.invoke('create-checkout', {
+    body: { type: 'checkout', plan },
+  });
+  if (error || !data?.url) {
+    showToast('Error al iniciar el pago: ' + (error?.message || 'sin URL'), 'error');
+    return;
+  }
+  window.location.href = data.url;
+}
+
+async function openBillingPortal() {
+  showToast('Abriendo portal de facturación…');
+  const { data, error } = await sb.functions.invoke('create-checkout', {
+    body: { type: 'portal' },
+  });
+  if (error || !data?.url) {
+    showToast('Error al abrir el portal: ' + (error?.message || 'sin URL'), 'error');
+    return;
+  }
+  window.location.href = data.url;
 }
 
 // ===== TOAST =====

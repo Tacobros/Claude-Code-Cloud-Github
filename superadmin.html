@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuperAdmin — ProductSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="admin.css" />
+  <style>
+    /* ── Overrides de color para SuperAdmin ── */
+    :root { --accent: #5b8ab5; }
+    .nav-item.active        { background: #5b8ab5; }
+    .btn-login              { background: #5b8ab5; }
+    .btn-login:hover        { background: #4a7a9b; }
+    .login-screen           { background: linear-gradient(135deg, #0a1628 0%, #0d2240 100%); }
+    .sidebar                { background: #0f172a; }
+    .field input:focus      { border-color: #5b8ab5; }
+    .search-input:focus     { border-color: #5b8ab5; }
+    .select-filter:focus    { border-color: #5b8ab5; }
+
+    /* ── Stat cards ── */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 22px 24px;
+    }
+    .sc-label {
+      font-size: .75rem;
+      font-weight: 700;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 10px;
+    }
+    .sc-value {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #1f2937;
+      line-height: 1;
+    }
+    .sc-sub {
+      font-size: .78rem;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+    .stat-card.blue .sc-value  { color: #5b8ab5; }
+    .stat-card.green .sc-value { color: #059669; }
+    .stat-card.amber .sc-value { color: #d97706; }
+
+    /* ── Plan badges ── */
+    .plan-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .plan-free    { background: #f3f4f6; color: #6b7280; }
+    .plan-starter { background: #dbeafe; color: #1d4ed8; }
+    .plan-pro     { background: #fef3c7; color: #92400e; }
+
+    /* ── Status ── */
+    .status-active    { color: #059669; font-weight: 600; font-size: .82rem; }
+    .status-suspended { color: #dc2626; font-weight: 600; font-size: .82rem; }
+
+    /* ── Acciones en tabla ── */
+    .plan-select {
+      padding: 5px 8px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: .8rem;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      background: #fff;
+      outline: none;
+    }
+    .plan-select:focus { border-color: #5b8ab5; }
+
+    .btn-status {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .btn-suspend  { background: #fee2e2; color: #991b1b; }
+    .btn-suspend:hover  { background: #fecaca; }
+    .btn-activate { background: #d1fae5; color: #065f46; }
+    .btn-activate:hover { background: #a7f3d0; }
+
+    .btn-view {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: .78rem;
+      font-weight: 600;
+      border: 1.5px solid #e5e7eb;
+      background: #fff;
+      color: #374151;
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+      display: inline-block;
+      transition: all .15s;
+    }
+    .btn-view:hover { border-color: #5b8ab5; color: #5b8ab5; }
+
+    /* ── Panel reciente ── */
+    .panel-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .panel-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #f3f4f6;
+      font-weight: 700;
+      font-size: .95rem;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-card-header a {
+      font-size: .8rem;
+      font-weight: 500;
+      color: #5b8ab5;
+      text-decoration: none;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 56px;
+      color: #9ca3af;
+      font-size: .9rem;
+    }
+
+    .sidebar-section-label {
+      padding: 4px 16px 10px;
+      font-size: .68rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.3);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+    }
+
+    @media (max-width: 900px) {
+      .stat-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .stat-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="loginScreen" class="login-screen" style="display:none;">
+    <div class="login-card">
+      <div class="login-logo" style="justify-content:center;margin-bottom:20px;">
+        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
+             alt="ProductSpot" style="height:44px;width:auto;" />
+      </div>
+      <div style="text-align:center;margin-bottom:24px;">
+        <span style="background:#5b8ab5;color:#fff;font-size:.72rem;font-weight:700;padding:4px 14px;border-radius:99px;letter-spacing:.06em;text-transform:uppercase;">
+          SuperAdmin
+        </span>
+      </div>
+      <h2>Acceso restringido</h2>
+      <p>Solo para administradores de la plataforma.</p>
+      <div id="loginError" class="error-msg" style="display:none;margin-top:16px;"></div>
+      <div class="field" style="margin-top:20px;">
+        <label>Correo electrónico</label>
+        <input type="email" id="saEmail" placeholder="tu@email.com" />
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="saPassword" placeholder="••••••••" />
+      </div>
+      <button class="btn-login" id="loginBtn">Entrar al panel</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="adminApp" class="admin-app" style="display:none;">
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
+             alt="ProductSpot" style="height:26px;width:auto;filter:brightness(0) invert(1);" />
+      </div>
+      <div class="sidebar-section-label">SuperAdmin</div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#" class="nav-item" data-page="stores">
+          <span class="nav-icon">🏪</span> Tiendas
+        </a>
+      </nav>
+      <div class="sidebar-user" id="saUserEmail"></div>
+      <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+    </aside>
+
+    <main class="main-content">
+      <div class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <button class="btn-primary" id="refreshBtn" style="margin-left:auto;">↻ Actualizar</button>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="pageDashboard" class="page active">
+        <div class="page-header">
+          <div><h2>Dashboard</h2><p>Vista general de la plataforma</p></div>
+        </div>
+        <div class="stat-cards">
+          <div class="stat-card blue">
+            <div class="sc-label">Total tiendas</div>
+            <div class="sc-value" id="statTotal">—</div>
+            <div class="sc-sub">registradas</div>
+          </div>
+          <div class="stat-card green">
+            <div class="sc-label">Activas</div>
+            <div class="sc-value" id="statActive">—</div>
+            <div class="sc-sub">sin suspender</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="sc-label">En plan pago</div>
+            <div class="sc-value" id="statPaid">—</div>
+            <div class="sc-sub">Starter + Pro</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-label">Esta semana</div>
+            <div class="sc-value" id="statWeek">—</div>
+            <div class="sc-sub">nuevas tiendas</div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-card-header">
+            Tiendas recientes
+            <a href="#" data-page="stores">Ver todas →</a>
+          </div>
+          <div id="recentBody" class="loading">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- STORES -->
+      <div id="pageStores" class="page">
+        <div class="page-header">
+          <div><h2>Todas las tiendas</h2><p>Gestiona planes y estados de cada cliente</p></div>
+        </div>
+        <div class="table-toolbar">
+          <input type="text" class="search-input" id="storeSearch" placeholder="Buscar por nombre, slug o email…" />
+          <select class="select-filter" id="planFilter">
+            <option value="">Todos los planes</option>
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="pro">Pro</option>
+          </select>
+          <select class="select-filter" id="statusFilter">
+            <option value="">Todos los estados</option>
+            <option value="active">Activas</option>
+            <option value="suspended">Suspendidas</option>
+          </select>
+        </div>
+        <div class="products-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Tienda</th>
+                <th>Email</th>
+                <th>Slug / URL</th>
+                <th>Plan</th>
+                <th style="text-align:center;">Productos</th>
+                <th>Registro</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="storesBody">
+              <tr><td colspan="8" class="loading">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="supabase.js"></script>
+  <script src="superadmin.js"></script>
+</body>
+</html>

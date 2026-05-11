@@ -73,6 +73,20 @@ async function loadStoreSettings() {
       }
     }
 
+    // Stats
+    const statFields = [
+      ["stat1Value", "stat1_value"], ["stat1Label", "stat1_label"],
+      ["stat2Value", "stat2_value"], ["stat2Label", "stat2_label"],
+      ["stat3Value", "stat3_value"], ["stat3Label", "stat3_label"],
+      ["stat4Value", "stat4_value"], ["stat4Label", "stat4_label"],
+    ];
+    statFields.forEach(([elId, dbKey]) => {
+      if (data[dbKey]) {
+        const el = document.getElementById(elId);
+        if (el) el.textContent = data[dbKey];
+      }
+    });
+
     // WhatsApp links
     updateWALinks();
   } catch (_) {}

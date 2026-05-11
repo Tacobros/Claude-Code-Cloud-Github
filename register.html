@@ -19,7 +19,7 @@
       color: #6b7280;
       word-break: break-all;
     }
-    .slug-preview strong { color: #e94560; }
+    .slug-preview strong { color: #5b8ab5; }
     .plan-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -35,16 +35,23 @@
       text-align: center;
     }
     .plan-card input[type=radio] { display: none; }
-    .plan-card:has(input:checked) { border-color: #e94560; background: #1a0a10; }
+    .plan-card:has(input:checked) { border-color: #5b8ab5; background: #0d1c2e; }
     .plan-card .plan-name { font-weight: 700; font-size: .95rem; margin-bottom: 2px; }
-    .plan-card .plan-price { color: #e94560; font-size: 1.1rem; font-weight: 800; }
+    .plan-card .plan-price { color: #5b8ab5; font-size: 1.1rem; font-weight: 800; }
     .plan-card .plan-desc { font-size: .75rem; color: #6b7280; margin-top: 4px; }
     .divider { border: none; border-top: 1px solid #1e293b; margin: 18px 0; }
     .login-link { text-align: center; margin-top: 16px; font-size: .875rem; color: #6b7280; }
-    .login-link a { color: #e94560; text-decoration: none; }
+    .login-link a { color: #5b8ab5; text-decoration: none; }
     .step-indicator { display: flex; gap: 8px; margin-bottom: 20px; }
     .step { flex: 1; height: 3px; border-radius: 99px; background: #1e293b; }
-    .step.active { background: #e94560; }
+    .step.active { background: #5b8ab5; }
+
+    /* Override admin.css accent for register page */
+    :root { --accent: #5b8ab5; }
+    .btn-login { background: #5b8ab5; }
+    .btn-login:hover { background: #4a7a9b; }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color: #5b8ab5; }
+    .login-screen { background: linear-gradient(135deg, #0a1628 0%, #0d2240 100%); }
     .success-card { text-align: center; padding: 32px 24px; }
     .success-icon { font-size: 3rem; margin-bottom: 16px; }
     .success-card h2 { margin-bottom: 8px; }

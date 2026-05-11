@@ -66,7 +66,9 @@ function debouncedSlugCheck(slug) {
 
 async function checkSlugAvailability(slug) {
   try {
-    const { data } = await sb.from("stores").select("id").eq("slug", slug).maybeSingle();
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
+    const query = sb.from("stores").select("id").eq("slug", slug).maybeSingle();
+    const { data } = await Promise.race([query, timeout]);
     if (data) {
       slugStatus.textContent = "✗ Ese slug ya está en uso";
       slugStatus.style.color = "#ef4444";
@@ -101,8 +103,10 @@ document.getElementById("step1Form").addEventListener("submit", async (e) => {
   btn.textContent = "Verificando...";
 
   try {
-    // Final slug check
-    const { data: existing, error: slugErr } = await sb.from("stores").select("id").eq("slug", slug).maybeSingle();
+    // Final slug check with 4s timeout
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
+    const query = sb.from("stores").select("id").eq("slug", slug).maybeSingle();
+    const { data: existing, error: slugErr } = await Promise.race([query, timeout]);
     if (slugErr) throw slugErr;
     if (existing) {
       err.textContent = "Ese slug ya está en uso, elige otro.";
@@ -113,7 +117,7 @@ document.getElementById("step1Form").addEventListener("submit", async (e) => {
     }
   } catch (e) {
     console.error("Slug check error:", e);
-    // Allow continuing if check fails (will be validated on insert)
+    // Allow continuing if check fails or times out
   }
 
   btn.disabled = false;

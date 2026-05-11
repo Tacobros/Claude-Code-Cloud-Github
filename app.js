@@ -13,12 +13,21 @@ let storeWA = "50200000000";
 let storeName = "CAS";
 
 // ===== STORE SETTINGS =====
+function getStoreSlug() {
+  const host = window.location.hostname; // e.g. mitienda.productspot.com
+  const parts = host.split(".");
+  // Subdomain detected: mitienda.productspot.com or mitienda.pages.dev
+  if (parts.length >= 3 && parts[0] !== "www") return parts[0];
+  // Fallback for local dev or direct access: ?s=slug
+  return new URLSearchParams(window.location.search).get("s");
+}
+
 async function loadStoreSettings() {
   try {
     if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) return;
-    const urlSlug = new URLSearchParams(window.location.search).get("s");
+    const slug = getStoreSlug();
     let query = sb.from("stores").select("*");
-    if (urlSlug) query = query.eq("slug", urlSlug);
+    if (slug) query = query.eq("slug", slug);
     else query = query.limit(1);
     const { data } = await query.single();
     if (!data) return;

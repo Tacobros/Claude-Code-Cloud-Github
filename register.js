@@ -1,6 +1,22 @@
-// Set the real catalog base URL dynamically
-const catalogBase = window.location.origin + window.location.pathname.replace("register.html", "index.html") + "?s=";
-document.getElementById("slugBase").textContent = catalogBase;
+// Set the catalog URL preview — subdomain format if on productspot.com, else ?s= param
+function buildCatalogUrl(slug) {
+  const host = window.location.hostname;
+  const parts = host.split(".");
+  // On the real platform (e.g. register.productspot.com or projectname.pages.dev)
+  if (parts.length >= 2) {
+    const base = parts.slice(parts.length >= 3 ? 1 : 0).join(".");
+    return `https://${slug || "tu-tienda"}.${base}/`;
+  }
+  // Local dev fallback
+  return `${window.location.origin}/index.html?s=${slug || "tu-tienda"}`;
+}
+
+const baseHost = (() => {
+  const parts = window.location.hostname.split(".");
+  return parts.length >= 3 ? parts.slice(1).join(".") : window.location.hostname;
+})();
+document.getElementById("slugBase").textContent = "https://";
+// slugBase will be updated dynamically as user types
 
 function slugify(str) {
   return str.toLowerCase().trim()
@@ -19,17 +35,23 @@ const slugStatus = document.getElementById("slugStatus");
 let slugCheckTimer = null;
 let slugAvailable = false;
 
+function updateSlugPreview(slug) {
+  const url = buildCatalogUrl(slug);
+  document.getElementById("slugBase").textContent = "";
+  slugPreviewVal.textContent = url;
+}
+
 regStoreNameEl.addEventListener("input", () => {
   const auto = slugify(regStoreNameEl.value);
   regSlugEl.value = auto;
-  slugPreviewVal.textContent = auto || "mi-tienda";
+  updateSlugPreview(auto);
   debouncedSlugCheck(auto);
 });
 
 regSlugEl.addEventListener("input", () => {
   const cleaned = slugify(regSlugEl.value);
   regSlugEl.value = cleaned;
-  slugPreviewVal.textContent = cleaned || "mi-tienda";
+  updateSlugPreview(cleaned);
   debouncedSlugCheck(cleaned);
 });
 

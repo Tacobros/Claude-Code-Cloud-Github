@@ -6,11 +6,19 @@ function slugify(str) {
     .replace(/^-|-$/g, "");
 }
 
-function updateCatalogLink(slug, base) {
+function updateCatalogLink(slug) {
   const el = document.getElementById("catalogLink");
   if (!el) return;
-  const catalogBase = base || (window.location.origin + window.location.pathname.replace("admin.html", "index.html") + "?s=");
-  el.textContent = slug ? catalogBase + slug : "— ingresa un slug para ver tu enlace —";
+  if (!slug) { el.textContent = "— ingresa un slug para ver tu enlace —"; return; }
+  const host = window.location.hostname;
+  const parts = host.split(".");
+  // On the real platform: build subdomain URL
+  if (parts.length >= 2) {
+    const rootDomain = parts.length >= 3 ? parts.slice(1).join(".") : host;
+    el.textContent = `https://${slug}.${rootDomain}/`;
+  } else {
+    el.textContent = `${window.location.origin}/index.html?s=${slug}`;
+  }
 }
 
 const DEFAULT_CATEGORIES = {
@@ -364,15 +372,18 @@ async function loadSettings() {
   const { data: { user } } = await sb.auth.getUser();
   const { data } = await sb.from("stores").select("*").eq("user_id", user.id).single();
 
-  // Set the slug URL prefix display
-  const catalogBase = window.location.origin + window.location.pathname.replace("admin.html", "index.html") + "?s=";
-  document.getElementById("slugPrefix").textContent = catalogBase;
+  // Set slug URL prefix: subdomain format on platform, ?s= param locally
+  const host = window.location.hostname;
+  const parts = host.split(".");
+  const rootDomain = parts.length >= 3 ? parts.slice(1).join(".") : host;
+  const slugPrefixEl = document.getElementById("slugPrefix");
+  if (slugPrefixEl) slugPrefixEl.textContent = parts.length >= 2 ? `https://` : window.location.origin + "/index.html?s=";
 
   if (data) {
     storeSettings = data;
     document.getElementById("storeName").value = data.name || "";
     document.getElementById("storeSlug").value = data.slug || "";
-    updateCatalogLink(data.slug || "", catalogBase);
+    updateCatalogLink(data.slug || "");
     document.getElementById("storeWhatsapp").value = data.whatsapp || "";
     document.getElementById("storeDesc").value = data.description || "";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";

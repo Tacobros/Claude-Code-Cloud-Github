@@ -26,11 +26,17 @@ async function loadStoreSettings() {
   try {
     if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) return;
     const slug = getStoreSlug();
+    if (!slug) {
+      window.location.href = "landing.html";
+      return;
+    }
     let query = sb.from("stores").select("*");
-    if (slug) query = query.eq("slug", slug);
-    else query = query.limit(1);
+    query = query.eq("slug", slug);
     const { data } = await query.single();
-    if (!data) return;
+    if (!data) {
+      window.location.href = "landing.html";
+      return;
+    }
 
     storeName = data.name || "CAS";
     storeWA = data.whatsapp || storeWA;

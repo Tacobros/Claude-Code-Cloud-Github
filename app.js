@@ -14,12 +14,18 @@ let storeName = "CAS";
 
 // ===== STORE SETTINGS =====
 function getStoreSlug() {
-  const host = window.location.hostname; // e.g. mitienda.productspot.com
+  // ?s= param takes priority — works on pages.dev and local dev
+  const paramSlug = new URLSearchParams(window.location.search).get("s");
+  if (paramSlug) return paramSlug;
+
+  // Subdomain detection for production custom domain only
+  // (e.g. casgt.productspot.com = 3 parts, casgt.productspot.pages.dev = 4 parts)
+  const host = window.location.hostname;
   const parts = host.split(".");
-  // Subdomain detected: mitienda.productspot.com or mitienda.pages.dev
-  if (parts.length >= 3 && parts[0] !== "www") return parts[0];
-  // Fallback for local dev or direct access: ?s=slug
-  return new URLSearchParams(window.location.search).get("s");
+  if (parts.length >= 4 && parts[0] !== "www") return parts[0]; // client.productspot.pages.dev
+  if (parts.length === 3 && !host.endsWith(".pages.dev") && parts[0] !== "www") return parts[0]; // client.productspot.com
+
+  return null;
 }
 
 async function loadStoreSettings() {

@@ -117,7 +117,8 @@ function handleUrlParams() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('upgraded') === '1') {
     history.replaceState({}, '', window.location.pathname);
-    showToast('¡Suscripción activada! Bienvenido a tu nuevo plan.', 'success');
+    showToast('¡Pago completado! Tu plan se actualizará en unos momentos.', 'success');
+    setTimeout(() => loadSettings(), 4000);
   }
   if (params.get('page') === 'plan') {
     history.replaceState({}, '', window.location.pathname);
@@ -703,15 +704,15 @@ function loadPlanPage() {
   }).join('');
 
   const manageLink = currentPlan !== 'free'
-    ? `<p class="plan-manage-link">¿Necesitas cambiar tu método de pago o cancelar? <a href="#" onclick="openBillingPortal();return false;">Gestionar suscripción →</a></p>`
+    ? `<p class="plan-manage-link">¿Necesitas cancelar o cambiar tu método de pago? <a href="#" onclick="openBillingPortal();return false;">Administrar en PayPal →</a></p>`
     : '';
 
   el.innerHTML = `<div class="plan-grid">${cards}</div>${manageLink}`;
 }
 
 async function upgradePlan(plan) {
-  showToast('Redirigiendo a Stripe…');
-  const { data, error } = await sb.functions.invoke('create-checkout', {
+  showToast('Redirigiendo a PayPal…');
+  const { data, error } = await sb.functions.invoke('create-paypal-subscription', {
     body: { type: 'checkout', plan },
   });
   if (error || !data?.url) {
@@ -722,8 +723,8 @@ async function upgradePlan(plan) {
 }
 
 async function openBillingPortal() {
-  showToast('Abriendo portal de facturación…');
-  const { data, error } = await sb.functions.invoke('create-checkout', {
+  showToast('Abriendo PayPal…');
+  const { data, error } = await sb.functions.invoke('create-paypal-subscription', {
     body: { type: 'portal' },
   });
   if (error || !data?.url) {

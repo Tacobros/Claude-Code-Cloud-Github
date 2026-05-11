@@ -348,6 +348,14 @@ async function loadSettings() {
     document.getElementById("storeHeroSubtitle").value = data.hero_subtitle || "";
     document.getElementById("storeLogoUrl").value = data.logo_url || "";
     document.getElementById("storeHeroImageUrl").value = data.hero_image_url || "";
+    document.getElementById("stat1Value").value = data.stat1_value || "";
+    document.getElementById("stat1Label").value = data.stat1_label || "";
+    document.getElementById("stat2Value").value = data.stat2_value || "";
+    document.getElementById("stat2Label").value = data.stat2_label || "";
+    document.getElementById("stat3Value").value = data.stat3_value || "";
+    document.getElementById("stat3Label").value = data.stat3_label || "";
+    document.getElementById("stat4Value").value = data.stat4_value || "";
+    document.getElementById("stat4Label").value = data.stat4_label || "";
 
     if (data.logo_url) {
       const container = document.getElementById("logoPreviewContainer");
@@ -404,6 +412,21 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
   const colsExistInDb = "hero_image_url" in storeSettings;
   Object.entries(designCols).forEach(([key, val]) => {
     if (colsExistInDb || val) payload[key] = val;
+  });
+
+  const statCols = {
+    stat1_value: document.getElementById("stat1Value").value.trim() || null,
+    stat1_label: document.getElementById("stat1Label").value.trim() || null,
+    stat2_value: document.getElementById("stat2Value").value.trim() || null,
+    stat2_label: document.getElementById("stat2Label").value.trim() || null,
+    stat3_value: document.getElementById("stat3Value").value.trim() || null,
+    stat3_label: document.getElementById("stat3Label").value.trim() || null,
+    stat4_value: document.getElementById("stat4Value").value.trim() || null,
+    stat4_label: document.getElementById("stat4Label").value.trim() || null,
+  };
+  const statColsExistInDb = "stat1_value" in storeSettings;
+  Object.entries(statCols).forEach(([key, val]) => {
+    if (statColsExistInDb || val) payload[key] = val;
   });
 
   const { error } = storeSettings?.id
@@ -521,5 +544,3 @@ document.addEventListener("keydown", (e) => {
     document.getElementById("deleteOverlay").classList.remove("open");
   }
 });
-
-init();

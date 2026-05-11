@@ -231,7 +231,24 @@ body {
   box-shadow: 0 6px 20px rgba(37,211,102,.4);
 }
 
-/* Jersey showcase */
+/* Hero product image */
+.hero-product-img {
+  width: 100%;
+  max-width: 520px;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+}
+
+.hero-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Jersey showcase (legacy fallback) */
 .jersey-showcase {
   display: flex;
   gap: 16px;
@@ -423,6 +440,14 @@ body {
   background: var(--gray-50);
 }
 
+.product-image img.product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+  background: var(--gray-50);
+}
+
 .product-body {
   padding: 18px;
 }
@@ -515,6 +540,24 @@ body {
 .empty-state p { color: var(--gray-600); }
 .empty-state a { color: var(--green); font-weight: 600; }
 
+.loading-placeholder {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gray-400);
+  font-size: .95rem;
+}
+
+.product-img-placeholder {
+  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--gray-100);
+}
+
 /* ===== ABOUT ===== */
 .about {
   background: var(--gray-50);
@@ -589,6 +632,53 @@ body {
 .league-badge:hover { transform: scale(1.05); }
 .league-badge span { font-size: 1.6rem; display: block; margin-bottom: 6px; }
 .league-badge small { font-size: .7rem; color: var(--gray-600); font-weight: 600; }
+
+/* About jersey grid */
+.about-jersey-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.about-jersey-item {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform .2s, box-shadow .2s;
+  text-align: center;
+}
+
+.about-jersey-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.about-jersey-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--gray-50);
+  padding: 12px;
+  display: block;
+}
+
+.about-jersey-item span {
+  display: block;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  padding: 8px;
+  border-top: 1px solid var(--gray-100);
+}
+
+.about-icon-img {
+  color: var(--accent);
+  background: rgba(233,69,96,.08) !important;
+}
+
+.about-icon-img svg { color: var(--accent); stroke: var(--accent); }
 
 /* ===== CONTACT ===== */
 .contact {
@@ -709,6 +799,41 @@ body {
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
+.modal-gallery { position: relative; }
+
+.modal-main-img {
+  width: 100%;
+  height: 300px;
+  object-fit: contain;
+  display: block;
+  background: var(--gray-50);
+  padding: 12px;
+}
+
+.modal-thumbs-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+  overflow-x: auto;
+}
+
+.modal-thumb-img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  background: var(--white);
+  border: 2px solid var(--gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color .2s;
+}
+
+.modal-thumb-img.active,
+.modal-thumb-img:hover { border-color: var(--accent); }
+
 .modal-body { padding: 24px; }
 .modal-league { font-size: .8rem; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
 .modal-name { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
@@ -815,13 +940,13 @@ body {
   .hero-inner { grid-template-columns: 1fr; gap: 40px; text-align: center; }
   .hero-content p { margin: 0 auto 28px; }
   .hero-actions { justify-content: center; }
-  .jersey-showcase { justify-content: center; }
 
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 
   .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 
   .about-inner { grid-template-columns: 1fr; }
+  .about-jersey-grid { grid-template-columns: 1fr 1fr; }
   .leagues-display { grid-template-columns: repeat(4, 1fr); }
 
   .footer-inner { flex-direction: column; text-align: center; }
@@ -835,58 +960,6 @@ body {
   .product-price { font-size: 1rem; }
   .product-desc { display: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .about-jersey-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .leagues-display { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .jersey-card-hero { min-width: 90px; padding: 20px 12px; }
-  .jersey-visual { font-size: 2.2rem; }
-}
-
-/* PRODUCT CARD IMAGE */
-.product-image img.product-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 8px;
-  background: #f9fafb;
-}
-
-/* MODAL IMAGE GALLERY */
-.modal-gallery {
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  overflow: hidden;
-}
-
-.modal-main-img {
-  width: 100%;
-  height: 300px;
-  object-fit: contain;
-  display: block;
-  background: #f9fafb;
-  padding: 12px;
-}
-
-.modal-thumbs-row {
-  display: flex;
-  gap: 6px;
-  padding: 8px 12px;
-  background: #f9fafb;
-  overflow-x: auto;
-}
-
-.modal-thumb-img {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  background: #f9fafb;
-  border-radius: 6px;
-  cursor: pointer;
-  border: 2px solid transparent;
-  opacity: 0.6;
-  flex-shrink: 0;
-  transition: all .15s;
-}
-
-.modal-thumb-img.active,
-.modal-thumb-img:hover {
-  border-color: var(--accent);
-  opacity: 1;
 }

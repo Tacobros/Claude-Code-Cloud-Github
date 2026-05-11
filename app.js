@@ -1,194 +1,3 @@
-const products = [
-  {
-    id: 1,
-    name: "Real Madrid — Local 2024/25",
-    league: "LaLiga",
-    category: "laliga",
-    price: "Q220",
-    emoji: "⚽",
-    bg: "linear-gradient(135deg, #f8f8f8 0%, #e8e8e8 100%)",
-    badge: "popular",
-    badgeText: "Más vendida",
-    desc: "Camisola oficial temporada 2024/25. Tela climachill, corte slim.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["#ffffff", "#d4af37", "#1a1a2e"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 2,
-    name: "Barcelona — Local 2024/25",
-    league: "LaLiga",
-    category: "laliga",
-    price: "Q220",
-    emoji: "🔵",
-    bg: "linear-gradient(135deg, #a8001c 0%, #004d98 100%)",
-    badge: "popular",
-    badgeText: "Más vendida",
-    desc: "Diseño a rayas clásicas azulgrana. Escudo bordado.",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["#a8001c", "#004d98"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 3,
-    name: "Atletico de Madrid — Visita",
-    league: "LaLiga",
-    category: "laliga",
-    price: "Q200",
-    emoji: "🔴",
-    bg: "linear-gradient(135deg, #c8102e 0%, #1a1a2e 100%)",
-    badge: null,
-    desc: "Camisola visitante temporada 24/25. Color negro con detalles rojos.",
-    sizes: ["M", "L", "XL", "XXL"],
-    colors: ["#c8102e", "#1a1a2e"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 4,
-    name: "Manchester United — Local",
-    league: "Premier League",
-    category: "premier",
-    price: "Q230",
-    emoji: "🔴",
-    bg: "linear-gradient(135deg, #c8102e 0%, #fbf3c5 100%)",
-    badge: "new",
-    badgeText: "Nueva",
-    desc: "Camisola de local del United 2024/25. Rojo clásico con cuello redondo.",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-    colors: ["#c8102e", "#fbd700"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 5,
-    name: "Manchester City — Local",
-    league: "Premier League",
-    category: "premier",
-    price: "Q230",
-    emoji: "🔵",
-    bg: "linear-gradient(135deg, #6cabdd 0%, #1c2c5b 100%)",
-    badge: null,
-    desc: "Celeste cielo del City, temporada 24/25. Diseño moderno.",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["#6cabdd", "#1c2c5b"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 6,
-    name: "Arsenal — Local 2024/25",
-    league: "Premier League",
-    category: "premier",
-    price: "Q220",
-    emoji: "⭐",
-    bg: "linear-gradient(135deg, #ef0107 0%, #9c0000 100%)",
-    badge: null,
-    desc: "Rojo y blanco clásico de los Gunners. Tela dri-fit.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["#ef0107", "#ffffff"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 7,
-    name: "PSG — Local 2024/25",
-    league: "Ligue 1",
-    category: "ligue1",
-    price: "Q240",
-    emoji: "🗼",
-    bg: "linear-gradient(135deg, #004170 0%, #c0392b 100%)",
-    badge: "popular",
-    badgeText: "Más vendida",
-    desc: "Azul oscuro con detalle rojo. Escudo bordado del Paris Saint-Germain.",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["#004170", "#c0392b", "#d4af37"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 8,
-    name: "PSG — Visita Blanca",
-    league: "Ligue 1",
-    category: "ligue1",
-    price: "Q240",
-    emoji: "⚡",
-    bg: "linear-gradient(135deg, #f0f0f0 0%, #cccccc 100%)",
-    badge: "new",
-    badgeText: "Nueva",
-    desc: "Camisola visitante blanca con detalles dorados y rojos.",
-    sizes: ["M", "L", "XL"],
-    colors: ["#ffffff", "#c0392b", "#d4af37"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 9,
-    name: "Guatemala — Copa Centroamericana",
-    league: "Selecciones",
-    category: "selecciones",
-    price: "Q250",
-    emoji: "🇬🇹",
-    bg: "linear-gradient(135deg, #4997d0 0%, #ffffff 50%, #4997d0 100%)",
-    badge: "popular",
-    badgeText: "Orgullo GT",
-    desc: "Camisola de la Selección Nacional. Azul y blanco. ¡Apoya a Guatemala!",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["#4997d0", "#ffffff"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 10,
-    name: "Brasil — Amarilla Oficial",
-    league: "Selecciones",
-    category: "selecciones",
-    price: "Q230",
-    emoji: "🇧🇷",
-    bg: "linear-gradient(135deg, #ffd700 0%, #009c3b 100%)",
-    badge: null,
-    desc: "La canarinha, temporada 24/25. Verde y amarillo icónicos.",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["#ffd700", "#009c3b"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 11,
-    name: "Argentina — Campeona del Mundo",
-    league: "Selecciones",
-    category: "selecciones",
-    price: "Q250",
-    emoji: "🏆",
-    bg: "linear-gradient(135deg, #74acdf 0%, #ffffff 100%)",
-    badge: "popular",
-    badgeText: "Campeón",
-    desc: "La scaloneta. Rayas celestes y blancas con las 3 estrellas.",
-    sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-    colors: ["#74acdf", "#ffffff", "#d4af37"],
-    images: [],
-    available: true,
-  },
-  {
-    id: 12,
-    name: "Comunicaciones FC — Local",
-    league: "Liga Nacional",
-    category: "local",
-    price: "Q180",
-    emoji: "🇬🇹",
-    bg: "linear-gradient(135deg, #ffffff 0%, #eeeeee 100%)",
-    badge: "popular",
-    badgeText: "Liga GT",
-    desc: "El Campeón de Guatemala. Camisola blanca local 2024/25.",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["#ffffff", "#c0392b"],
-    images: [],
-    available: true,
-  },
-];
-
 const categoryLabels = {
   laliga: "LaLiga",
   premier: "Premier League",
@@ -199,40 +8,124 @@ const categoryLabels = {
 
 let activeFilter = "all";
 let searchQuery = "";
-let liveProducts = null; // populated from Supabase if configured
+let liveProducts = [];
+let storeWA = "50200000000";
+let storeName = "CAS";
 
-async function loadFromSupabase() {
+// ===== STORE SETTINGS =====
+async function loadStoreSettings() {
   try {
     if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) return;
+    const { data } = await sb.from("stores").select("*").limit(1).single();
+    if (!data) return;
+
+    storeName = data.name || "CAS";
+    storeWA = data.whatsapp || storeWA;
+
+    // Logo
+    if (data.logo_url) {
+      const logoIcon = document.getElementById("siteLogoIcon");
+      if (logoIcon) {
+        logoIcon.innerHTML = `<img src="${data.logo_url}" alt="${storeName}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;" />`;
+      }
+    }
+    const logoText = document.getElementById("siteLogoText");
+    if (logoText) logoText.textContent = storeName;
+    const footerLogoText = document.getElementById("footerLogoText");
+    if (footerLogoText) footerLogoText.textContent = storeName;
+    const footerCopy = document.getElementById("footerCopy");
+    if (footerCopy) footerCopy.textContent = `© 2025 ${storeName} · Camisolas deportivas premium`;
+
+    // Hero content
+    const heroTitle = document.getElementById("heroTitle");
+    if (heroTitle && data.hero_title) heroTitle.textContent = data.hero_title;
+    const heroSubtitle = document.getElementById("heroSubtitle");
+    if (heroSubtitle && data.hero_subtitle) heroSubtitle.textContent = data.hero_subtitle;
+
+    // Hero image
+    if (data.hero_image_url) {
+      const img = document.getElementById("heroProductImg");
+      if (img) img.src = data.hero_image_url;
+    }
+
+    // Accent color
+    if (data.accent_color) {
+      document.documentElement.style.setProperty("--accent", data.accent_color);
+    }
+
+    // Custom categories — add filter buttons for extras
+    if (data.custom_categories && data.custom_categories.length > 0) {
+      const bar = document.getElementById("filtersBar");
+      if (bar) {
+        data.custom_categories.forEach((cat) => {
+          const btn = document.createElement("button");
+          btn.className = "filter-btn";
+          btn.dataset.filter = cat;
+          btn.textContent = cat;
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            activeFilter = cat;
+            renderProducts();
+          });
+          bar.appendChild(btn);
+        });
+      }
+    }
+
+    // WhatsApp links
+    updateWALinks();
+  } catch (_) {}
+}
+
+function updateWALinks() {
+  const waBaseMsg = encodeURIComponent(`Hola! Vi el catálogo de ${storeName} y me interesa una camisola`);
+  const waUrl = `https://wa.me/${storeWA}?text=${waBaseMsg}`;
+
+  const heroBtn = document.getElementById("heroWaBtn");
+  if (heroBtn) heroBtn.href = waUrl;
+  const ctaBtn = document.getElementById("ctaWaBtn");
+  if (ctaBtn) ctaBtn.href = waUrl;
+  const floatBtn = document.getElementById("floatWaBtn");
+  if (floatBtn) floatBtn.href = waUrl;
+  const emptyLink = document.getElementById("emptyWaLink");
+  if (emptyLink) emptyLink.href = `https://wa.me/${storeWA}?text=${encodeURIComponent("Busco una camisola específica")}`;
+}
+
+// ===== PRODUCTS =====
+async function loadProducts() {
+  try {
+    if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) {
+      renderProducts();
+      return;
+    }
     const { data } = await sb.from("products").select("*").eq("available", true).order("created_at", { ascending: false });
     if (data && data.length > 0) {
       liveProducts = data.map((p) => ({
         ...p,
         price: `Q${p.price}`,
         league: categoryLabels[p.category] || p.category,
-        bg: "linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%)",
-        badgeText: p.badge === "popular" ? "Más vendida" : p.badge === "new" ? "Nueva" : "",
+        badgeText: p.badge === "popular" ? "Más vendida" : p.badge === "new" ? "Nueva" : p.badge || "",
         desc: p.description || "",
-        colors: [],
+        sizes: p.sizes || [],
         images: p.image_urls && p.image_urls.length > 0 ? p.image_urls : (p.image_url ? [p.image_url] : []),
       }));
-      renderProducts();
     }
   } catch (_) {}
+  renderProducts();
 }
 
 function renderProducts() {
   const grid = document.getElementById("productsGrid");
   const empty = document.getElementById("emptyState");
 
-  const source = liveProducts || products;
-  const filtered = source.filter((p) => {
+  const filtered = liveProducts.filter((p) => {
     const matchCat = activeFilter === "all" || p.category === activeFilter;
     const q = searchQuery.toLowerCase();
     const matchSearch =
       !q ||
       p.name.toLowerCase().includes(q) ||
-      p.league.toLowerCase().includes(q) ||
+      (p.league || "").toLowerCase().includes(q) ||
       p.desc.toLowerCase().includes(q);
     return matchCat && matchSearch;
   });
@@ -245,62 +138,55 @@ function renderProducts() {
 
   empty.style.display = "none";
 
-  grid.innerHTML = filtered
-    .map(
-      (p) => {
-        const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
-        return `
-    <div class="product-card" onclick="openModal(${p.id})">
-      ${p.badge ? `<div class="product-badge ${p.badge}">${p.badgeText}</div>` : ""}
-      <div class="product-image" style="${thumb ? "" : `background:${p.bg}`}">
-        ${thumb ? `<img src="${thumb}" alt="${p.name}" class="product-img" />` : (p.emoji || "⚽")}
-      </div>
-      <div class="product-body">
-        <div class="product-league">${p.league}</div>
-        <div class="product-name">${p.name}</div>
-        <div class="product-desc">${p.desc}</div>
-        <div class="product-sizes">
-          ${p.sizes.map((s) => `<span class="size-chip">${s}</span>`).join("")}
+  grid.innerHTML = filtered.map((p) => {
+    const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
+    return `
+      <div class="product-card" onclick="openModal(${p.id})">
+        ${p.badge ? `<div class="product-badge ${p.badge}">${p.badgeText}</div>` : ""}
+        <div class="product-image">
+          ${thumb
+            ? `<img src="${thumb}" alt="${p.name}" class="product-img" />`
+            : `<div class="product-img-placeholder">👕</div>`}
         </div>
-        <div class="product-footer">
-          <div class="product-price">${p.price} <span>GTQ/mes</span></div>
-          <a class="btn-ask" href="${waLink(p)}" target="_blank" onclick="event.stopPropagation()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Pedir
-          </a>
+        <div class="product-body">
+          <div class="product-league">${p.league}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-desc">${p.desc}</div>
+          <div class="product-sizes">
+            ${(p.sizes || []).map((s) => `<span class="size-chip">${s}</span>`).join("")}
+          </div>
+          <div class="product-footer">
+            <div class="product-price">${p.price} <span>GTQ</span></div>
+            <a class="btn-ask" href="${waLink(p)}" target="_blank" onclick="event.stopPropagation()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Pedir
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-  `;
-      })
-    .join("");
+    `;
+  }).join("");
 }
 
 function waLink(p, size = "") {
   const msg = size
-    ? `Hola! Vi el catálogo de GoalKit y quiero pedir: *${p.name}* talla *${size}* - Precio: ${p.price}`
-    : `Hola! Vi el catálogo de GoalKit y me interesa: *${p.name}* - Precio: ${p.price}`;
-  return `https://wa.me/50200000000?text=${encodeURIComponent(msg)}`;
+    ? `Hola! Vi el catálogo de ${storeName} y quiero pedir: *${p.name}* talla *${size}* - Precio: ${p.price}`
+    : `Hola! Vi el catálogo de ${storeName} y me interesa: *${p.name}* - Precio: ${p.price}`;
+  return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
 
 function openModal(id) {
-  const source = liveProducts || products;
-  const p = source.find((x) => x.id === id) || products.find((x) => x.id === id);
+  const p = liveProducts.find((x) => x.id === id);
   if (!p) return;
 
-  const images = p.images && p.images.length > 0 ? p.images : (p.image_urls && p.image_urls.length > 0 ? p.image_urls : (p.image_url ? [p.image_url] : []));
+  const images = p.images && p.images.length > 0 ? p.images : [];
 
   const imageHtml = images.length > 0
     ? `<div class="modal-gallery">
         <img id="modalMainImg" src="${images[0]}" alt="${p.name}" class="modal-main-img" />
         ${images.length > 1 ? `<div class="modal-thumbs-row">${images.map((url, i) => `<img src="${url}" class="modal-thumb-img${i === 0 ? " active" : ""}" onclick="setMainImg(this,'${url}')" />`).join("")}</div>` : ""}
       </div>`
-    : `<div class="modal-product-image" style="background:${p.bg}">${p.emoji}</div>`;
-
-  const colorHtml = p.colors && p.colors.length > 0
-    ? `<div class="modal-section-title">Colores</div>
-       <div class="modal-colors">${p.colors.map((c, i) => `<div class="modal-color ${i === 0 ? "selected" : ""}" style="background:${c}" onclick="selectColor(this)"></div>`).join("")}</div>`
-    : "";
+    : `<div class="modal-product-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">👕</div>`;
 
   const content = document.getElementById("modalContent");
   content.innerHTML = `
@@ -309,14 +195,10 @@ function openModal(id) {
       <div class="modal-league">${p.league}</div>
       <div class="modal-name">${p.name}</div>
       <div class="modal-desc">${p.desc}</div>
-
       <div class="modal-section-title">Tallas disponibles</div>
       <div class="modal-sizes" id="modalSizes">
-        ${p.sizes.map((s) => `<button class="modal-size" onclick="selectSize(this,'${s}')">${s}</button>`).join("")}
+        ${(p.sizes || []).map((s) => `<button class="modal-size" onclick="selectSize(this,'${s}')">${s}</button>`).join("")}
       </div>
-
-      ${colorHtml}
-
       <div class="modal-price-row">
         <div class="modal-price">${p.price} <small style="font-size:.75rem;color:#9ca3af;font-weight:500">GTQ</small></div>
         <a class="btn-modal-wa" id="modalWaBtn" href="${waLink(p)}" target="_blank">
@@ -342,14 +224,7 @@ function selectSize(btn, size) {
   document.querySelectorAll(".modal-size").forEach((b) => b.classList.remove("selected"));
   btn.classList.add("selected");
   const p = window._currentProduct;
-  if (p) {
-    document.getElementById("modalWaBtn").href = waLink(p, size);
-  }
-}
-
-function selectColor(el) {
-  document.querySelectorAll(".modal-color").forEach((c) => c.classList.remove("selected"));
-  el.classList.add("selected");
+  if (p) document.getElementById("modalWaBtn").href = waLink(p, size);
 }
 
 function closeModal() {
@@ -388,5 +263,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeModal();
 });
 
-renderProducts();
-loadFromSupabase();
+// Initialize
+updateWALinks();
+loadStoreSettings();
+loadProducts();

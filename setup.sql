@@ -16,7 +16,16 @@ ALTER TABLE stores
   ADD COLUMN IF NOT EXISTS stat3_value    text,
   ADD COLUMN IF NOT EXISTS stat3_label    text,
   ADD COLUMN IF NOT EXISTS stat4_value    text,
-  ADD COLUMN IF NOT EXISTS stat4_label    text;
+  ADD COLUMN IF NOT EXISTS stat4_label    text,
+  ADD COLUMN IF NOT EXISTS about_title    text,
+  ADD COLUMN IF NOT EXISTS about1_title   text,
+  ADD COLUMN IF NOT EXISTS about1_desc    text,
+  ADD COLUMN IF NOT EXISTS about2_title   text,
+  ADD COLUMN IF NOT EXISTS about2_desc    text,
+  ADD COLUMN IF NOT EXISTS about3_title   text,
+  ADD COLUMN IF NOT EXISTS about3_desc    text,
+  ADD COLUMN IF NOT EXISTS about4_title   text,
+  ADD COLUMN IF NOT EXISTS about4_desc    text;
 
 -- 2. Sample products
 -- Replace <YOUR_USER_ID> with your actual Supabase Auth user UUID

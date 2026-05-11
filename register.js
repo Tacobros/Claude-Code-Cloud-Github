@@ -1,3 +1,7 @@
+// Set the real catalog base URL dynamically
+const catalogBase = window.location.origin + window.location.pathname.replace("register.html", "index.html") + "?s=";
+document.getElementById("slugBase").textContent = catalogBase;
+
 function slugify(str) {
   return str.toLowerCase().trim()
     .replace(/[^a-z0-9\s-]/g, "")

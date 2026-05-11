@@ -176,14 +176,26 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
   }
 });
 
+const selectedPlan = new URLSearchParams(window.location.search).get('plan') || '';
+
 function showSuccess(immediate, slug) {
   document.getElementById("step2").style.display = "none";
   const success = document.getElementById("successScreen");
   success.style.display = "block";
   const msg = document.getElementById("successMsg");
   if (immediate) {
-    msg.textContent = `Tu catálogo "${slug}" está listo. Entra al panel admin para agregar productos y personalizar tu tienda.`;
+    if (selectedPlan && selectedPlan !== 'free') {
+      msg.textContent = `Tu catálogo "${slug}" está listo. Te redirigimos a PayPal para completar tu suscripción ${selectedPlan}…`;
+      setTimeout(() => {
+        window.location.href = `admin.html?checkout=${selectedPlan}`;
+      }, 2000);
+    } else {
+      msg.textContent = `Tu catálogo "${slug}" está listo. Entra al panel admin para agregar productos y personalizar tu tienda.`;
+    }
   } else {
+    if (selectedPlan && selectedPlan !== 'free') {
+      localStorage.setItem('pendingPlan', selectedPlan);
+    }
     msg.textContent = `Revisa tu correo y confirma tu cuenta. Luego inicia sesión en el panel admin para completar la configuración de tu tienda "${slug}".`;
   }
 }

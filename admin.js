@@ -124,6 +124,13 @@ function handleUrlParams() {
     history.replaceState({}, '', window.location.pathname);
     document.querySelector('.nav-item[data-page="plan"]')?.click();
   }
+  const checkoutPlan = params.get('checkout') || localStorage.getItem('pendingPlan');
+  if (checkoutPlan && (checkoutPlan === 'starter' || checkoutPlan === 'pro')) {
+    localStorage.removeItem('pendingPlan');
+    history.replaceState({}, '', window.location.pathname);
+    showToast(`Iniciando pago del plan ${checkoutPlan}…`);
+    setTimeout(() => upgradePlan(checkoutPlan), 1500);
+  }
 }
 
 function showLogin() {

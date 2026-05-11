@@ -92,6 +92,7 @@ function showApp(user) {
   document.getElementById("sidebarUser").textContent = user.email;
   loadProducts();
   loadSettings();
+  initDesignUploads();
 }
 
 document.getElementById("loginForm").addEventListener("submit", async (e) => {
@@ -341,9 +342,22 @@ async function loadSettings() {
     document.getElementById("storeName").value = data.name || "";
     document.getElementById("storeWhatsapp").value = data.whatsapp || "";
     document.getElementById("storeDesc").value = data.description || "";
-    document.getElementById("storeEmoji").value = data.emoji || "⚽";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";
     document.getElementById("storeAccentHex").textContent = data.accent_color || "#e94560";
+    document.getElementById("storeHeroTitle").value = data.hero_title || "";
+    document.getElementById("storeHeroSubtitle").value = data.hero_subtitle || "";
+    document.getElementById("storeLogoUrl").value = data.logo_url || "";
+    document.getElementById("storeHeroImageUrl").value = data.hero_image_url || "";
+
+    if (data.logo_url) {
+      const container = document.getElementById("logoPreviewContainer");
+      container.innerHTML = `<img src="${data.logo_url}" style="max-height:56px;max-width:100%;object-fit:contain;border-radius:4px;" />`;
+    }
+    if (data.hero_image_url) {
+      const container = document.getElementById("heroPreviewContainer");
+      container.innerHTML = `<img src="${data.hero_image_url}" style="max-height:56px;max-width:100%;object-fit:cover;border-radius:4px;" />`;
+    }
+
     customCategories = data.custom_categories || [];
     populateCategorySelects();
     renderCustomCategories();
@@ -353,15 +367,12 @@ async function loadSettings() {
 
 function updateSettingsPreview() {
   const name = document.getElementById("storeName").value || "Mi tienda";
-  const emoji = document.getElementById("storeEmoji").value || "⚽";
   const color = document.getElementById("storeAccent").value;
   document.getElementById("previewName").textContent = name;
-  document.getElementById("previewEmoji").textContent = emoji;
   document.getElementById("previewHeader").style.background = color;
 }
 
 document.getElementById("storeName").addEventListener("input", updateSettingsPreview);
-document.getElementById("storeEmoji").addEventListener("input", updateSettingsPreview);
 document.getElementById("storeAccent").addEventListener("input", (e) => {
   document.getElementById("storeAccentHex").textContent = e.target.value;
   updateSettingsPreview();
@@ -378,9 +389,12 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     name: document.getElementById("storeName").value.trim(),
     whatsapp: document.getElementById("storeWhatsapp").value.trim(),
     description: document.getElementById("storeDesc").value.trim(),
-    emoji: document.getElementById("storeEmoji").value.trim() || "⚽",
     accent_color: document.getElementById("storeAccent").value,
     custom_categories: customCategories,
+    hero_title: document.getElementById("storeHeroTitle").value.trim() || null,
+    hero_subtitle: document.getElementById("storeHeroSubtitle").value.trim() || null,
+    logo_url: document.getElementById("storeLogoUrl").value.trim() || null,
+    hero_image_url: document.getElementById("storeHeroImageUrl").value.trim() || null,
   };
 
   const { error } = storeSettings?.id
@@ -438,6 +452,49 @@ document.getElementById("btnAddCategory").addEventListener("click", () => {
 document.getElementById("newCategoryInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); document.getElementById("btnAddCategory").click(); }
 });
+
+// ===== DESIGN UPLOADS =====
+function initDesignUploads() {
+  const logoArea = document.getElementById("logoUploadArea");
+  const logoInput = document.getElementById("logoImageInput");
+  const heroArea = document.getElementById("heroUploadArea");
+  const heroInput = document.getElementById("heroImageInput");
+
+  if (logoArea) logoArea.addEventListener("click", () => logoInput.click());
+  if (heroArea) heroArea.addEventListener("click", () => heroInput.click());
+
+  if (logoInput) {
+    logoInput.addEventListener("change", async (e) => {
+      await uploadDesignImage(e.target.files[0], "logo", "storeLogoUrl", "logoPreviewContainer");
+      e.target.value = "";
+    });
+  }
+
+  if (heroInput) {
+    heroInput.addEventListener("change", async (e) => {
+      await uploadDesignImage(e.target.files[0], "hero", "storeHeroImageUrl", "heroPreviewContainer");
+      e.target.value = "";
+    });
+  }
+}
+
+async function uploadDesignImage(file, type, urlFieldId, previewId) {
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast("La imagen no puede superar 2MB", "error"); return; }
+  const { data: { user } } = await sb.auth.getUser();
+  const ext = file.name.split(".").pop();
+  const path = `${user.id}/design-${type}-${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from("product-images").upload(path, file, { upsert: true });
+  if (error) { showToast("Error al subir imagen: " + error.message, "error"); return; }
+  const { data } = sb.storage.from("product-images").getPublicUrl(path);
+  document.getElementById(urlFieldId).value = data.publicUrl;
+  const container = document.getElementById(previewId);
+  if (container) {
+    const isHero = type === "hero";
+    container.innerHTML = `<img src="${data.publicUrl}" style="max-height:56px;max-width:100%;object-fit:${isHero ? "cover" : "contain"};border-radius:4px;" />`;
+  }
+  showToast("Imagen subida ✓", "success");
+}
 
 // ===== TOAST =====
 function showToast(msg, type = "") {

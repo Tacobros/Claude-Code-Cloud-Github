@@ -391,11 +391,20 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     description: document.getElementById("storeDesc").value.trim(),
     accent_color: document.getElementById("storeAccent").value,
     custom_categories: customCategories,
+  };
+
+  // Only include design columns if they already exist in the DB (migration ran)
+  // or if the user has entered a value in the field.
+  const designCols = {
     hero_title: document.getElementById("storeHeroTitle").value.trim() || null,
     hero_subtitle: document.getElementById("storeHeroSubtitle").value.trim() || null,
     logo_url: document.getElementById("storeLogoUrl").value.trim() || null,
     hero_image_url: document.getElementById("storeHeroImageUrl").value.trim() || null,
   };
+  const colsExistInDb = "hero_image_url" in storeSettings;
+  Object.entries(designCols).forEach(([key, val]) => {
+    if (colsExistInDb || val) payload[key] = val;
+  });
 
   const { error } = storeSettings?.id
     ? await sb.from("stores").update(payload).eq("id", storeSettings.id)

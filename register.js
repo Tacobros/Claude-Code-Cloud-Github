@@ -147,7 +147,12 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
   const slug = slugify(regSlugEl.value);
   const whatsapp = document.getElementById("regWhatsapp").value.trim();
 
-  const { data: authData, error: authError } = await sb.auth.signUp({ email, password: pass });
+  const adminUrl = `${window.location.origin}/admin.html`;
+  const { data: authData, error: authError } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: { emailRedirectTo: adminUrl },
+  });
 
   if (authError) {
     err.textContent = authError.message;

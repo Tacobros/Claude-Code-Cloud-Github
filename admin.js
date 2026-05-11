@@ -152,6 +152,14 @@ async function showApp(user) {
       await sb.from("stores").insert({ user_id: user.id, name, slug, whatsapp });
     }
     localStorage.removeItem("pendingStore");
+  } else {
+    // Check if user has a store at all; if not, send to registration
+    const { data: existing } = await sb.from("stores").select("id").eq("user_id", user.id).maybeSingle();
+    if (!existing) {
+      await sb.auth.signOut();
+      window.location.href = "register.html?error=no_store";
+      return;
+    }
   }
 
   loadProducts();
@@ -408,6 +416,12 @@ async function loadSettings() {
   const rootDomain = parts.length >= 3 ? parts.slice(1).join(".") : host;
   const slugPrefixEl = document.getElementById("slugPrefix");
   if (slugPrefixEl) slugPrefixEl.textContent = parts.length >= 2 ? `https://` : window.location.origin + "/index.html?s=";
+
+  if (!data) {
+    currentPlan = 'free';
+    loadPlanPage();
+    return;
+  }
 
   if (data) {
     storeSettings = data;

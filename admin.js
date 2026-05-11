@@ -1,3 +1,18 @@
+function slugify(str) {
+  return str.toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function updateCatalogLink(slug, base) {
+  const el = document.getElementById("catalogLink");
+  if (!el) return;
+  const catalogBase = base || (window.location.origin + window.location.pathname.replace("admin.html", "index.html") + "?s=");
+  el.textContent = slug ? catalogBase + slug : "— ingresa un slug para ver tu enlace —";
+}
+
 const DEFAULT_CATEGORIES = {
   laliga: "LaLiga",
   premier: "Premier League",
@@ -86,10 +101,22 @@ function showLogin() {
   document.getElementById("adminApp").style.display = "none";
 }
 
-function showApp(user) {
+async function showApp(user) {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("adminApp").style.display = "flex";
   document.getElementById("sidebarUser").textContent = user.email;
+
+  // Create store from registration if email confirmation was required
+  const pending = localStorage.getItem("pendingStore");
+  if (pending) {
+    const { name, slug, whatsapp } = JSON.parse(pending);
+    const { data: existing } = await sb.from("stores").select("id").eq("user_id", user.id).maybeSingle();
+    if (!existing) {
+      await sb.from("stores").insert({ user_id: user.id, name, slug, whatsapp });
+    }
+    localStorage.removeItem("pendingStore");
+  }
+
   loadProducts();
   loadSettings();
   initDesignUploads();
@@ -337,9 +364,15 @@ async function loadSettings() {
   const { data: { user } } = await sb.auth.getUser();
   const { data } = await sb.from("stores").select("*").eq("user_id", user.id).single();
 
+  // Set the slug URL prefix display
+  const catalogBase = window.location.origin + window.location.pathname.replace("admin.html", "index.html") + "?s=";
+  document.getElementById("slugPrefix").textContent = catalogBase;
+
   if (data) {
     storeSettings = data;
     document.getElementById("storeName").value = data.name || "";
+    document.getElementById("storeSlug").value = data.slug || "";
+    updateCatalogLink(data.slug || "", catalogBase);
     document.getElementById("storeWhatsapp").value = data.whatsapp || "";
     document.getElementById("storeDesc").value = data.description || "";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";
@@ -390,6 +423,9 @@ function updateSettingsPreview() {
 }
 
 document.getElementById("storeName").addEventListener("input", updateSettingsPreview);
+document.getElementById("storeSlug").addEventListener("input", (e) => {
+  updateCatalogLink(slugify(e.target.value));
+});
 document.getElementById("storeAccent").addEventListener("input", (e) => {
   document.getElementById("storeAccentHex").textContent = e.target.value;
   updateSettingsPreview();
@@ -401,9 +437,14 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
   btn.disabled = true;
   btn.textContent = "Guardando...";
 
+  const rawSlug = document.getElementById("storeSlug").value.trim();
+  const slug = slugify(rawSlug);
+  document.getElementById("storeSlug").value = slug;
+
   const payload = {
     user_id: user.id,
     name: document.getElementById("storeName").value.trim(),
+    slug: slug || null,
     whatsapp: document.getElementById("storeWhatsapp").value.trim(),
     description: document.getElementById("storeDesc").value.trim(),
     accent_color: document.getElementById("storeAccent").value,

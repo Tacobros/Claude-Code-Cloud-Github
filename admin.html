@@ -36,6 +36,9 @@
         <div id="loginError" class="error-msg" style="display:none;"></div>
         <button type="submit" class="btn-login" id="loginBtn">Entrar</button>
       </form>
+      <p style="text-align:center;margin-top:16px;font-size:.875rem;color:#6b7280;">
+        ¿No tienes cuenta? <a href="register.html" style="color:#e94560;text-decoration:none;">Crear catálogo gratis →</a>
+      </p>
     </div>
   </div>
 
@@ -119,6 +122,14 @@
             <div class="field">
               <label>Nombre de la tienda</label>
               <input type="text" id="storeName" placeholder="CAS — Central America Shirts" />
+            </div>
+            <div class="field">
+              <label>URL de tu catálogo <small style="font-weight:400;color:#9ca3af;">(slug)</small></label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span id="slugPrefix" style="color:#6b7280;font-size:.875rem;white-space:nowrap;"></span>
+                <input type="text" id="storeSlug" placeholder="mi-tienda" style="flex:1;" />
+              </div>
+              <small>Solo letras minúsculas, números y guiones. Ej: central-america-shirts</small>
             </div>
             <div class="field">
               <label>Número de WhatsApp</label>

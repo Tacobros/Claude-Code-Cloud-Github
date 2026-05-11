@@ -16,7 +16,11 @@ let storeName = "CAS";
 async function loadStoreSettings() {
   try {
     if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) return;
-    const { data } = await sb.from("stores").select("*").limit(1).single();
+    const urlSlug = new URLSearchParams(window.location.search).get("s");
+    let query = sb.from("stores").select("*");
+    if (urlSlug) query = query.eq("slug", urlSlug);
+    else query = query.limit(1);
+    const { data } = await query.single();
     if (!data) return;
 
     storeName = data.name || "CAS";

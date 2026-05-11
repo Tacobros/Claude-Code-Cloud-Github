@@ -1,14 +1,15 @@
 // Set the catalog URL preview — subdomain format if on productspot.com, else ?s= param
 function buildCatalogUrl(slug) {
   const host = window.location.hostname;
-  const parts = host.split(".");
-  // On the real platform (e.g. register.productspot.com or projectname.pages.dev)
-  if (parts.length >= 2) {
-    const base = parts.slice(parts.length >= 3 ? 1 : 0).join(".");
-    return `https://${slug || "tu-tienda"}.${base}/`;
+  // pages.dev and localhost always use ?s= param (no subdomain support)
+  if (host.endsWith('.pages.dev') || host === 'localhost' || host === '127.0.0.1') {
+    const base = window.location.origin;
+    return `${base}/index.html?s=${slug || "tu-tienda"}`;
   }
-  // Local dev fallback
-  return `${window.location.origin}/index.html?s=${slug || "tu-tienda"}`;
+  // Custom domain: use subdomain format
+  const parts = host.split(".");
+  const base = parts.slice(parts.length >= 3 ? 1 : 0).join(".");
+  return `https://${slug || "tu-tienda"}.${base}/`;
 }
 
 const baseHost = (() => {
@@ -99,14 +100,20 @@ document.getElementById("step1Form").addEventListener("submit", async (e) => {
   btn.disabled = true;
   btn.textContent = "Verificando...";
 
-  // Final slug check
-  const { data: existing } = await sb.from("stores").select("id").eq("slug", slug).maybeSingle();
-  if (existing) {
-    err.textContent = "Ese slug ya está en uso, elige otro.";
-    err.style.display = "block";
-    btn.disabled = false;
-    btn.textContent = "Continuar →";
-    return;
+  try {
+    // Final slug check
+    const { data: existing, error: slugErr } = await sb.from("stores").select("id").eq("slug", slug).maybeSingle();
+    if (slugErr) throw slugErr;
+    if (existing) {
+      err.textContent = "Ese slug ya está en uso, elige otro.";
+      err.style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "Continuar →";
+      return;
+    }
+  } catch (e) {
+    console.error("Slug check error:", e);
+    // Allow continuing if check fails (will be validated on insert)
   }
 
   btn.disabled = false;

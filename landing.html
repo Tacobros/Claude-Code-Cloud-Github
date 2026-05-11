@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProductSpot — Tu catálogo digital en minutos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #e94560;
+      --accent-dark: #c73652;
+      --bg: #0a0f1e;
+      --bg2: #0f172a;
+      --bg3: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #1e293b;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,15,30,.85); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+    .nav-inner { max-width: 1100px; margin: 0 auto; height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .nav-logo strong { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+    .nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: .9rem; text-decoration: none; transition: all .15s; cursor: pointer; border: none; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-outline { border: 1.5px solid var(--border); color: var(--text); background: transparent; }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-ghost { color: var(--muted); background: transparent; }
+    .btn-ghost:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero { padding: 100px 24px 80px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before {
+      content: ''; position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(233,69,96,.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(233,69,96,.1); border: 1px solid rgba(233,69,96,.3); color: var(--accent); padding: 6px 14px; border-radius: 99px; font-size: .8rem; font-weight: 600; margin-bottom: 28px; }
+    .hero h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 20px; letter-spacing: -.02em; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 1.15rem; color: var(--muted); max-width: 540px; margin: 0 auto 36px; }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-actions .btn { font-size: 1rem; padding: 14px 28px; }
+
+    .hero-demo {
+      margin: 64px auto 0; max-width: 800px;
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+      overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.5);
+    }
+    .demo-bar { background: var(--bg3); padding: 12px 16px; display: flex; align-items: center; gap: 8px; }
+    .demo-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .demo-url { flex: 1; background: var(--bg); border-radius: 6px; padding: 6px 12px; font-size: .8rem; color: var(--muted); margin-left: 8px; }
+    .demo-preview { padding: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .demo-card { background: var(--bg3); border-radius: 10px; padding: 16px; }
+    .demo-img { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #1e293b, #334155); border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .demo-league { font-size: .7rem; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+    .demo-name { font-size: .85rem; font-weight: 600; margin-bottom: 8px; }
+    .demo-price { font-size: .9rem; font-weight: 700; color: var(--accent); }
+    .demo-btn { margin-top: 10px; width: 100%; padding: 8px; background: rgba(233,69,96,.15); border: 1px solid rgba(233,69,96,.3); color: var(--accent); border-radius: 7px; font-size: .75rem; font-weight: 600; cursor: pointer; }
+
+    /* ── STATS ── */
+    .stats { padding: 48px 24px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 900; color: var(--accent); }
+    .stat-label { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── SECTION HEADER ── */
+    .section { padding: 80px 24px; }
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-header .tag { display: inline-block; background: rgba(233,69,96,.1); color: var(--accent); font-size: .78rem; font-weight: 700; padding: 5px 12px; border-radius: 99px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: .06em; }
+    .section-header h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; margin-bottom: 14px; letter-spacing: -.02em; }
+    .section-header p { color: var(--muted); font-size: 1.05rem; max-width: 520px; margin: 0 auto; }
+
+    /* ── FEATURES ── */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .feature-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 28px; transition: border-color .2s; }
+    .feature-card:hover { border-color: rgba(233,69,96,.4); }
+    .feature-icon { width: 44px; height: 44px; background: rgba(233,69,96,.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 1.3rem; }
+    .feature-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p { font-size: .875rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── HOW IT WORKS ── */
+    .how-section { background: var(--bg2); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+    .step-item { text-align: center; }
+    .step-num { width: 48px; height: 48px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; margin: 0 auto 20px; }
+    .step-item h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .step-item p { color: var(--muted); font-size: .875rem; }
+    .step-connector { display: none; }
+
+    /* ── PRICING ── */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+    .pricing-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 32px; position: relative; }
+    .pricing-card.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(233,69,96,.08), var(--bg2)); }
+    .featured-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: .75rem; font-weight: 700; padding: 4px 14px; border-radius: 99px; white-space: nowrap; }
+    .plan-name { font-size: .85rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+    .plan-price { font-size: 2.8rem; font-weight: 900; letter-spacing: -.03em; margin-bottom: 4px; }
+    .plan-price span { font-size: 1rem; font-weight: 500; color: var(--muted); }
+    .plan-desc { color: var(--muted); font-size: .875rem; margin-bottom: 24px; }
+    .plan-features { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+    .plan-features li { font-size: .875rem; color: var(--muted); display: flex; gap: 10px; align-items: flex-start; }
+    .plan-features li::before { content: '✓'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+    .plan-features li.off { opacity: .4; }
+    .plan-features li.off::before { content: '✗'; color: var(--muted); }
+    .plan-cta { width: 100%; padding: 12px; border-radius: 10px; font-weight: 700; font-size: .9rem; cursor: pointer; border: none; transition: all .15s; text-decoration: none; display: block; text-align: center; }
+    .plan-cta-primary { background: var(--accent); color: #fff; }
+    .plan-cta-primary:hover { background: var(--accent-dark); }
+    .plan-cta-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+    .plan-cta-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── DEMO CTA ── */
+    .demo-cta { background: linear-gradient(135deg, rgba(233,69,96,.15), rgba(233,69,96,.05)); border: 1px solid rgba(233,69,96,.25); border-radius: 20px; padding: 64px 32px; text-align: center; }
+    .demo-cta h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; margin-bottom: 14px; }
+    .demo-cta p { color: var(--muted); font-size: 1.05rem; margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+    .demo-cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+    /* ── FOOTER ── */
+    footer { border-top: 1px solid var(--border); padding: 32px 24px; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .footer-logo { display: flex; align-items: center; gap: 8px; }
+    .footer-copy { color: var(--muted); font-size: .85rem; }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: .85rem; transition: color .15s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; gap: 24px; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .demo-preview { grid-template-columns: repeat(2, 1fr); }
+      .demo-preview .demo-card:last-child { display: none; }
+      .nav-links .btn-ghost, .nav-links a:not(.btn) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="landing.html" class="nav-logo">
+        <div class="nav-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+            <path d="M4 8 L11 5 C11 5 13 10 16 10 C19 10 21 5 21 5 L28 8 L25 17 L21 15 L21 27 L11 27 L11 15 L7 17 Z" fill="white"/>
+          </svg>
+        </div>
+        <strong>ProductSpot</strong>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Funciones</a>
+        <a href="#pricing">Precios</a>
+        <a href="index.html?s=cas" target="_blank">Ver demo</a>
+        <a href="admin.html" class="btn btn-ghost">Entrar</a>
+        <a href="register.html" class="btn btn-primary">Crear cuenta gratis</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Catálogos digitales para negocios que venden por WhatsApp
+    </div>
+    <h1>Tu tienda online lista<br /><span>en menos de 5 minutos</span></h1>
+    <p>Crea tu catálogo digital, comparte el enlace con tus clientes y recibe pedidos directo por WhatsApp. Sin código, sin complicaciones.</p>
+    <div class="hero-actions">
+      <a href="register.html" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Crear mi catálogo gratis
+      </a>
+      <a href="index.html?s=cas" target="_blank" class="btn btn-outline">Ver demo en vivo →</a>
+    </div>
+
+    <!-- FAKE DEMO PREVIEW -->
+    <div class="hero-demo">
+      <div class="demo-bar">
+        <div class="demo-dot" style="background:#ef4444;"></div>
+        <div class="demo-dot" style="background:#f59e0b;"></div>
+        <div class="demo-dot" style="background:#22c55e;"></div>
+        <div class="demo-url">tutienda.productspot.com</div>
+      </div>
+      <div class="demo-preview">
+        <div class="demo-card">
+          <div class="demo-img">👕</div>
+          <div class="demo-league">LaLiga</div>
+          <div class="demo-name">Real Madrid Local 2025</div>
+          <div class="demo-price">Q220</div>
+          <button class="demo-btn">Pedir por WhatsApp</button>
+        </div>
+        <div class="demo-card">
+          <div class="demo-img">🟥</div>
+          <div class="demo-league">Premier League</div>
+          <div class="demo-name">Arsenal Away 2025</div>
+          <div class="demo-price">Q230</div>
+          <button class="demo-btn">Pedir por WhatsApp</button>
+        </div>
+        <div class="demo-card">
+          <div class="demo-img">🔵</div>
+          <div class="demo-league">Selecciones</div>
+          <div class="demo-name">Guatemala Local 2025</div>
+          <div class="demo-price">Q250</div>
+          <button class="demo-btn">Pedir por WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div>
+          <div class="stat-num">5 min</div>
+          <div class="stat-label">Para tener tu catálogo listo</div>
+        </div>
+        <div>
+          <div class="stat-num">$0</div>
+          <div class="stat-label">Para empezar, sin tarjeta</div>
+        </div>
+        <div>
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Personalizable a tu marca</div>
+        </div>
+        <div>
+          <div class="stat-num">WhatsApp</div>
+          <div class="stat-label">Pedidos directos, sin apps</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <div class="tag">Funciones</div>
+        <h2>Todo lo que necesitás para vender más</h2>
+        <p>Diseñado para negocios pequeños y medianos que quieren profesionalizar su catálogo sin complicaciones técnicas.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3>100% personalizable</h3>
+          <p>Cambia colores, logo, imágenes y textos desde tu panel admin. Tu catálogo refleja tu marca, no la nuestra.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h3>Gestión de productos</h3>
+          <p>Agrega, edita y organiza tus productos por categorías. Sube fotos, define tallas y precios en segundos.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>WhatsApp integrado</h3>
+          <p>Cada producto tiene un botón "Pedir por WhatsApp" con el mensaje prellenado. Tus clientes llegan listos para comprar.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔗</div>
+          <h3>Tu propio subdominio</h3>
+          <p>Cada tienda tiene su URL única: <strong>tutienda.productspot.com</strong>. Compártelo en redes, historias y bio.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Diseño mobile-first</h3>
+          <p>Tu catálogo se ve perfecto en celular. El 90% de tus clientes te van a visitar desde el teléfono.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Rápido y siempre disponible</h3>
+          <p>Hosting en Cloudflare con CDN global. Tu catálogo carga en menos de 1 segundo desde cualquier lugar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section how-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="tag">¿Cómo funciona?</div>
+        <h2>Tres pasos y ya estás vendiendo</h2>
+        <p>No necesitás saber de tecnología ni contratar a nadie.</p>
+      </div>
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <h3>Creá tu cuenta</h3>
+          <p>Registrate en 2 minutos. Elegís el nombre de tu tienda y tu URL única. Sin tarjeta de crédito.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <h3>Cargá tus productos</h3>
+          <p>Subí fotos, ponés precio, elegís categorías y tallas. El panel es visual e intuitivo.</p>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <h3>Compartí y vendé</h3>
+          <p>Copiás tu enlace y lo compartís donde quieras. Tus clientes hacen pedidos por WhatsApp al instante.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="section-header">
+        <div class="tag">Precios</div>
+        <h2>Empezá gratis, crecé cuando quieras</h2>
+        <p>Sin contratos. Cancelá cuando quieras. Actualizá o bajá de plan en cualquier momento.</p>
+      </div>
+      <div class="pricing-grid">
+
+        <div class="pricing-card">
+          <div class="plan-name">Free</div>
+          <div class="plan-price">$0 <span>/mes</span></div>
+          <div class="plan-desc">Para empezar y probar</div>
+          <ul class="plan-features">
+            <li>Hasta 10 productos</li>
+            <li>Subdominio propio</li>
+            <li>WhatsApp integrado</li>
+            <li>Panel admin completo</li>
+            <li class="off">Sin branding ProductSpot</li>
+            <li class="off">Categorías personalizadas</li>
+            <li class="off">Soporte prioritario</li>
+          </ul>
+          <a href="register.html" class="plan-cta plan-cta-outline">Empezar gratis</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <div class="featured-badge">⭐ Más popular</div>
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">$15 <span>/mes</span></div>
+          <div class="plan-desc">Para negocios en crecimiento</div>
+          <ul class="plan-features">
+            <li>Hasta 50 productos</li>
+            <li>Subdominio propio</li>
+            <li>WhatsApp integrado</li>
+            <li>Panel admin completo</li>
+            <li>Sin branding ProductSpot</li>
+            <li>Categorías personalizadas</li>
+            <li class="off">Soporte prioritario</li>
+          </ul>
+          <a href="register.html" class="plan-cta plan-cta-primary">Empezar ahora</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$35 <span>/mes</span></div>
+          <div class="plan-desc">Para tiendas establecidas</div>
+          <ul class="plan-features">
+            <li>Productos ilimitados</li>
+            <li>Dominio propio (tutienda.com)</li>
+            <li>WhatsApp integrado</li>
+            <li>Panel admin completo</li>
+            <li>Sin branding ProductSpot</li>
+            <li>Categorías personalizadas</li>
+            <li>Soporte prioritario</li>
+          </ul>
+          <a href="register.html" class="plan-cta plan-cta-outline">Empezar ahora</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section">
+    <div class="container">
+      <div class="demo-cta">
+        <h2>¿Listo para tener tu catálogo?</h2>
+        <p>Únete a los negocios que ya están vendiendo más por WhatsApp con ProductSpot.</p>
+        <div class="demo-cta-actions">
+          <a href="register.html" class="btn btn-primary" style="font-size:1rem;padding:14px 28px;">
+            Crear mi catálogo gratis →
+          </a>
+          <a href="index.html?s=cas" target="_blank" class="btn btn-outline" style="font-size:1rem;padding:14px 28px;">
+            Ver demo en vivo
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div class="nav-logo-icon" style="width:26px;height:26px;">
+          <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
+            <path d="M4 8 L11 5 C11 5 13 10 16 10 C19 10 21 5 21 5 L28 8 L25 17 L21 15 L21 27 L11 27 L11 15 L7 17 Z" fill="white"/>
+          </svg>
+        </div>
+        <span style="font-weight:700;font-size:.95rem;">ProductSpot</span>
+      </div>
+      <p class="footer-copy">© 2025 ProductSpot · Catálogos digitales para negocios</p>
+      <div class="footer-links">
+        <a href="register.html">Registro</a>
+        <a href="admin.html">Admin</a>
+        <a href="index.html?s=cas">Demo</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

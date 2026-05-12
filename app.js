@@ -5,6 +5,14 @@ let storeWA = "50200000000";
 let storeWaMessage = "";
 let storeName = "CAS";
 let storeUserId = null;
+let storeDbId = null;
+
+function logEvent(eventType, productId = null) {
+  if (!storeDbId) return;
+  const payload = { store_id: storeDbId, event_type: eventType };
+  if (productId) payload.product_id = productId;
+  sb.from("store_events").insert(payload).then(() => {});
+}
 
 // ===== STORE SETTINGS =====
 function getStoreSlug() {
@@ -42,6 +50,8 @@ async function loadStoreSettings() {
     storeWA = data.whatsapp || storeWA;
     storeWaMessage = data.wa_message || "";
     storeUserId = data.user_id;
+    storeDbId = data.id;
+    logEvent("catalog_view");
 
     document.title = storeName ? `${storeName}` : "Mi tienda";
     setMetaTags({
@@ -201,11 +211,11 @@ function updateWALinks() {
   const waUrl = `https://wa.me/${storeWA}?text=${encodeURIComponent(defaultMsg)}`;
 
   const heroBtn = document.getElementById("heroWaBtn");
-  if (heroBtn) heroBtn.href = waUrl;
+  if (heroBtn) { heroBtn.href = waUrl; heroBtn.addEventListener("click", () => logEvent("whatsapp_click"), { once: true }); }
   const ctaBtn = document.getElementById("ctaWaBtn");
-  if (ctaBtn) ctaBtn.href = waUrl;
+  if (ctaBtn) { ctaBtn.href = waUrl; ctaBtn.addEventListener("click", () => logEvent("whatsapp_click"), { once: true }); }
   const floatBtn = document.getElementById("floatWaBtn");
-  if (floatBtn) floatBtn.href = waUrl;
+  if (floatBtn) { floatBtn.href = waUrl; floatBtn.addEventListener("click", () => logEvent("whatsapp_click"), { once: true }); }
   const emptyLink = document.getElementById("emptyWaLink");
   if (emptyLink) emptyLink.href = waUrl;
 }
@@ -351,6 +361,8 @@ function openModal(id) {
       </button>
     </div>
   `;
+
+  logEvent("product_view", p.id);
 
   // Update URL and meta tags for product sharing
   const newUrl = getProductUrl(p.id);

@@ -318,6 +318,7 @@ document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
     document.querySelectorAll(".page").forEach((p) => p.classList.remove("active"));
     document.getElementById(`page${page.charAt(0).toUpperCase() + page.slice(1)}`).classList.add("active");
     document.getElementById("topbarTitle").textContent = item.querySelector("span:last-child").textContent;
+    if (page === "analytics") loadAnalytics();
     closeSidebar();
   });
 });
@@ -374,8 +375,9 @@ function renderTable() {
   }
 
   const rows = filtered.map((p) => `
-    <tr>
-      <td class="td-emoji">${(p.image_urls && p.image_urls.length > 0) ? `<img src="${p.image_urls[0]}" class="td-img" alt="" />` : p.image_url ? `<img src="${p.image_url}" class="td-img" alt="" />` : "📦"}</td>
+    <tr id="row-${p.id}">
+      <td class="td-check"><input type="checkbox" value="${p.id}" onchange="onRowCheck(this)" aria-label="Seleccionar ${p.name}" /></td>
+      <td class="td-emoji">${(p.image_urls && p.image_urls.length > 0) ? `<img src="${p.image_urls[0]}" class="td-img" alt="${p.name}" />` : p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${p.name}" />` : "📦"}</td>
       <td class="td-name">
         <strong>${p.name}</strong>
         <small>Q${p.price} GTQ · ${(p.sizes || []).join(", ")}</small>
@@ -393,6 +395,7 @@ function renderTable() {
     <table>
       <thead>
         <tr>
+          <th class="td-check"><input type="checkbox" id="checkAll" onchange="toggleAllRows(this)" aria-label="Seleccionar todos" /></th>
           <th style="width:52px"></th>
           <th>Producto</th>
           <th>Liga</th>
@@ -535,6 +538,67 @@ document.getElementById("confirmDelete").addEventListener("click", async () => {
   showToast("Producto eliminado", "success");
   loadProducts();
 });
+
+// ===== BULK ACTIONS =====
+function getSelectedIds() {
+  return [...document.querySelectorAll('#productsTable input[type=checkbox]:checked')]
+    .map(cb => cb.value).filter(Boolean);
+}
+
+function updateBulkBar() {
+  const ids = getSelectedIds();
+  const bar = document.getElementById("bulkBar");
+  const count = document.getElementById("bulkCount");
+  bar.style.display = ids.length > 0 ? "flex" : "none";
+  if (count) count.textContent = `${ids.length} producto${ids.length !== 1 ? "s" : ""} seleccionado${ids.length !== 1 ? "s" : ""}`;
+}
+
+function onRowCheck(cb) {
+  const row = document.getElementById(`row-${cb.value}`);
+  if (row) row.classList.toggle("row-selected", cb.checked);
+  const all = document.getElementById("checkAll");
+  const boxes = document.querySelectorAll('#productsTable tbody input[type=checkbox]');
+  if (all) all.checked = boxes.length > 0 && [...boxes].every(b => b.checked);
+  updateBulkBar();
+}
+
+function toggleAllRows(masterCb) {
+  document.querySelectorAll('#productsTable tbody input[type=checkbox]').forEach(cb => {
+    cb.checked = masterCb.checked;
+    const row = document.getElementById(`row-${cb.value}`);
+    if (row) row.classList.toggle("row-selected", masterCb.checked);
+  });
+  updateBulkBar();
+}
+
+function clearSelection() {
+  document.querySelectorAll('#productsTable input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    const row = document.getElementById(`row-${cb.value}`);
+    if (row) row.classList.remove("row-selected");
+  });
+  updateBulkBar();
+}
+
+async function bulkToggleAvailable(available) {
+  const ids = getSelectedIds();
+  if (!ids.length) return;
+  const { error } = await sb.from("products").update({ available }).in("id", ids);
+  if (error) { showToast("Error al actualizar", "error"); return; }
+  showToast(`${ids.length} producto${ids.length !== 1 ? "s" : ""} ${available ? "visibles" : "ocultos"} ✓`, "success");
+  clearSelection();
+  loadProducts();
+}
+
+async function bulkDelete() {
+  const ids = getSelectedIds();
+  if (!ids.length) return;
+  if (!confirm(`¿Eliminar ${ids.length} producto${ids.length !== 1 ? "s" : ""}? Esta acción no se puede deshacer.`)) return;
+  const { error } = await sb.from("products").delete().in("id", ids);
+  if (error) { showToast("Error al eliminar", "error"); return; }
+  showToast(`${ids.length} producto${ids.length !== 1 ? "s" : ""} eliminado${ids.length !== 1 ? "s" : ""} ✓`, "success");
+  loadProducts();
+}
 
 // ===== SETTINGS =====
 async function loadSettings(user) {
@@ -1029,6 +1093,54 @@ async function uploadDesignImage(file, type, urlFieldId, previewId) {
 }
 
 // ===== PLAN PAGE =====
+// ===== ANALYTICS =====
+async function loadAnalytics() {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: events } = await sb
+    .from("store_events")
+    .select("event_type, product_id, created_at")
+    .gte("created_at", since);
+
+  if (!events) return;
+
+  const views    = events.filter(e => e.event_type === "catalog_view").length;
+  const wa       = events.filter(e => e.event_type === "whatsapp_click").length;
+  const prodViews = events.filter(e => e.event_type === "product_view").length;
+
+  document.getElementById("statViews").textContent        = views;
+  document.getElementById("statWA").textContent           = wa;
+  document.getElementById("statProductViews").textContent = prodViews;
+
+  // Top products
+  const counts = {};
+  events.filter(e => e.event_type === "product_view" && e.product_id).forEach(e => {
+    counts[e.product_id] = (counts[e.product_id] || 0) + 1;
+  });
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const list = document.getElementById("topProductsList");
+  if (!top.length) {
+    list.innerHTML = `<p style="color:#6b7280;font-size:.875rem;">Aún no hay datos de productos vistos.</p>`;
+    return;
+  }
+  const maxVal = top[0][1];
+  list.innerHTML = top.map(([id, count]) => {
+    const p = allProducts.find(pr => String(pr.id) === String(id));
+    const name = p ? p.name : `Producto #${id}`;
+    const pct  = Math.round((count / maxVal) * 100);
+    return `
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;">
+          <span style="color:#e2e8f0;">${name}</span>
+          <span style="color:#6b7280;">${count} vista${count !== 1 ? "s" : ""}</span>
+        </div>
+        <div style="height:6px;background:#1e293b;border-radius:99px;">
+          <div style="height:100%;width:${pct}%;background:#f59e0b;border-radius:99px;transition:width .4s;"></div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
 function loadPlanPage() {
   const el = document.getElementById('planContent');
   if (!el) return;

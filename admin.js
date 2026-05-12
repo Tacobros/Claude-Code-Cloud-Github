@@ -108,6 +108,12 @@ document.getElementById("pImage").addEventListener("change", async (e) => {
 
 // ===== AUTH =====
 async function init() {
+  // If URL has auth error in hash (e.g. expired OTP), go to login
+  if (window.location.hash.includes('error=')) {
+    history.replaceState({}, '', window.location.pathname);
+    showLogin();
+    return;
+  }
   const { data: { session } } = await sb.auth.getSession();
   if (session) showApp(session.user);
   else showLogin();
@@ -221,6 +227,7 @@ function closeSidebar() {
 // ===== PRODUCTS =====
 async function loadProducts() {
   const { data: { user } } = await sb.auth.getUser();
+  if (!user) { showLogin(); return; }
   const { data, error } = await sb
     .from("products")
     .select("*")
@@ -408,6 +415,7 @@ document.getElementById("confirmDelete").addEventListener("click", async () => {
 // ===== SETTINGS =====
 async function loadSettings() {
   const { data: { user } } = await sb.auth.getUser();
+  if (!user) { showLogin(); return; }
   const { data } = await sb.from("stores").select("*").eq("user_id", user.id).single();
 
   // Set slug URL prefix: subdomain format on platform, ?s= param locally

@@ -133,23 +133,67 @@
         <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
              alt="ProductSpot" style="height:40px;width:auto;" />
       </div>
-      <h2>Iniciar sesión</h2>
-      <p>Accede a tu panel de administración</p>
-      <form id="loginForm">
-        <div class="field">
-          <label>Correo electrónico</label>
-          <input type="email" id="loginEmail" placeholder="tu@correo.com" required />
-        </div>
-        <div class="field">
-          <label>Contraseña</label>
-          <input type="password" id="loginPassword" placeholder="••••••••" required />
-        </div>
-        <div id="loginError" class="error-msg" style="display:none;"></div>
-        <button type="submit" class="btn-login" id="loginBtn">Entrar</button>
-      </form>
-      <p style="text-align:center;margin-top:16px;font-size:.875rem;color:#6b7280;">
-        ¿No tienes cuenta? <a href="register.html" style="color:#5b8ab5;text-decoration:none;">Crear catálogo gratis →</a>
-      </p>
+
+      <!-- Panel: login -->
+      <div id="loginPanel">
+        <h2>Iniciar sesión</h2>
+        <p>Accede a tu panel de administración</p>
+        <form id="loginForm" style="margin-top:20px;">
+          <div class="field">
+            <label>Correo electrónico</label>
+            <input type="email" id="loginEmail" placeholder="tu@correo.com" required />
+          </div>
+          <div class="field">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label style="margin:0;">Contraseña</label>
+              <a href="#" id="forgotLink" style="font-size:.8rem;color:#5b8ab5;text-decoration:none;">¿Olvidaste tu contraseña?</a>
+            </div>
+            <input type="password" id="loginPassword" placeholder="••••••••" required />
+          </div>
+          <div id="loginError" class="error-msg" style="display:none;"></div>
+          <button type="submit" class="btn-login" id="loginBtn">Entrar</button>
+        </form>
+        <p style="text-align:center;margin-top:16px;font-size:.875rem;color:#6b7280;">
+          ¿No tienes cuenta? <a href="register.html" style="color:#5b8ab5;text-decoration:none;">Crear catálogo gratis →</a>
+        </p>
+      </div>
+
+      <!-- Panel: recuperar contraseña -->
+      <div id="forgotPanel" style="display:none;">
+        <h2>Recuperar contraseña</h2>
+        <p>Te enviaremos un enlace para restablecer tu contraseña.</p>
+        <form id="forgotForm" style="margin-top:20px;">
+          <div class="field">
+            <label>Correo electrónico</label>
+            <input type="email" id="forgotEmail" placeholder="tu@correo.com" required />
+          </div>
+          <div id="forgotError" class="error-msg" style="display:none;"></div>
+          <div id="forgotSuccess" style="display:none;background:#0d2b1a;border:1px solid #166534;border-radius:8px;padding:12px;font-size:.875rem;color:#4ade80;margin-bottom:12px;"></div>
+          <div style="display:flex;gap:10px;">
+            <button type="button" id="forgotBackBtn" class="btn-login" style="background:#1e293b;flex:0 0 44px;padding:0;font-size:1.1rem;">←</button>
+            <button type="submit" class="btn-login" id="forgotBtn" style="flex:1;">Enviar enlace</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Panel: nueva contraseña (desde email de recuperación) -->
+      <div id="resetPanel" style="display:none;">
+        <h2>Nueva contraseña</h2>
+        <p>Elige una contraseña segura para tu cuenta.</p>
+        <form id="resetForm" style="margin-top:20px;">
+          <div class="field">
+            <label>Nueva contraseña</label>
+            <input type="password" id="resetPassword" placeholder="Mínimo 8 caracteres" required minlength="8" />
+          </div>
+          <div class="field">
+            <label>Confirmar contraseña</label>
+            <input type="password" id="resetPasswordConfirm" placeholder="Repite tu contraseña" required />
+          </div>
+          <div id="resetError" class="error-msg" style="display:none;"></div>
+          <button type="submit" class="btn-login" id="resetBtn">Guardar contraseña</button>
+        </form>
+      </div>
+
     </div>
   </div>
 

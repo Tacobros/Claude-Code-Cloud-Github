@@ -110,15 +110,30 @@ document.getElementById("pImage").addEventListener("change", async (e) => {
 
 // ===== AUTH =====
 async function init() {
-  // If URL has auth error in hash (e.g. expired OTP), go to login
-  if (window.location.hash.includes('error=')) {
+  // Password recovery redirect: hash contains type=recovery
+  const hash = window.location.hash;
+  if (hash.includes('type=recovery')) {
     history.replaceState({}, '', window.location.pathname);
-    showLogin();
+    showLoginPanel('reset');
+    return;
+  }
+  // Auth error in hash (e.g. expired OTP)
+  if (hash.includes('error=')) {
+    history.replaceState({}, '', window.location.pathname);
+    showLoginPanel('login');
     return;
   }
   const { data: { session } } = await sb.auth.getSession();
   if (session) showApp(session.user);
-  else showLogin();
+  else showLoginPanel('login');
+}
+
+function showLoginPanel(panel) {
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("adminApp").style.display = "none";
+  document.getElementById("loginPanel").style.display = panel === 'login' ? 'block' : 'none';
+  document.getElementById("forgotPanel").style.display = panel === 'forgot' ? 'block' : 'none';
+  document.getElementById("resetPanel").style.display = panel === 'reset' ? 'block' : 'none';
 }
 
 function handleUrlParams() {
@@ -142,8 +157,7 @@ function handleUrlParams() {
 }
 
 function showLogin() {
-  document.getElementById("loginScreen").style.display = "flex";
-  document.getElementById("adminApp").style.display = "none";
+  showLoginPanel('login');
 }
 
 async function showApp(user) {
@@ -204,6 +218,80 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   await sb.auth.signOut();
   showLogin();
+});
+
+// Forgot password link
+document.getElementById("forgotLink").addEventListener("click", (e) => {
+  e.preventDefault();
+  showLoginPanel('forgot');
+});
+
+document.getElementById("forgotBackBtn").addEventListener("click", () => {
+  showLoginPanel('login');
+});
+
+// Forgot password form
+document.getElementById("forgotForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("forgotBtn");
+  const err = document.getElementById("forgotError");
+  const success = document.getElementById("forgotSuccess");
+  err.style.display = "none";
+  success.style.display = "none";
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+
+  const email = document.getElementById("forgotEmail").value.trim();
+  const redirectTo = `${window.location.origin}/admin.html`;
+
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+
+  if (error) {
+    err.textContent = error.message;
+    err.style.display = "block";
+  } else {
+    success.textContent = `Enviamos un enlace a ${email}. Revisa tu bandeja de entrada y sigue las instrucciones.`;
+    success.style.display = "block";
+    document.getElementById("forgotEmail").value = "";
+  }
+  btn.disabled = false;
+  btn.textContent = "Enviar enlace";
+});
+
+// New password form (after recovery redirect)
+document.getElementById("resetForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("resetBtn");
+  const err = document.getElementById("resetError");
+  err.style.display = "none";
+
+  const pass = document.getElementById("resetPassword").value;
+  const confirm = document.getElementById("resetPasswordConfirm").value;
+
+  if (pass !== confirm) {
+    err.textContent = "Las contraseñas no coinciden.";
+    err.style.display = "block";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Guardando...";
+
+  const { error } = await sb.auth.updateUser({ password: pass });
+
+  if (error) {
+    err.textContent = error.message;
+    err.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Guardar contraseña";
+  } else {
+    showToast("Contraseña actualizada. Iniciando sesión...", "success");
+    setTimeout(async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) showApp(session.user);
+      else showLoginPanel('login');
+    }, 1500);
+  }
 });
 
 // ===== NAVIGATION =====

@@ -298,12 +298,16 @@
                 <input type="text" id="storeHeroImageUrl" placeholder="URL de imagen hero (se llena automáticamente)" style="margin-top:8px;" readonly />
               </div>
               <div class="field span-2">
+                <label>Etiqueta del Hero (badge)</label>
+                <input type="text" id="storeHeroBadge" placeholder="Ej: Nueva colección 2025" maxlength="40" />
+              </div>
+              <div class="field span-2">
                 <label>Título principal del Hero</label>
-                <input type="text" id="storeHeroTitle" placeholder="Camisolas oficiales y réplicas premium" />
+                <input type="text" id="storeHeroTitle" placeholder="Bienvenido a nuestra tienda" />
               </div>
               <div class="field span-2">
                 <label>Subtítulo del Hero</label>
-                <textarea id="storeHeroSubtitle" rows="2" placeholder="Las mejores camisolas de los equipos que amas..."></textarea>
+                <textarea id="storeHeroSubtitle" rows="2" placeholder="Explora nuestro catálogo y contáctanos por WhatsApp."></textarea>
               </div>
             </div>
             <h4 style="margin:20px 0 12px;font-size:.9rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Estadísticas del catálogo</h4>
@@ -340,6 +344,34 @@
               <div class="field">
                 <label>Estadística 4 — Etiqueta</label>
                 <input type="text" id="stat4Label" placeholder="Ej: En todo Guatemala" maxlength="40" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-card full-width">
+            <h3>Sección de Catálogo</h3>
+            <p class="hint">Textos que aparecen en la sección de productos del catálogo.</p>
+            <div class="form-grid" style="margin-top:16px;">
+              <div class="field">
+                <label>Título del catálogo</label>
+                <input type="text" id="catalogTitle" placeholder="Catálogo" maxlength="60" />
+              </div>
+              <div class="field">
+                <label>Subtítulo del catálogo</label>
+                <input type="text" id="catalogSubtitle" placeholder="Explora nuestros productos" maxlength="100" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-card full-width">
+            <h3>Sección de Contacto (CTA)</h3>
+            <p class="hint">Textos del bloque final que invita al cliente a contactarte.</p>
+            <div class="form-grid" style="margin-top:16px;">
+              <div class="field">
+                <label>Título</label>
+                <input type="text" id="ctaTitle" placeholder="¿Listo para hacer tu pedido?" maxlength="80" />
+              </div>
+              <div class="field">
+                <label>Descripción</label>
+                <input type="text" id="ctaDesc" placeholder="Escríbenos por WhatsApp y te atendemos al instante." maxlength="160" />
               </div>
             </div>
           </div>

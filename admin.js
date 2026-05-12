@@ -446,8 +446,13 @@ async function loadSettings(user) {
     document.getElementById("storeDesc").value = data.description || "";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";
     document.getElementById("storeAccentHex").textContent = data.accent_color || "#e94560";
+    document.getElementById("storeHeroBadge").value = data.hero_badge || "";
     document.getElementById("storeHeroTitle").value = data.hero_title || "";
     document.getElementById("storeHeroSubtitle").value = data.hero_subtitle || "";
+    document.getElementById("catalogTitle").value = data.catalog_title || "";
+    document.getElementById("catalogSubtitle").value = data.catalog_subtitle || "";
+    document.getElementById("ctaTitle").value = data.cta_title || "";
+    document.getElementById("ctaDesc").value = data.cta_desc || "";
     document.getElementById("storeLogoUrl").value = data.logo_url || "";
     document.getElementById("storeHeroImageUrl").value = data.hero_image_url || "";
     document.getElementById("aboutTitle").value = data.about_title || "";
@@ -527,10 +532,15 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
   // Only include design columns if they already exist in the DB (migration ran)
   // or if the user has entered a value in the field.
   const designCols = {
+    hero_badge: document.getElementById("storeHeroBadge").value.trim() || null,
     hero_title: document.getElementById("storeHeroTitle").value.trim() || null,
     hero_subtitle: document.getElementById("storeHeroSubtitle").value.trim() || null,
     logo_url: document.getElementById("storeLogoUrl").value.trim() || null,
     hero_image_url: document.getElementById("storeHeroImageUrl").value.trim() || null,
+    catalog_title: document.getElementById("catalogTitle").value.trim() || null,
+    catalog_subtitle: document.getElementById("catalogSubtitle").value.trim() || null,
+    cta_title: document.getElementById("ctaTitle").value.trim() || null,
+    cta_desc: document.getElementById("ctaDesc").value.trim() || null,
   };
   const colsExistInDb = "hero_image_url" in storeSettings;
   Object.entries(designCols).forEach(([key, val]) => {

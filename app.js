@@ -72,10 +72,24 @@ async function loadStoreSettings() {
     if (footerCopy) footerCopy.textContent = storeName ? `© 2025 ${storeName}` : "";
 
     // Hero content
+    const heroBadge = document.getElementById("heroBadge");
+    if (heroBadge) heroBadge.textContent = data.hero_badge || "Bienvenidos";
     const heroTitle = document.getElementById("heroTitle");
-    if (heroTitle && data.hero_title) heroTitle.textContent = data.hero_title;
+    if (heroTitle) heroTitle.textContent = data.hero_title || "Bienvenido a nuestra tienda";
     const heroSubtitle = document.getElementById("heroSubtitle");
-    if (heroSubtitle && data.hero_subtitle) heroSubtitle.textContent = data.hero_subtitle;
+    if (heroSubtitle) heroSubtitle.textContent = data.hero_subtitle || "Explora nuestro catálogo y contáctanos por WhatsApp para hacer tu pedido.";
+
+    // Catalog section
+    const catalogTitle = document.getElementById("catalogTitle");
+    if (catalogTitle) catalogTitle.textContent = data.catalog_title || "Catálogo";
+    const catalogSubtitle = document.getElementById("catalogSubtitle");
+    if (catalogSubtitle) catalogSubtitle.textContent = data.catalog_subtitle || "Explora nuestros productos";
+
+    // CTA section
+    const ctaTitle = document.getElementById("ctaTitle");
+    if (ctaTitle) ctaTitle.textContent = data.cta_title || "¿Listo para hacer tu pedido?";
+    const ctaDesc = document.getElementById("ctaDesc");
+    if (ctaDesc) ctaDesc.textContent = data.cta_desc || "Escríbenos por WhatsApp y te atendemos al instante.";
 
     // Hero image
     const heroImg = document.getElementById("heroProductImg");

@@ -1095,6 +1095,25 @@ async function uploadDesignImage(file, type, urlFieldId, previewId) {
 // ===== PLAN PAGE =====
 // ===== ANALYTICS =====
 async function loadAnalytics() {
+  if (currentPlan === 'free') {
+    document.getElementById('statViews').textContent = '—';
+    document.getElementById('statWA').textContent = '—';
+    document.getElementById('statProductViews').textContent = '—';
+    document.getElementById('analyticsRange').textContent = '';
+    document.getElementById('topProductsList').innerHTML = `
+      <div style="text-align:center;padding:40px 24px;">
+        <div style="font-size:2.5rem;margin-bottom:12px;">📊</div>
+        <h3 style="font-size:1rem;margin-bottom:8px;color:#e2e8f0;">Estadísticas disponibles en Starter y Pro</h3>
+        <p style="color:#6b7280;font-size:.875rem;margin-bottom:20px;line-height:1.6;">
+          Activa el plan Starter para ver vistas del catálogo, clicks en WhatsApp y tus productos más populares.
+        </p>
+        <a href="#" onclick="document.querySelector('.nav-item[data-page=plan]').click();return false;"
+           class="btn-primary" style="text-decoration:none;">Ver planes →</a>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('analyticsRange').textContent = 'Últimos 30 días';
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const { data: events } = await sb

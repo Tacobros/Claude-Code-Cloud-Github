@@ -57,17 +57,24 @@ async function loadStoreSettings() {
     const jerseyGrid = document.getElementById("aboutJerseyGrid");
     if (jerseyGrid && data.show_gallery) jerseyGrid.style.display = "";
 
-    // Logo
+    // Logo — solo visible si la tienda tiene una imagen configurada
+    const headerIcon = document.getElementById("siteLogoIcon");
+    const footerIcon = document.getElementById("footerLogoIcon");
     if (data.logo_url) {
-      const logoIcon = document.getElementById("siteLogoIcon");
-      if (logoIcon) {
-        logoIcon.innerHTML = `<img src="${data.logo_url}" alt="${storeName}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;" />`;
-      }
+      if (headerIcon) { headerIcon.innerHTML = `<img src="${data.logo_url}" alt="${storeName}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;" />`; headerIcon.style.display = ""; }
+      if (footerIcon) { footerIcon.innerHTML = `<img src="${data.logo_url}" alt="${storeName}" style="width:24px;height:24px;object-fit:contain;border-radius:4px;" />`; footerIcon.style.display = ""; }
+    } else {
+      if (headerIcon) headerIcon.style.display = "none";
+      if (footerIcon) footerIcon.style.display = "none";
     }
     const logoText = document.getElementById("siteLogoText");
     if (logoText) logoText.textContent = storeName;
     const footerLogoText = document.getElementById("footerLogoText");
     if (footerLogoText) footerLogoText.textContent = storeName;
+
+    // Sello ProductSpot — solo en tiendas con plan gratuito
+    const productspotBadge = document.getElementById("productspotBadge");
+    if (productspotBadge && (!data.plan || data.plan === "free")) productspotBadge.style.display = "";
     const footerCopy = document.getElementById("footerCopy");
     if (footerCopy) footerCopy.textContent = storeName ? `© 2025 ${storeName}` : "";
 

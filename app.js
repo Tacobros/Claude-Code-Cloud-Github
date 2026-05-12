@@ -133,16 +133,14 @@ async function loadStoreSettings() {
     // About section
     const aboutFields = [
       ["aboutTitle", "about_title"],
-      ["about1Title", "about1_title"], ["about1Desc", "about1_desc"],
-      ["about2Title", "about2_title"], ["about2Desc", "about2_desc"],
-      ["about3Title", "about3_title"], ["about3Desc", "about3_desc"],
-      ["about4Title", "about4_title"], ["about4Desc", "about4_desc"],
+      ["about1Icon", "about1_icon"], ["about1Title", "about1_title"], ["about1Desc", "about1_desc"],
+      ["about2Icon", "about2_icon"], ["about2Title", "about2_title"], ["about2Desc", "about2_desc"],
+      ["about3Icon", "about3_icon"], ["about3Title", "about3_title"], ["about3Desc", "about3_desc"],
+      ["about4Icon", "about4_icon"], ["about4Title", "about4_title"], ["about4Desc", "about4_desc"],
     ];
     aboutFields.forEach(([elId, dbKey]) => {
-      if (data[dbKey]) {
-        const el = document.getElementById(elId);
-        if (el) el.textContent = data[dbKey];
-      }
+      const el = document.getElementById(elId);
+      if (el && data[dbKey]) el.textContent = data[dbKey];
     });
 
     // Stats

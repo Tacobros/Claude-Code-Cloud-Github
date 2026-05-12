@@ -206,7 +206,21 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
 
   if (error) {
-    err.textContent = "Correo o contraseña incorrectos";
+    const isUnconfirmed = error.message?.toLowerCase().includes('email not confirmed')
+      || error.message?.toLowerCase().includes('not confirmed');
+    if (isUnconfirmed) {
+      err.innerHTML = `Tu correo no ha sido verificado.
+        <a href="#" id="resendVerification" style="color:#5b8ab5;text-decoration:underline;">Reenviar correo de verificación</a>`;
+      document.getElementById("resendVerification")?.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        const { error: resendErr } = await sb.auth.resend({ type: 'signup', email });
+        err.textContent = resendErr
+          ? 'No se pudo reenviar. Intenta más tarde.'
+          : `Correo reenviado a ${email}. Revisa tu bandeja de entrada.`;
+      });
+    } else {
+      err.textContent = "Correo o contraseña incorrectos";
+    }
     err.style.display = "block";
     btn.disabled = false;
     btn.textContent = "Entrar";
@@ -485,7 +499,10 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
   btn.textContent = "Guardar producto";
 
   if (error) {
-    err.textContent = "Error al guardar: " + error.message;
+    const isPlanLimit = error.message?.includes('plan_limit_exceeded');
+    err.textContent = isPlanLimit
+      ? `Límite de productos alcanzado en tu plan. Actualiza tu plan para agregar más.`
+      : "Error al guardar: " + error.message;
     err.style.display = "block";
     return;
   }

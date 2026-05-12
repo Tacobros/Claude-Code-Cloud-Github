@@ -265,6 +265,7 @@ function renderTable() {
 
   if (filtered.length === 0) {
     document.getElementById("productsTable").innerHTML = `<div class="loading">No se encontraron productos.</div>`;
+    enforcePlanLimits();
     return;
   }
 
@@ -298,6 +299,7 @@ function renderTable() {
       <tbody>${rows}</tbody>
     </table>
   `;
+  enforcePlanLimits();
 }
 
 document.getElementById("adminSearch").addEventListener("input", renderTable);
@@ -352,6 +354,15 @@ document.getElementById("productModalOverlay").addEventListener("click", (e) => 
 
 document.getElementById("productForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // Verificar límite de plan antes de guardar
+  const isNew = !document.getElementById("productId").value;
+  const limits = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.free;
+  if (isNew && allProducts.length >= limits.maxProducts) {
+    showToast(`Límite de ${limits.maxProducts} productos alcanzado. Actualiza tu plan para agregar más.`, 'error');
+    return;
+  }
+
   const btn = document.getElementById("saveProductBtn");
   const err = document.getElementById("formError");
   err.style.display = "none";
@@ -522,7 +533,116 @@ async function loadSettings(user) {
     updateSettingsPreview();
     currentPlan = data.plan || 'free';
     loadPlanPage();
+    enforcePlanLimits();
   }
+}
+
+const PLAN_LIMITS = {
+  free:    { maxProducts: 5,  features: [] },
+  starter: { maxProducts: 50, features: ['logo','color','categories','gallery','about','stats','waMessage','heroExtras'] },
+  pro:     { maxProducts: Infinity, features: ['logo','color','categories','gallery','about','stats','waMessage','heroExtras'] },
+};
+
+function enforcePlanLimits() {
+  const plan = currentPlan;
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  const isPaid = plan === 'starter' || plan === 'pro';
+
+  // Actualizar contador de productos con límite
+  const countEl = document.getElementById("productCount");
+  if (countEl) {
+    const max = limits.maxProducts === Infinity ? '∞' : limits.maxProducts;
+    countEl.textContent = `${allProducts.length} / ${max} productos`;
+  }
+
+  // Bloquear botón "Agregar producto" si se llegó al límite
+  const addBtn = document.getElementById("btnAddProduct");
+  if (addBtn) {
+    const atLimit = allProducts.length >= limits.maxProducts;
+    addBtn.disabled = atLimit;
+    addBtn.title = atLimit ? `Límite de ${limits.maxProducts} productos en plan ${plan}. Actualiza tu plan para agregar más.` : '';
+    if (atLimit) {
+      addBtn.textContent = `Límite alcanzado (${limits.maxProducts})`;
+    } else {
+      addBtn.textContent = '+ Agregar producto';
+    }
+  }
+
+  // Secciones bloqueadas en free: logo, color, mensaje WA, hero extras, categorías, galería, about, stats
+  const lockedSections = [
+    { id: 'logoUploadArea',    feature: 'logo' },
+    { id: 'heroUploadArea',    feature: 'heroExtras' },
+    { id: 'storeAccent',       feature: 'color' },
+    { id: 'storeWaMessage',    feature: 'waMessage' },
+    { id: 'storeHeroBadge',    feature: 'heroExtras' },
+    { id: 'storeHeroSubtitle', feature: 'heroExtras' },
+    { id: 'customCategoriesList', feature: 'categories' },
+    { id: 'newCategoryInput',  feature: 'categories' },
+    { id: 'btnAddCategory',    feature: 'categories' },
+    { id: 'showGallery',       feature: 'gallery' },
+    { id: 'galleryUpload1',    feature: 'gallery' },
+    { id: 'galleryUpload2',    feature: 'gallery' },
+    { id: 'galleryUpload3',    feature: 'gallery' },
+    { id: 'galleryUpload4',    feature: 'gallery' },
+    { id: 'gallery1Title',     feature: 'gallery' },
+    { id: 'gallery2Title',     feature: 'gallery' },
+    { id: 'gallery3Title',     feature: 'gallery' },
+    { id: 'gallery4Title',     feature: 'gallery' },
+    { id: 'about1Title',       feature: 'about' },
+    { id: 'about2Title',       feature: 'about' },
+    { id: 'about3Title',       feature: 'about' },
+    { id: 'about4Title',       feature: 'about' },
+    { id: 'stat1Value',        feature: 'stats' },
+    { id: 'stat2Value',        feature: 'stats' },
+    { id: 'stat3Value',        feature: 'stats' },
+    { id: 'stat4Value',        feature: 'stats' },
+  ];
+
+  lockedSections.forEach(({ id, feature }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const locked = !isPaid;
+    el.disabled = locked;
+    if (locked) {
+      el.classList.add('plan-locked');
+      el.title = 'Disponible en plan Starter o Pro';
+    } else {
+      el.classList.remove('plan-locked');
+      el.title = '';
+    }
+  });
+
+  // Mostrar/ocultar banners de upgrade en settings cards que tienen features bloqueadas
+  applyLockOverlays(isPaid);
+}
+
+function applyLockOverlays(isPaid) {
+  // Secciones completas que mostrar con overlay de candado si es free
+  const lockedCards = [
+    'settingsCardLogo',
+    'settingsCardColor',
+    'settingsCardAbout',
+    'settingsCardStats',
+    'settingsCardGallery',
+  ];
+
+  lockedCards.forEach(id => {
+    const card = document.getElementById(id);
+    if (!card) return;
+    let overlay = card.querySelector('.plan-lock-overlay');
+    if (!isPaid) {
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'plan-lock-overlay';
+        overlay.innerHTML = `<span>🔒</span><p>Disponible en <strong>Starter</strong> o <strong>Pro</strong></p><a href="#" class="plan-lock-btn" onclick="document.querySelector('.nav-item[data-page=plan]').click();return false;">Ver planes →</a>`;
+        card.style.position = 'relative';
+        card.appendChild(overlay);
+      }
+      overlay.style.display = 'flex';
+    } else {
+      if (overlay) overlay.style.display = 'none';
+    }
+  });
 }
 
 function updateSettingsPreview() {
@@ -795,36 +915,35 @@ function loadPlanPage() {
       price: '$0',
       period: '/ siempre gratis',
       features: [
-        'Hasta 10 productos',
+        'Hasta 5 productos',
         'Catálogo digital público',
         'Pedidos por WhatsApp',
-        'Personalización básica',
       ],
     },
     {
       id: 'starter',
       name: 'Starter',
-      price: '$15',
+      price: '$5',
       period: '/ mes',
       features: [
-        'Hasta 100 productos',
-        'Todo lo del plan Free',
-        'Categorías ilimitadas',
-        'Imagen hero personalizada',
-        'Soporte por email',
+        'Hasta 50 productos',
+        'Sin sello ProductSpot',
+        'Logo y color de marca',
+        'Categorías personalizadas',
+        'Galería de imágenes',
+        'Sección "¿Por qué nosotros?"',
+        'Estadísticas del catálogo',
       ],
     },
     {
       id: 'pro',
       name: 'Pro',
-      price: '$35',
+      price: '$10',
       period: '/ mes',
       features: [
         'Productos ilimitados',
         'Todo lo del plan Starter',
-        'Dominio personalizado',
-        'Analytics de visitas',
-        'Soporte prioritario',
+        'Soporte prioritario por WhatsApp',
       ],
     },
   ];

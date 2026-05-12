@@ -353,7 +353,6 @@ function renderTable() {
 
   if (filtered.length === 0) {
     document.getElementById("productsTable").innerHTML = `<div class="loading">No se encontraron productos.</div>`;
-    enforcePlanLimits();
     return;
   }
 
@@ -387,7 +386,6 @@ function renderTable() {
       <tbody>${rows}</tbody>
     </table>
   `;
-  enforcePlanLimits();
 }
 
 document.getElementById("adminSearch").addEventListener("input", renderTable);

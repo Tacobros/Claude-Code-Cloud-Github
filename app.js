@@ -70,9 +70,14 @@ async function loadStoreSettings() {
     if (heroSubtitle && data.hero_subtitle) heroSubtitle.textContent = data.hero_subtitle;
 
     // Hero image
-    if (data.hero_image_url) {
-      const img = document.getElementById("heroProductImg");
-      if (img) img.src = data.hero_image_url;
+    const heroImg = document.getElementById("heroProductImg");
+    if (heroImg) {
+      if (data.hero_image_url) {
+        heroImg.src = data.hero_image_url;
+        heroImg.style.display = "";
+      } else {
+        heroImg.style.display = "none";
+      }
     }
 
     // Accent color

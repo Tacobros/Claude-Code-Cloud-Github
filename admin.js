@@ -8,14 +8,16 @@ function slugify(str) {
 
 function updateCatalogLink(slug) {
   const host = window.location.hostname;
-  const parts = host.split(".");
   let url;
   if (slug) {
-    if (parts.length >= 2) {
+    // pages.dev y localhost siempre usan ?s= (no soportan subdominios)
+    if (host.endsWith(".pages.dev") || host === "localhost" || host === "127.0.0.1") {
+      url = `${window.location.origin}/index.html?s=${slug}`;
+    } else {
+      // Dominio personalizado: formato subdominio
+      const parts = host.split(".");
       const rootDomain = parts.length >= 3 ? parts.slice(1).join(".") : host;
       url = `https://${slug}.${rootDomain}/`;
-    } else {
-      url = `${window.location.origin}/index.html?s=${slug}`;
     }
   }
 

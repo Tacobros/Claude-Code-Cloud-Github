@@ -319,36 +319,36 @@
             <p class="hint" style="margin-bottom:14px;">Los 4 números/etiquetas que aparecen debajo del hero.</p>
             <div class="form-grid" style="margin-top:0;">
               <div class="field">
+                <label>Estadística 1 — Etiqueta</label>
+                <input type="text" id="stat1Label" placeholder="Ej: Productos disponibles" maxlength="40" />
+              </div>
+              <div class="field">
                 <label>Estadística 1 — Número / Valor</label>
                 <input type="text" id="stat1Value" placeholder="Ej: 200+" maxlength="20" />
               </div>
               <div class="field">
-                <label>Estadística 1 — Etiqueta</label>
-                <input type="text" id="stat1Label" placeholder="Ej: Modelos disponibles" maxlength="40" />
+                <label>Estadística 2 — Etiqueta</label>
+                <input type="text" id="stat2Label" placeholder="Ej: Clientes satisfechos" maxlength="40" />
               </div>
               <div class="field">
                 <label>Estadística 2 — Número / Valor</label>
-                <input type="text" id="stat2Value" placeholder="Ej: 50+" maxlength="20" />
-              </div>
-              <div class="field">
-                <label>Estadística 2 — Etiqueta</label>
-                <input type="text" id="stat2Label" placeholder="Ej: Equipos del mundo" maxlength="40" />
-              </div>
-              <div class="field">
-                <label>Estadística 3 — Número / Valor</label>
-                <input type="text" id="stat3Value" placeholder="Ej: 6 tallas" maxlength="20" />
+                <input type="text" id="stat2Value" placeholder="Ej: 500+" maxlength="20" />
               </div>
               <div class="field">
                 <label>Estadística 3 — Etiqueta</label>
-                <input type="text" id="stat3Label" placeholder="Ej: XS hasta XXL" maxlength="40" />
+                <input type="text" id="stat3Label" placeholder="Ej: Tallas disponibles" maxlength="40" />
               </div>
               <div class="field">
-                <label>Estadística 4 — Número / Valor</label>
-                <input type="text" id="stat4Value" placeholder="Ej: Entrega" maxlength="20" />
+                <label>Estadística 3 — Número / Valor</label>
+                <input type="text" id="stat3Value" placeholder="Ej: XS-XXL" maxlength="20" />
               </div>
               <div class="field">
                 <label>Estadística 4 — Etiqueta</label>
-                <input type="text" id="stat4Label" placeholder="Ej: En todo Guatemala" maxlength="40" />
+                <input type="text" id="stat4Label" placeholder="Ej: Cobertura" maxlength="40" />
+              </div>
+              <div class="field">
+                <label>Estadística 4 — Número / Valor</label>
+                <input type="text" id="stat4Value" placeholder="Ej: Nacional" maxlength="20" />
               </div>
             </div>
           </div>
@@ -382,78 +382,146 @@
           </div>
           <div class="settings-card full-width">
             <h3>Sección "¿Por qué nosotros?"</h3>
-            <p class="hint">Edita el título y los 4 puntos de venta que aparecen en la sección inferior del catálogo.</p>
+            <p class="hint">Edita el título y los 4 puntos destacados que aparecen en el catálogo.</p>
             <div class="form-grid" style="margin-top:16px;">
               <div class="field span-2">
                 <label>Título de la sección</label>
-                <input type="text" id="aboutTitle" placeholder="¿Por qué CAS?" maxlength="60" />
+                <input type="text" id="aboutTitle" placeholder="¿Por qué elegirnos?" maxlength="60" />
               </div>
-              <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;align-items:end;">
-                <div>
-                  <label>Ícono 1</label>
-                  <input type="text" id="about1Icon" placeholder="✅" maxlength="2" style="text-align:center;font-size:1.4rem;" />
-                </div>
-                <div>
-                  <label>Punto 1 — Título</label>
-                  <input type="text" id="about1Title" placeholder="Calidad garantizada" maxlength="50" />
-                </div>
-                <div>
-                  <label>Punto 1 — Descripción</label>
-                  <input type="text" id="about1Desc" placeholder="Camisolas de calidad premium..." maxlength="120" />
-                </div>
+            </div>
+            <!-- Punto 1 -->
+            <div class="about-point-row">
+              <div class="about-point-emoji">
+                <label>Ícono</label>
+                <button type="button" class="emoji-trigger" id="emojiBtn1" data-target="about1Icon">✅</button>
+                <input type="hidden" id="about1Icon" value="" />
               </div>
-              <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;align-items:end;">
-                <div>
-                  <label>Ícono 2</label>
-                  <input type="text" id="about2Icon" placeholder="🚚" maxlength="2" style="text-align:center;font-size:1.4rem;" />
+              <div class="about-point-fields">
+                <div class="field">
+                  <label>Título del punto 1</label>
+                  <input type="text" id="about1Title" placeholder="Ej: Calidad garantizada" maxlength="50" />
                 </div>
-                <div>
-                  <label>Punto 2 — Título</label>
-                  <input type="text" id="about2Title" placeholder="Entrega a domicilio" maxlength="50" />
-                </div>
-                <div>
-                  <label>Punto 2 — Descripción</label>
-                  <input type="text" id="about2Desc" placeholder="Enviamos a toda Guatemala..." maxlength="120" />
+                <div class="field">
+                  <label>Descripción del punto 1</label>
+                  <input type="text" id="about1Desc" placeholder="Describe brevemente este punto..." maxlength="120" />
                 </div>
               </div>
-              <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;align-items:end;">
-                <div>
-                  <label>Ícono 3</label>
-                  <input type="text" id="about3Icon" placeholder="💬" maxlength="2" style="text-align:center;font-size:1.4rem;" />
+            </div>
+            <!-- Punto 2 -->
+            <div class="about-point-row">
+              <div class="about-point-emoji">
+                <label>Ícono</label>
+                <button type="button" class="emoji-trigger" id="emojiBtn2" data-target="about2Icon">🚚</button>
+                <input type="hidden" id="about2Icon" value="" />
+              </div>
+              <div class="about-point-fields">
+                <div class="field">
+                  <label>Título del punto 2</label>
+                  <input type="text" id="about2Title" placeholder="Ej: Envío a domicilio" maxlength="50" />
                 </div>
-                <div>
-                  <label>Punto 3 — Título</label>
-                  <input type="text" id="about3Title" placeholder="Atención personalizada" maxlength="50" />
-                </div>
-                <div>
-                  <label>Punto 3 — Descripción</label>
-                  <input type="text" id="about3Desc" placeholder="Pedidos personalizados..." maxlength="120" />
+                <div class="field">
+                  <label>Descripción del punto 2</label>
+                  <input type="text" id="about2Desc" placeholder="Describe brevemente este punto..." maxlength="120" />
                 </div>
               </div>
-              <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;align-items:end;">
-                <div>
-                  <label>Ícono 4</label>
-                  <input type="text" id="about4Icon" placeholder="🔄" maxlength="2" style="text-align:center;font-size:1.4rem;" />
+            </div>
+            <!-- Punto 3 -->
+            <div class="about-point-row">
+              <div class="about-point-emoji">
+                <label>Ícono</label>
+                <button type="button" class="emoji-trigger" id="emojiBtn3" data-target="about3Icon">💬</button>
+                <input type="hidden" id="about3Icon" value="" />
+              </div>
+              <div class="about-point-fields">
+                <div class="field">
+                  <label>Título del punto 3</label>
+                  <input type="text" id="about3Title" placeholder="Ej: Atención personalizada" maxlength="50" />
                 </div>
-                <div>
-                  <label>Punto 4 — Título</label>
-                  <input type="text" id="about4Title" placeholder="Cambios sin problema" maxlength="50" />
+                <div class="field">
+                  <label>Descripción del punto 3</label>
+                  <input type="text" id="about3Desc" placeholder="Describe brevemente este punto..." maxlength="120" />
                 </div>
-                <div>
-                  <label>Punto 4 — Descripción</label>
-                  <input type="text" id="about4Desc" placeholder="Si la talla no es la correcta..." maxlength="120" />
+              </div>
+            </div>
+            <!-- Punto 4 -->
+            <div class="about-point-row">
+              <div class="about-point-emoji">
+                <label>Ícono</label>
+                <button type="button" class="emoji-trigger" id="emojiBtn4" data-target="about4Icon">🔄</button>
+                <input type="hidden" id="about4Icon" value="" />
+              </div>
+              <div class="about-point-fields">
+                <div class="field">
+                  <label>Título del punto 4</label>
+                  <input type="text" id="about4Title" placeholder="Ej: Garantía y devoluciones" maxlength="50" />
                 </div>
+                <div class="field">
+                  <label>Descripción del punto 4</label>
+                  <input type="text" id="about4Desc" placeholder="Describe brevemente este punto..." maxlength="120" />
+                </div>
+              </div>
+            </div>
+            <!-- Emoji picker flotante -->
+            <div id="emojiPicker" class="emoji-picker" style="display:none;">
+              <div class="emoji-grid">
+                ✅ ⭐ 🌟 🏆 💎 🎯 🎁 🎉 ✨ 🚀
+                🚚 📦 🛒 🏪 🔑 🌍 📍 🗺️ 🏠 🚗
+                💬 📞 📱 📧 🤝 👋 💪 🙌 ❤️ 🫶
+                🔄 🔧 🛡️ ⚡ 💡 🌿 ♻️ 🔒 ✔️ ➕
+                💰 💳 🏷️ 📊 📈 🎨 🖌️ 📸 🍽️ 🌱
               </div>
             </div>
           </div>
           <div class="settings-card full-width">
             <h3>Galería de categorías</h3>
-            <p class="hint">Muestra una sección visual con imágenes de tus categorías en el catálogo. Actívala solo si tienes imágenes configuradas.</p>
+            <p class="hint">Muestra una sección visual con hasta 4 imágenes de tus categorías. Si no configuras imágenes, la sección anterior ocupa todo el ancho.</p>
             <div class="field" style="margin-top:12px;">
               <label class="toggle-label">
                 <input type="checkbox" id="showGallery" />
-                <span>Mostrar galería de categorías en el catálogo</span>
+                <span>Mostrar galería en el catálogo</span>
               </label>
+            </div>
+            <div class="gallery-editor-grid" style="margin-top:16px;">
+              <div class="gallery-editor-item">
+                <div class="gallery-img-upload" id="galleryUpload1" title="Clic para subir imagen">
+                  <div id="galleryPreview1" class="gallery-preview-inner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <input type="file" id="galleryFile1" accept="image/*" style="display:none;" />
+                  <input type="hidden" id="gallery1Img" />
+                </div>
+                <input type="text" id="gallery1Title" placeholder="Ej: Ropa deportiva" maxlength="40" class="gallery-title-input" />
+              </div>
+              <div class="gallery-editor-item">
+                <div class="gallery-img-upload" id="galleryUpload2" title="Clic para subir imagen">
+                  <div id="galleryPreview2" class="gallery-preview-inner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <input type="file" id="galleryFile2" accept="image/*" style="display:none;" />
+                  <input type="hidden" id="gallery2Img" />
+                </div>
+                <input type="text" id="gallery2Title" placeholder="Ej: Accesorios" maxlength="40" class="gallery-title-input" />
+              </div>
+              <div class="gallery-editor-item">
+                <div class="gallery-img-upload" id="galleryUpload3" title="Clic para subir imagen">
+                  <div id="galleryPreview3" class="gallery-preview-inner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <input type="file" id="galleryFile3" accept="image/*" style="display:none;" />
+                  <input type="hidden" id="gallery3Img" />
+                </div>
+                <input type="text" id="gallery3Title" placeholder="Ej: Ofertas" maxlength="40" class="gallery-title-input" />
+              </div>
+              <div class="gallery-editor-item">
+                <div class="gallery-img-upload" id="galleryUpload4" title="Clic para subir imagen">
+                  <div id="galleryPreview4" class="gallery-preview-inner">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <input type="file" id="galleryFile4" accept="image/*" style="display:none;" />
+                  <input type="hidden" id="gallery4Img" />
+                </div>
+                <input type="text" id="gallery4Title" placeholder="Ej: Novedades" maxlength="40" class="gallery-title-input" />
+              </div>
             </div>
           </div>
           <div class="settings-card full-width">

@@ -171,6 +171,8 @@ async function showApp(user) {
   loadProducts(user);
   loadSettings(user);
   initDesignUploads();
+  initEmojiPicker();
+  initGalleryUploads();
   handleUrlParams();
 }
 
@@ -489,6 +491,30 @@ async function loadSettings(user) {
 
     customCategories = data.custom_categories || [];
     document.getElementById("showGallery").checked = data.show_gallery || false;
+    document.getElementById("gallery1Img").value = data.gallery1_img || "";
+    document.getElementById("gallery1Title").value = data.gallery1_title || "";
+    document.getElementById("gallery2Img").value = data.gallery2_img || "";
+    document.getElementById("gallery2Title").value = data.gallery2_title || "";
+    document.getElementById("gallery3Img").value = data.gallery3_img || "";
+    document.getElementById("gallery3Title").value = data.gallery3_title || "";
+    document.getElementById("gallery4Img").value = data.gallery4_img || "";
+    document.getElementById("gallery4Title").value = data.gallery4_title || "";
+    // Update gallery previews
+    [1,2,3,4].forEach((n) => {
+      const url = data[`gallery${n}_img`];
+      if (url) {
+        const preview = document.getElementById(`galleryPreview${n}`);
+        if (preview) preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" />`;
+      }
+    });
+    // Update emoji buttons
+    [1,2,3,4].forEach((n) => {
+      const icon = data[`about${n}_icon`];
+      if (icon) {
+        const btn = document.getElementById(`emojiBtn${n}`);
+        if (btn) btn.textContent = icon;
+      }
+    });
     populateCategorySelects();
     renderCustomCategories();
     updateSettingsPreview();
@@ -533,6 +559,14 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     accent_color: document.getElementById("storeAccent").value,
     custom_categories: customCategories,
     show_gallery: document.getElementById("showGallery").checked,
+    gallery1_img: document.getElementById("gallery1Img").value || null,
+    gallery1_title: document.getElementById("gallery1Title").value.trim() || null,
+    gallery2_img: document.getElementById("gallery2Img").value || null,
+    gallery2_title: document.getElementById("gallery2Title").value.trim() || null,
+    gallery3_img: document.getElementById("gallery3Img").value || null,
+    gallery3_title: document.getElementById("gallery3Title").value.trim() || null,
+    gallery4_img: document.getElementById("gallery4Img").value || null,
+    gallery4_title: document.getElementById("gallery4Title").value.trim() || null,
   };
 
   // Only include design columns if they already exist in the DB (migration ran)
@@ -667,6 +701,66 @@ function initDesignUploads() {
       e.target.value = "";
     });
   }
+}
+
+function initEmojiPicker() {
+  const picker = document.getElementById("emojiPicker");
+  if (!picker) return;
+  let currentTarget = null;
+
+  // Split emoji text into clickable spans
+  const grid = picker.querySelector(".emoji-grid");
+  if (grid) {
+    const emojis = grid.textContent.trim().split(/\s+/);
+    grid.innerHTML = emojis.map(e => `<span class="emoji-opt">${e}</span>`).join("");
+  }
+
+  document.querySelectorAll(".emoji-trigger").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      currentTarget = btn.dataset.target;
+      const rect = btn.getBoundingClientRect();
+      picker.style.display = "block";
+      picker.style.position = "fixed";
+      picker.style.top = (rect.bottom + 6) + "px";
+      picker.style.left = Math.min(rect.left, window.innerWidth - 290) + "px";
+    });
+  });
+
+  if (grid) {
+    grid.addEventListener("click", (e) => {
+      if (!e.target.classList.contains("emoji-opt")) return;
+      const emoji = e.target.textContent;
+      if (currentTarget) {
+        document.getElementById(currentTarget).value = emoji;
+        const num = currentTarget.replace("about", "").replace("Icon", "");
+        const btn = document.getElementById("emojiBtn" + num);
+        if (btn) btn.textContent = emoji;
+      }
+      picker.style.display = "none";
+      currentTarget = null;
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!picker.contains(e.target) && !e.target.classList.contains("emoji-trigger")) {
+      picker.style.display = "none";
+    }
+  });
+}
+
+function initGalleryUploads() {
+  [1, 2, 3, 4].forEach((n) => {
+    const uploadArea = document.getElementById(`galleryUpload${n}`);
+    const fileInput = document.getElementById(`galleryFile${n}`);
+    if (uploadArea) uploadArea.addEventListener("click", () => fileInput.click());
+    if (fileInput) {
+      fileInput.addEventListener("change", async (e) => {
+        await uploadDesignImage(e.target.files[0], `gallery${n}`, `gallery${n}Img`, `galleryPreview${n}`);
+        e.target.value = "";
+      });
+    }
+  });
 }
 
 async function uploadDesignImage(file, type, urlFieldId, previewId) {

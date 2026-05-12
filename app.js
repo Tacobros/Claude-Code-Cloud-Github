@@ -219,6 +219,9 @@ async function loadProducts() {
     }
   } catch (_) {}
   renderProducts();
+
+  const autoOpenId = new URLSearchParams(window.location.search).get("p");
+  if (autoOpenId) openModal(autoOpenId);
 }
 
 function renderProducts() {
@@ -400,11 +403,7 @@ document.addEventListener("keydown", (e) => {
 
 // Initialize
 updateWALinks();
-loadStoreSettings().then(() => loadProducts().then(() => {
-  // Auto-open product from ?p= URL param
-  const productId = new URLSearchParams(window.location.search).get("p");
-  if (productId) openModal(productId);
-}));
+loadStoreSettings().then(() => loadProducts());
 
 // Handle browser back/forward for product modal
 window.addEventListener("popstate", () => {

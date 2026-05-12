@@ -301,7 +301,7 @@ function copyProductLink(productId) {
 }
 
 function openModal(id) {
-  const p = liveProducts.find((x) => x.id === id);
+  const p = liveProducts.find((x) => String(x.id) === String(id));
   if (!p) return;
 
   const images = p.images && p.images.length > 0 ? p.images : [];

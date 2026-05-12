@@ -478,6 +478,7 @@ async function loadSettings(user) {
     }
 
     customCategories = data.custom_categories || [];
+    document.getElementById("showGallery").checked = data.show_gallery || false;
     populateCategorySelects();
     renderCustomCategories();
     updateSettingsPreview();
@@ -520,6 +521,7 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     description: document.getElementById("storeDesc").value.trim(),
     accent_color: document.getElementById("storeAccent").value,
     custom_categories: customCategories,
+    show_gallery: document.getElementById("showGallery").checked,
   };
 
   // Only include design columns if they already exist in the DB (migration ran)

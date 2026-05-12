@@ -45,9 +45,17 @@ async function loadStoreSettings() {
       return;
     }
 
-    storeName = data.name || "CAS";
+    storeName = data.name || "";
     storeWA = data.whatsapp || storeWA;
     storeUserId = data.user_id;
+
+    document.title = storeName ? `${storeName}` : "Mi tienda";
+    const pageTitle = document.getElementById("pageTitle");
+    if (pageTitle) pageTitle.textContent = storeName || "Mi tienda";
+
+    // Show gallery section only if store has it enabled
+    const jerseyGrid = document.getElementById("aboutJerseyGrid");
+    if (jerseyGrid && data.show_gallery) jerseyGrid.style.display = "";
 
     // Logo
     if (data.logo_url) {
@@ -61,7 +69,7 @@ async function loadStoreSettings() {
     const footerLogoText = document.getElementById("footerLogoText");
     if (footerLogoText) footerLogoText.textContent = storeName;
     const footerCopy = document.getElementById("footerCopy");
-    if (footerCopy) footerCopy.textContent = `© 2025 ${storeName} · Camisolas deportivas premium`;
+    if (footerCopy) footerCopy.textContent = storeName ? `© 2025 ${storeName}` : "";
 
     // Hero content
     const heroTitle = document.getElementById("heroTitle");
@@ -328,5 +336,4 @@ document.addEventListener("keydown", (e) => {
 
 // Initialize
 updateWALinks();
-loadStoreSettings();
-loadProducts();
+loadStoreSettings().then(() => loadProducts());

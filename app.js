@@ -1,15 +1,8 @@
-const categoryLabels = {
-  laliga: "LaLiga",
-  premier: "Premier League",
-  ligue1: "Ligue 1",
-  selecciones: "Selecciones",
-  local: "Liga Nacional",
-};
-
 let activeFilter = "all";
 let searchQuery = "";
 let liveProducts = [];
 let storeWA = "50200000000";
+let storeWaMessage = "";
 let storeName = "CAS";
 let storeUserId = null;
 
@@ -47,6 +40,7 @@ async function loadStoreSettings() {
 
     storeName = data.name || "";
     storeWA = data.whatsapp || storeWA;
+    storeWaMessage = data.wa_message || "";
     storeUserId = data.user_id;
 
     document.title = storeName ? `${storeName}` : "Mi tienda";
@@ -114,10 +108,12 @@ async function loadStoreSettings() {
       document.documentElement.style.setProperty("--accent", data.accent_color);
     }
 
-    // Custom categories — add filter buttons for extras
-    if (data.custom_categories && data.custom_categories.length > 0) {
-      const bar = document.getElementById("filtersBar");
-      if (bar) {
+    // Categorías: construir solo desde custom_categories de la tienda
+    const bar = document.getElementById("filtersBar");
+    if (bar) {
+      // Limpiar todos los filtros excepto "Todos"
+      bar.querySelectorAll(".filter-btn:not([data-filter='all'])").forEach((b) => b.remove());
+      if (data.custom_categories && data.custom_categories.length > 0) {
         data.custom_categories.forEach((cat) => {
           const btn = document.createElement("button");
           btn.className = "filter-btn";
@@ -169,8 +165,8 @@ async function loadStoreSettings() {
 }
 
 function updateWALinks() {
-  const waBaseMsg = encodeURIComponent(`Hola! Vi el catálogo de ${storeName} y me interesa una camisola`);
-  const waUrl = `https://wa.me/${storeWA}?text=${waBaseMsg}`;
+  const defaultMsg = storeWaMessage || `Hola! Me interesa hacer un pedido en ${storeName}`;
+  const waUrl = `https://wa.me/${storeWA}?text=${encodeURIComponent(defaultMsg)}`;
 
   const heroBtn = document.getElementById("heroWaBtn");
   if (heroBtn) heroBtn.href = waUrl;
@@ -179,7 +175,7 @@ function updateWALinks() {
   const floatBtn = document.getElementById("floatWaBtn");
   if (floatBtn) floatBtn.href = waUrl;
   const emptyLink = document.getElementById("emptyWaLink");
-  if (emptyLink) emptyLink.href = `https://wa.me/${storeWA}?text=${encodeURIComponent("Busco una camisola específica")}`;
+  if (emptyLink) emptyLink.href = waUrl;
 }
 
 // ===== PRODUCTS =====
@@ -196,7 +192,7 @@ async function loadProducts() {
       liveProducts = data.map((p) => ({
         ...p,
         price: `Q${p.price}`,
-        league: categoryLabels[p.category] || p.category,
+        league: p.category || "",
         badgeText: p.badge === "popular" ? "Más vendida" : p.badge === "new" ? "Nueva" : p.badge || "",
         desc: p.description || "",
         sizes: p.sizes || [],

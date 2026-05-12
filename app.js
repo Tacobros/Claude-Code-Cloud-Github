@@ -11,6 +11,7 @@ let searchQuery = "";
 let liveProducts = [];
 let storeWA = "50200000000";
 let storeName = "CAS";
+let storeUserId = null;
 
 // ===== STORE SETTINGS =====
 function getStoreSlug() {
@@ -46,6 +47,7 @@ async function loadStoreSettings() {
 
     storeName = data.name || "CAS";
     storeWA = data.whatsapp || storeWA;
+    storeUserId = data.user_id;
 
     // Logo
     if (data.logo_url) {
@@ -153,7 +155,9 @@ async function loadProducts() {
       renderProducts();
       return;
     }
-    const { data } = await sb.from("products").select("*").eq("available", true).order("created_at", { ascending: false });
+    let productsQuery = sb.from("products").select("*").eq("available", true).order("created_at", { ascending: false });
+    if (storeUserId) productsQuery = productsQuery.eq("user_id", storeUserId);
+    const { data } = await productsQuery;
     if (data && data.length > 0) {
       liveProducts = data.map((p) => ({
         ...p,

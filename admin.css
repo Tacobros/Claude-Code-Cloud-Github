@@ -307,6 +307,21 @@ tr:hover td { background: var(--gray-50); }
 .btn-delete { background: #fee2e2; color: #dc2626; }
 .btn-delete:hover { background: #fecaca; }
 
+.btn-sm-action {
+  padding: 6px 12px; border-radius: 7px; font-size: .8rem; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit;
+  background: #2d4a6b; color: #e2e8f0; transition: background .15s;
+}
+.btn-sm-action:hover { background: #3a5f8a; }
+.btn-sm-danger { background: #7f1d1d; color: #fca5a5; }
+.btn-sm-danger:hover { background: #991b1b; }
+.btn-sm-outline { background: transparent; border: 1px solid #4b6a8a; color: #94a3b8; }
+.btn-sm-outline:hover { background: #1e3a5f; }
+
+.td-check { width: 36px; text-align: center; }
+.td-check input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: #2563eb; }
+tr.row-selected { background: #0d2240 !important; }
+
 .loading {
   text-align: center;
   padding: 60px;

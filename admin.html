@@ -215,6 +215,10 @@
           <span class="nav-icon">⚙️</span>
           <span>Mi tienda</span>
         </a>
+        <a href="#" class="nav-item" data-page="analytics">
+          <span class="nav-icon">📊</span>
+          <span>Estadísticas</span>
+        </a>
         <a href="#" class="nav-item" data-page="plan">
           <span class="nav-icon">💳</span>
           <span>Mi plan</span>
@@ -294,6 +298,14 @@
             <option value="selecciones">Selecciones</option>
             <option value="local">Liga Nacional</option>
           </select>
+        </div>
+        <!-- Bulk action bar: visible when products are selected -->
+        <div id="bulkBar" style="display:none;align-items:center;gap:10px;padding:10px 14px;background:#1e3a5f;border-radius:10px;margin-bottom:10px;flex-wrap:wrap;">
+          <span id="bulkCount" style="font-size:.875rem;color:#94a3b8;flex:1;min-width:120px;"></span>
+          <button onclick="bulkToggleAvailable(true)"  class="btn-sm-action">Hacer visibles</button>
+          <button onclick="bulkToggleAvailable(false)" class="btn-sm-action">Ocultar</button>
+          <button onclick="bulkDelete()" class="btn-sm-action btn-sm-danger">Eliminar seleccionados</button>
+          <button onclick="clearSelection()" class="btn-sm-action btn-sm-outline">Cancelar</button>
         </div>
         <div id="productsTable" class="products-table">
           <div class="loading">Cargando productos...</div>
@@ -622,6 +634,34 @@
               <button class="btn-copy" id="btnCopyLink">Copiar enlace</button>
             </div>
             <p class="hint">Comparte este enlace con tus clientes para que vean tu catálogo.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS PAGE -->
+      <div id="pageAnalytics" class="page">
+        <div class="page-header">
+          <div><h2>Estadísticas</h2><p id="analyticsRange">Últimos 30 días</p></div>
+          <button class="btn-primary" onclick="loadAnalytics()">↻ Actualizar</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
+          <div class="settings-card" style="text-align:center;padding:24px 16px;">
+            <div id="statViews" style="font-size:2.2rem;font-weight:800;color:var(--accent);">—</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:4px;">Vistas del catálogo</div>
+          </div>
+          <div class="settings-card" style="text-align:center;padding:24px 16px;">
+            <div id="statWA" style="font-size:2.2rem;font-weight:800;color:#25d366;">—</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:4px;">Clicks en WhatsApp</div>
+          </div>
+          <div class="settings-card" style="text-align:center;padding:24px 16px;">
+            <div id="statProductViews" style="font-size:2.2rem;font-weight:800;color:#f59e0b;">—</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:4px;">Vistas de productos</div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>Productos más vistos</h3>
+          <div id="topProductsList" style="margin-top:16px;">
+            <p style="color:#6b7280;font-size:.875rem;">Cargando...</p>
           </div>
         </div>
       </div>

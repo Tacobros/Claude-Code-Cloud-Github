@@ -457,12 +457,16 @@ async function loadSettings(user) {
     document.getElementById("storeLogoUrl").value = data.logo_url || "";
     document.getElementById("storeHeroImageUrl").value = data.hero_image_url || "";
     document.getElementById("aboutTitle").value = data.about_title || "";
+    document.getElementById("about1Icon").value = data.about1_icon || "";
     document.getElementById("about1Title").value = data.about1_title || "";
     document.getElementById("about1Desc").value = data.about1_desc || "";
+    document.getElementById("about2Icon").value = data.about2_icon || "";
     document.getElementById("about2Title").value = data.about2_title || "";
     document.getElementById("about2Desc").value = data.about2_desc || "";
+    document.getElementById("about3Icon").value = data.about3_icon || "";
     document.getElementById("about3Title").value = data.about3_title || "";
     document.getElementById("about3Desc").value = data.about3_desc || "";
+    document.getElementById("about4Icon").value = data.about4_icon || "";
     document.getElementById("about4Title").value = data.about4_title || "";
     document.getElementById("about4Desc").value = data.about4_desc || "";
     document.getElementById("stat1Value").value = data.stat1_value || "";
@@ -566,12 +570,16 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
 
   const aboutCols = {
     about_title: document.getElementById("aboutTitle").value.trim() || null,
+    about1_icon: document.getElementById("about1Icon").value.trim() || null,
     about1_title: document.getElementById("about1Title").value.trim() || null,
     about1_desc: document.getElementById("about1Desc").value.trim() || null,
+    about2_icon: document.getElementById("about2Icon").value.trim() || null,
     about2_title: document.getElementById("about2Title").value.trim() || null,
     about2_desc: document.getElementById("about2Desc").value.trim() || null,
+    about3_icon: document.getElementById("about3Icon").value.trim() || null,
     about3_title: document.getElementById("about3Title").value.trim() || null,
     about3_desc: document.getElementById("about3Desc").value.trim() || null,
+    about4_icon: document.getElementById("about4Icon").value.trim() || null,
     about4_title: document.getElementById("about4Title").value.trim() || null,
     about4_desc: document.getElementById("about4Desc").value.trim() || null,
   };
@@ -799,3 +807,5 @@ document.addEventListener("keydown", (e) => {
     document.getElementById("deleteOverlay").classList.remove("open");
   }
 });
+
+init();

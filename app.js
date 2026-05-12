@@ -47,9 +47,29 @@ async function loadStoreSettings() {
     const pageTitle = document.getElementById("pageTitle");
     if (pageTitle) pageTitle.textContent = storeName || "Mi tienda";
 
-    // Show gallery section only if store has it enabled
+    // Gallery: render items y mostrar si hay imágenes y show_gallery está activo
     const jerseyGrid = document.getElementById("aboutJerseyGrid");
-    if (jerseyGrid && data.show_gallery) jerseyGrid.style.display = "";
+    let hasGalleryItems = false;
+    [1,2,3,4].forEach((n) => {
+      const imgUrl = data[`gallery${n}_img`];
+      const title = data[`gallery${n}_title`];
+      const item = document.getElementById(`galleryItem${n}`);
+      const img = document.getElementById(`galleryItemImg${n}`);
+      const span = document.getElementById(`galleryItemTitle${n}`);
+      if (item && imgUrl) {
+        img.src = imgUrl;
+        img.alt = title || "";
+        if (span) span.textContent = title || "";
+        item.style.display = "";
+        hasGalleryItems = true;
+      }
+    });
+    if (jerseyGrid && data.show_gallery && hasGalleryItems) jerseyGrid.style.display = "";
+    // Si no hay galería, about-content ocupa todo el ancho
+    const aboutInner = document.querySelector(".about-inner");
+    if (aboutInner && (!data.show_gallery || !hasGalleryItems)) {
+      aboutInner.style.gridTemplateColumns = "1fr";
+    }
 
     // Logo — solo visible si la tienda tiene una imagen configurada
     const headerIcon = document.getElementById("siteLogoIcon");

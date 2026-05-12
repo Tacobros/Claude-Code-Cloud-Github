@@ -281,6 +281,22 @@ function waLink(p, size = "") {
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
 
+function getProductUrl(productId) {
+  const params = new URLSearchParams(window.location.search);
+  params.set("p", productId);
+  return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+}
+
+function copyProductLink(productId) {
+  const url = getProductUrl(productId);
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById("shareLinkBtn");
+    if (!btn) return;
+    btn.textContent = "¡Enlace copiado!";
+    setTimeout(() => { btn.textContent = "Compartir enlace"; }, 2000);
+  });
+}
+
 function openModal(id) {
   const p = liveProducts.find((x) => x.id === id);
   if (!p) return;
@@ -312,8 +328,16 @@ function openModal(id) {
           Pedir por WhatsApp
         </a>
       </div>
+      <button class="btn-share-link" id="shareLinkBtn" onclick="copyProductLink('${p.id}')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Compartir enlace
+      </button>
     </div>
   `;
+
+  // Update URL with product param without reloading
+  const newUrl = getProductUrl(p.id);
+  history.pushState({ productId: p.id }, "", newUrl);
 
   document.getElementById("modalOverlay").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -336,6 +360,11 @@ function selectSize(btn, size) {
 function closeModal() {
   document.getElementById("modalOverlay").classList.remove("open");
   document.body.style.overflow = "";
+  // Remove ?p= from URL without reloading
+  const params = new URLSearchParams(window.location.search);
+  params.delete("p");
+  const base = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+  history.pushState({}, "", base);
 }
 
 document.getElementById("modalClose").addEventListener("click", closeModal);
@@ -371,4 +400,19 @@ document.addEventListener("keydown", (e) => {
 
 // Initialize
 updateWALinks();
-loadStoreSettings().then(() => loadProducts());
+loadStoreSettings().then(() => loadProducts().then(() => {
+  // Auto-open product from ?p= URL param
+  const productId = new URLSearchParams(window.location.search).get("p");
+  if (productId) openModal(productId);
+}));
+
+// Handle browser back/forward for product modal
+window.addEventListener("popstate", () => {
+  const productId = new URLSearchParams(window.location.search).get("p");
+  if (productId) {
+    openModal(productId);
+  } else {
+    document.getElementById("modalOverlay").classList.remove("open");
+    document.body.style.overflow = "";
+  }
+});

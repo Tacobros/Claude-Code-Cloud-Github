@@ -907,6 +907,29 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-share-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid #2d3748;
+  border-radius: 10px;
+  color: #9ca3af;
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+
+.btn-share-link:hover {
+  border-color: #5b8ab5;
+  color: #5b8ab5;
+}
+
 /* ===== WHATSAPP FLOAT ===== */
 .whatsapp-float {
   position: fixed;

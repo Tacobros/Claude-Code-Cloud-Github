@@ -855,3 +855,109 @@ tr:hover td { background: var(--gray-50); }
   text-transform: uppercase;
   letter-spacing: .3px;
 }
+
+/* About point rows */
+.about-point-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+.about-point-row:last-of-type { border-bottom: none; }
+.about-point-emoji {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 60px;
+}
+.about-point-emoji label { font-size: .75rem; color: #9ca3af; text-align: center; }
+.emoji-trigger {
+  font-size: 1.6rem;
+  background: var(--surface, #f9fafb);
+  border: 2px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  width: 52px;
+  height: 52px;
+  cursor: pointer;
+  transition: border-color .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.emoji-trigger:hover { border-color: var(--accent, #e94560); }
+.about-point-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+/* Emoji picker popup */
+.emoji-picker {
+  position: fixed;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+  width: 280px;
+}
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+}
+.emoji-opt {
+  font-size: 1.3rem;
+  text-align: center;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background .1s;
+}
+.emoji-opt:hover { background: #f3f4f6; }
+
+/* Gallery editor */
+.gallery-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.gallery-editor-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gallery-img-upload {
+  aspect-ratio: 1;
+  border: 2px dashed #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.gallery-img-upload:hover { border-color: var(--accent, #e94560); }
+.gallery-preview-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+.gallery-title-input {
+  font-size: .85rem;
+  padding: 6px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.gallery-title-input:focus { border-color: var(--accent, #e94560); }
+@media (max-width: 768px) {
+  .gallery-editor-grid { grid-template-columns: repeat(2, 1fr); }
+  .about-point-fields { grid-template-columns: 1fr; }
+}

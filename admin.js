@@ -365,6 +365,9 @@ function renderTable() {
   const countEl = document.getElementById("productCount");
   countEl.textContent = `${allProducts.length} productos en tu catálogo`;
 
+  const onboarding = document.getElementById("onboardingBanner");
+  if (onboarding) onboarding.style.display = allProducts.length === 0 ? 'block' : 'none';
+
   if (filtered.length === 0) {
     document.getElementById("productsTable").innerHTML = `<div class="loading">No se encontraron productos.</div>`;
     return;
@@ -651,11 +654,23 @@ function enforcePlanLimits() {
   const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
   const isPaid = plan === 'starter' || plan === 'pro';
 
-  // Actualizar contador de productos con límite
+  // Barra de progreso del plan
   const countEl = document.getElementById("productCount");
+  const bar     = document.getElementById("planProgressBar");
+  const badge   = document.getElementById("planBadge");
   if (countEl) {
     const max = limits.maxProducts === Infinity ? '∞' : limits.maxProducts;
     countEl.textContent = `${allProducts.length} / ${max} productos`;
+  }
+  if (bar) {
+    const pct = limits.maxProducts === Infinity ? 0
+      : Math.min(100, (allProducts.length / limits.maxProducts) * 100);
+    bar.style.width = `${pct}%`;
+    bar.style.background = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#5b8ab5';
+  }
+  if (badge) {
+    const labels = { free: 'Plan Free', starter: 'Plan Starter', pro: 'Plan Pro' };
+    badge.textContent = labels[plan] || 'Plan Free';
   }
 
   // Bloquear botón "Agregar producto" si se llegó al límite
@@ -765,6 +780,13 @@ document.getElementById("storeAccent").addEventListener("input", (e) => {
 });
 
 document.getElementById("btnSaveSettings").addEventListener("click", async () => {
+  const waRaw = document.getElementById("storeWhatsapp").value.replace(/\D/g, '');
+  if (waRaw.length < 8 || waRaw.length > 15) {
+    showToast("Número de WhatsApp inválido. Usa formato internacional sin espacios (ej: 50212345678).", "error");
+    document.getElementById("storeWhatsapp").focus();
+    return;
+  }
+
   const { data: { user } } = await sb.auth.getUser();
   const btn = document.getElementById("btnSaveSettings");
   btn.disabled = true;
@@ -778,7 +800,7 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     user_id: user.id,
     name: document.getElementById("storeName").value.trim(),
     slug: slug || null,
-    whatsapp: document.getElementById("storeWhatsapp").value.trim(),
+    whatsapp: document.getElementById("storeWhatsapp").value.replace(/\D/g, ''),
     wa_message: document.getElementById("storeWaMessage").value.trim() || null,
     description: document.getElementById("storeDesc").value.trim(),
     accent_color: document.getElementById("storeAccent").value,

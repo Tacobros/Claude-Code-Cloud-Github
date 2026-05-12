@@ -241,12 +241,49 @@
       <!-- PAGES -->
       <div id="pageProducts" class="page active">
         <div class="page-header">
-          <div>
+          <div style="flex:1;">
             <h2>Mis productos</h2>
-            <p id="productCount">Cargando...</p>
+            <div id="planProgressWrap" style="margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                <p id="productCount" style="margin:0;font-size:.8rem;color:#6b7280;">Cargando...</p>
+                <span id="planBadge" style="font-size:.72rem;font-weight:700;color:#5b8ab5;text-transform:uppercase;letter-spacing:.04em;"></span>
+              </div>
+              <div style="height:5px;background:#e5e7eb;border-radius:99px;overflow:hidden;max-width:240px;">
+                <div id="planProgressBar" style="height:100%;background:#5b8ab5;border-radius:99px;width:0%;transition:width .4s ease;"></div>
+              </div>
+            </div>
           </div>
           <button class="btn-primary" id="btnAddProduct">+ Agregar producto</button>
         </div>
+        <!-- Onboarding banner: visible only when store has 0 products -->
+        <div id="onboardingBanner" style="display:none;background:linear-gradient(135deg,#0d2240,#1e3a5f);border:1px solid #2d4a6b;border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+          <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+            <div style="font-size:2rem;line-height:1;">🚀</div>
+            <div style="flex:1;min-width:200px;">
+              <h3 style="margin:0 0 6px;font-size:1rem;color:#f1f5f9;">¡Bienvenido a ProductSpot!</h3>
+              <p style="margin:0 0 16px;color:#94a3b8;font-size:.875rem;line-height:1.5;">Tu catálogo está listo. Sigue estos pasos para empezar a recibir pedidos por WhatsApp:</p>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+                <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#cbd5e1;">
+                  <span style="width:22px;height:22px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;">1</span>
+                  Agrega tus primeros productos con fotos y precios
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#cbd5e1;">
+                  <span style="width:22px;height:22px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;">2</span>
+                  Personaliza tu tienda en <strong style="color:#5b8ab5;">Configuración</strong>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;color:#cbd5e1;">
+                  <span style="width:22px;height:22px;background:#2563eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;">3</span>
+                  Comparte tu enlace de catálogo con tus clientes
+                </div>
+              </div>
+              <button onclick="document.getElementById('btnAddProduct').click();document.getElementById('onboardingBanner').style.display='none';"
+                style="background:#2563eb;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;">
+                + Agregar mi primer producto
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="table-toolbar">
           <input type="text" id="adminSearch" placeholder="Buscar producto..." class="search-input" />
           <select id="adminFilter" class="select-filter">

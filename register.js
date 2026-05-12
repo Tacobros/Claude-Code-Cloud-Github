@@ -156,7 +156,15 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
 
   const storeName = regStoreNameEl.value.trim();
   const slug = slugify(regSlugEl.value);
-  const whatsapp = document.getElementById("regWhatsapp").value.trim();
+  const whatsapp = document.getElementById("regWhatsapp").value.replace(/\D/g, '');
+
+  if (whatsapp.length < 8 || whatsapp.length > 15) {
+    err.textContent = "Número de WhatsApp inválido. Usa formato internacional sin espacios (ej: 50212345678).";
+    err.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Crear cuenta";
+    return;
+  }
 
   const adminUrl = `${window.location.origin}/admin.html`;
   const { data: authData, error: authError } = await sb.auth.signUp({

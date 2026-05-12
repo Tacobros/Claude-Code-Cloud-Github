@@ -34,7 +34,7 @@ async function loadStoreSettings() {
     query = query.eq("slug", slug);
     const { data } = await query.single();
     if (!data) {
-      window.location.href = "landing.html";
+      window.location.href = `404.html?s=${encodeURIComponent(slug)}`;
       return;
     }
 
@@ -44,6 +44,12 @@ async function loadStoreSettings() {
     storeUserId = data.user_id;
 
     document.title = storeName ? `${storeName}` : "Mi tienda";
+    setMetaTags({
+      title: storeName || "Mi tienda",
+      description: data.hero_subtitle || `Explora el catálogo de ${storeName} y haz tu pedido por WhatsApp.`,
+      image: data.hero_image_url || data.logo_url || "",
+      url: window.location.href,
+    });
     const pageTitle = document.getElementById("pageTitle");
     if (pageTitle) pageTitle.textContent = storeName || "Mi tienda";
 
@@ -180,6 +186,14 @@ async function loadStoreSettings() {
     // WhatsApp links
     updateWALinks();
   } catch (_) {}
+}
+
+function setMetaTags({ title, description, image, url }) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.setAttribute('content', val); };
+  if (title) document.title = title;
+  set('metaDesc', description); set('ogTitle', title); set('ogDesc', description);
+  set('ogImage', image); set('ogUrl', url || window.location.href);
+  set('twTitle', title); set('twDesc', description); set('twImage', image);
 }
 
 function updateWALinks() {
@@ -338,9 +352,15 @@ function openModal(id) {
     </div>
   `;
 
-  // Update URL with product param without reloading
+  // Update URL and meta tags for product sharing
   const newUrl = getProductUrl(p.id);
   history.pushState({ productId: p.id }, "", newUrl);
+  setMetaTags({
+    title: `${p.name} — ${storeName}`,
+    description: p.desc || `${p.name} · ${p.price} GTQ`,
+    image: p.images?.[0] || "",
+    url: newUrl,
+  });
 
   document.getElementById("modalOverlay").classList.add("open");
   document.body.style.overflow = "hidden";
@@ -363,11 +383,12 @@ function selectSize(btn, size) {
 function closeModal() {
   document.getElementById("modalOverlay").classList.remove("open");
   document.body.style.overflow = "";
-  // Remove ?p= from URL without reloading
   const params = new URLSearchParams(window.location.search);
   params.delete("p");
   const base = `${window.location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
   history.pushState({}, "", base);
+  // Restore store-level meta tags
+  setMetaTags({ title: storeName, url: base });
 }
 
 document.getElementById("modalClose").addEventListener("click", closeModal);

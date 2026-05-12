@@ -443,6 +443,7 @@ async function loadSettings(user) {
     document.getElementById("storeSlug").value = data.slug || "";
     updateCatalogLink(data.slug || "");
     document.getElementById("storeWhatsapp").value = data.whatsapp || "";
+    document.getElementById("storeWaMessage").value = data.wa_message || "";
     document.getElementById("storeDesc").value = data.description || "";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";
     document.getElementById("storeAccentHex").textContent = data.accent_color || "#e94560";
@@ -523,6 +524,7 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     name: document.getElementById("storeName").value.trim(),
     slug: slug || null,
     whatsapp: document.getElementById("storeWhatsapp").value.trim(),
+    wa_message: document.getElementById("storeWaMessage").value.trim() || null,
     description: document.getElementById("storeDesc").value.trim(),
     accent_color: document.getElementById("storeAccent").value,
     custom_categories: customCategories,

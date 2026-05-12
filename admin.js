@@ -168,8 +168,8 @@ async function showApp(user) {
     }
   }
 
-  loadProducts();
-  loadSettings();
+  loadProducts(user);
+  loadSettings(user);
   initDesignUploads();
   handleUrlParams();
 }
@@ -225,9 +225,12 @@ function closeSidebar() {
 }
 
 // ===== PRODUCTS =====
-async function loadProducts() {
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) { showLogin(); return; }
+async function loadProducts(user) {
+  if (!user) {
+    const { data: { user: u } } = await sb.auth.getUser();
+    if (!u) { showLogin(); return; }
+    user = u;
+  }
   const { data, error } = await sb
     .from("products")
     .select("*")
@@ -413,9 +416,12 @@ document.getElementById("confirmDelete").addEventListener("click", async () => {
 });
 
 // ===== SETTINGS =====
-async function loadSettings() {
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) { showLogin(); return; }
+async function loadSettings(user) {
+  if (!user) {
+    const { data: { user: u } } = await sb.auth.getUser();
+    if (!u) { showLogin(); return; }
+    user = u;
+  }
   const { data } = await sb.from("stores").select("*").eq("user_id", user.id).single();
 
   // Set slug URL prefix: subdomain format on platform, ?s= param locally

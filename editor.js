@@ -82,6 +82,19 @@ const BLOCKS = [
   },
 ];
 
+// ── EMOJI DATA ────────────────────────────────────────────────────────────────
+const EMOJI_DB = {
+  popular: ['⭐','🌟','🏆','🎯','🎁','🎉','✨','🚀','💎','🔥','💡','🌈','🎨','🏅','👑','💫','🌙','☀️','⚡','🌊'],
+  nature:  ['🌿','🌱','🌲','🌸','🌺','🌻','🍀','🍃','🦋','🐝','🌍','🌎','🌏','🏔','🌅','🌄','🌿','🍁','🌾','🐾'],
+  objects: ['💡','🔑','🔧','🛡️','📦','🛒','🏪','📱','💻','🖥️','📷','🎵','📚','✏️','🔒','📊','📈','🎮','🏠','🚗'],
+  people:  ['👋','🤝','💪','🙌','🫶','❤️','💙','💚','🫂','👏','🙏','🤜','✊','👍','👎','💬','📞','🧑‍💼','👩‍💻','🧑‍🏫'],
+  symbols: ['✅','☑️','✔️','❌','⭕','❓','❗','➕','➖','➡️','⬆️','🔄','♻️','🔃','💯','🆕','🆓','🔴','🟢','🔵'],
+};
+
+// ── EMOJI PICKER STATE ────────────────────────────────────────────────────────
+let emojiPickerTarget = null; // { key, btnEl }
+let emojiCurrentCat   = 'popular';
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let storeData     = {};
 let pendingChanges = {};
@@ -236,14 +249,17 @@ function createFieldEl(field, value) {
     }
 
     case 'emoji': {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.className = 'ed-emoji-input';
-      input.value = value || '';
-      input.maxLength = 4;
-      input.placeholder = '😊';
-      input.addEventListener('input', () => handleChange(field.key, input.value));
-      wrap.appendChild(input);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ed-emoji-btn';
+      btn.dataset.key = field.key;
+      const displayEmoji = value || '😊';
+      btn.innerHTML = `<span class="ed-emoji-val">${displayEmoji}</span><span class="ed-emoji-btn-hint">Cambiar</span>`;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openEmojiPicker(field.key, btn);
+      });
+      wrap.appendChild(btn);
       break;
     }
 
@@ -448,5 +464,86 @@ function setStatus(msg, cls = '') {
   el.className = 'ed-status' + (cls ? ` ${cls}` : '');
 }
 
+// ── EMOJI PICKER ──────────────────────────────────────────────────────────────
+function openEmojiPicker(key, btnEl) {
+  const picker = document.getElementById('edEmojiPicker');
+
+  if (emojiPickerTarget && emojiPickerTarget.key === key && picker.style.display !== 'none') {
+    closeEmojiPicker(); return;
+  }
+
+  emojiPickerTarget = { key, btnEl };
+  renderEmojiGrid(emojiCurrentCat);
+
+  // Position picker relative to button
+  const rect = btnEl.getBoundingClientRect();
+  picker.style.display = 'block';
+  const pickerW = 300;
+  let left = rect.left;
+  if (left + pickerW > window.innerWidth - 8) left = window.innerWidth - pickerW - 8;
+  let top = rect.bottom + 6;
+  if (top + 300 > window.innerHeight) top = rect.top - 310;
+  picker.style.left = left + 'px';
+  picker.style.top  = top + 'px';
+}
+
+function closeEmojiPicker() {
+  document.getElementById('edEmojiPicker').style.display = 'none';
+  emojiPickerTarget = null;
+}
+
+function renderEmojiGrid(cat, filter = '') {
+  emojiCurrentCat = cat;
+  const grid = document.getElementById('edEmojiGrid');
+  let emojis = filter
+    ? Object.values(EMOJI_DB).flat().filter((e, i, a) => a.indexOf(e) === i)
+    : (EMOJI_DB[cat] || []);
+
+  grid.innerHTML = emojis.map(e =>
+    `<button class="ed-emoji-opt" title="${e}">${e}</button>`
+  ).join('');
+
+  grid.querySelectorAll('.ed-emoji-opt').forEach(btn => {
+    btn.addEventListener('click', () => selectEmoji(btn.textContent));
+  });
+}
+
+function selectEmoji(emoji) {
+  if (!emojiPickerTarget) return;
+  const { key, btnEl } = emojiPickerTarget;
+  const span = btnEl.querySelector('.ed-emoji-val');
+  if (span) span.textContent = emoji;
+  handleChange(key, emoji);
+  closeEmojiPicker();
+}
+
+function initEmojiPicker() {
+  const picker = document.getElementById('edEmojiPicker');
+
+  // Category buttons
+  document.querySelectorAll('.ed-emoji-cat').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ed-emoji-cat').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('edEmojiSearch').value = '';
+      renderEmojiGrid(btn.dataset.cat);
+    });
+  });
+
+  // Search
+  document.getElementById('edEmojiSearch').addEventListener('input', (e) => {
+    const q = e.target.value.trim();
+    renderEmojiGrid(emojiCurrentCat, q);
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!picker.contains(e.target) && !e.target.closest('.ed-emoji-btn')) {
+      closeEmojiPicker();
+    }
+  });
+}
+
 // ── START ─────────────────────────────────────────────────────────────────────
 init();
+initEmojiPicker();

@@ -1159,3 +1159,38 @@ body {
     transition-duration: .01ms !important;
   }
 }
+
+/* ===== PREVIEW / EDITOR MODE ===== */
+.preview-mode .editor-section {
+  position: relative;
+  cursor: pointer;
+  transition: outline .15s;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+.preview-mode .editor-section:hover {
+  outline-color: rgba(91,138,181,.5);
+}
+.preview-mode .editor-section.editor-active {
+  outline-color: #5b8ab5;
+  outline-width: 3px;
+}
+.preview-mode .editor-section::after {
+  content: attr(data-label);
+  position: absolute;
+  top: 8px; left: 8px;
+  background: rgba(91,138,181,.9);
+  color: #fff;
+  font-size: .7rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.preview-mode .editor-section:hover::after,
+.preview-mode .editor-section.editor-active::after {
+  opacity: 1;
+}

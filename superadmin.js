@@ -221,11 +221,16 @@ function renderStores(stores) {
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
 
 async function updatePlan(storeId, plan) {
+  const store = allStores.find(s => s.id === storeId);
+  const storeName = store?.name || 'esta tienda';
+  if (!confirm(`¿Cambiar el plan de "${storeName}" a ${plan}?`)) {
+    filterStores(); // re-render to reset the select
+    return;
+  }
   const { error } = await sb.rpc('superadmin_update_store', {
     p_store_id: storeId, p_plan: plan, p_status: null,
   });
   if (error) { toast('Error al cambiar el plan', 'error'); return; }
-  const store = allStores.find(s => s.id === storeId);
   if (store) store.plan = plan;
   renderStats(allStores);
   toast('Plan actualizado a ' + plan);
@@ -233,15 +238,140 @@ async function updatePlan(storeId, plan) {
 
 async function toggleStatus(storeId, current) {
   const next = current === 'active' ? 'suspended' : 'active';
+  const store = allStores.find(s => s.id === storeId);
+  const storeName = store?.name || 'esta tienda';
+  const action = next === 'suspended' ? 'SUSPENDER' : 'reactivar';
+  if (!confirm(`¿Deseas ${action} la tienda "${storeName}"?`)) return;
+
   const { error } = await sb.rpc('superadmin_update_store', {
     p_store_id: storeId, p_plan: null, p_status: next,
   });
   if (error) { toast('Error al cambiar el estado', 'error'); return; }
-  const store = allStores.find(s => s.id === storeId);
   if (store) store.status = next;
   renderStats(allStores);
   filterStores();
   toast(next === 'active' ? 'Tienda activada' : 'Tienda suspendida');
+
+  // Notificar al dueño por correo
+  if (store?.owner_email) {
+    fetch('/api/notify-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_email: store.owner_email,
+        store_name: store.name,
+        new_status: next,
+      }),
+    }).catch(() => {});
+  }
+}
+
+// ── PLATFORM ANALYTICS ───────────────────────────────────────────────────────
+
+async function loadPlatformAnalytics() {
+  const loadingEl = '<div style="color:#9ca3af;font-size:.8rem;">Cargando…</div>';
+  ['dailyChart','planDistChart','topStoresChart','weeklyRegChart'].forEach(id => {
+    document.getElementById(id).innerHTML = loadingEl;
+  });
+
+  const { data, error } = await sb.rpc('superadmin_get_platform_analytics');
+  if (error) {
+    ['dailyChart','planDistChart','topStoresChart','weeklyRegChart'].forEach(id => {
+      document.getElementById(id).innerHTML = '<div style="color:#dc2626;font-size:.8rem;">Error al cargar datos.</div>';
+    });
+    console.error(error);
+    return;
+  }
+
+  const totals = data.totals || {};
+  document.getElementById('saStatViews').textContent    = totals.catalog_views    || 0;
+  document.getElementById('saStatWA').textContent       = totals.whatsapp_clicks  || 0;
+  document.getElementById('saStatProdViews').textContent = totals.product_views   || 0;
+
+  renderDailyChart(data.daily_views || []);
+  renderPlanDist(data.plan_distribution || []);
+  renderTopStores(data.top_stores || []);
+  renderWeeklyReg(data.weekly_registrations || []);
+}
+
+function renderDailyChart(days) {
+  const el = document.getElementById('dailyChart');
+  if (!days.length) {
+    el.innerHTML = '<div style="color:#9ca3af;font-size:.8rem;margin:auto;">Sin datos aún.</div>';
+    return;
+  }
+  const last7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    const key = d.toISOString().slice(0, 10);
+    const found = days.find(r => r.day === key);
+    last7.push({ label: d.toLocaleDateString('es', { weekday: 'short' }), views: found ? Number(found.views) : 0 });
+  }
+  const maxV = Math.max(...last7.map(d => d.views), 1);
+  el.innerHTML = last7.map(d => {
+    const pct = Math.round((d.views / maxV) * 100);
+    return `
+      <div class="daily-col" title="${d.views} vista${d.views !== 1 ? 's' : ''}">
+        <div class="daily-bar" style="height:${Math.max(pct, 2)}%;"></div>
+        <div class="daily-label">${d.label}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderPlanDist(dist) {
+  const el = document.getElementById('planDistChart');
+  if (!dist.length) { el.innerHTML = '<div style="color:#9ca3af;font-size:.8rem;">Sin datos.</div>'; return; }
+  const total = dist.reduce((s, r) => s + Number(r.count), 0) || 1;
+  const colors = { free: '#9ca3af', starter: '#3b82f6', pro: '#f59e0b' };
+  const labels = { free: 'Free', starter: 'Starter', pro: 'Pro' };
+  el.innerHTML = dist.map(r => {
+    const pct = Math.round((Number(r.count) / total) * 100);
+    const color = colors[r.plan] || '#6b7280';
+    return `
+      <div class="chart-bar-row">
+        <div class="chart-bar-label">${labels[r.plan] || r.plan}</div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="width:${pct}%;background:${color};"></div>
+        </div>
+        <div class="chart-bar-value">${r.count}</div>
+      </div>
+      <div style="font-size:.72rem;color:#9ca3af;margin:-6px 0 8px 152px;">${pct}% del total</div>`;
+  }).join('');
+}
+
+function renderTopStores(stores) {
+  const el = document.getElementById('topStoresChart');
+  if (!stores.length) { el.innerHTML = '<div style="color:#9ca3af;font-size:.8rem;">Sin datos de engagement.</div>'; return; }
+  const maxV = Math.max(...stores.map(s => Number(s.event_count)), 1);
+  el.innerHTML = stores.map((s, i) => {
+    const pct = Math.round((Number(s.event_count) / maxV) * 100);
+    return `
+      <div class="chart-bar-row" style="margin-bottom:12px;">
+        <div class="chart-bar-label" title="${esc(s.name || s.slug)}">${i + 1}. ${esc(s.name || s.slug)}</div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="width:${pct}%;background:#5b8ab5;"></div>
+        </div>
+        <div class="chart-bar-value">${s.event_count}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderWeeklyReg(weeks) {
+  const el = document.getElementById('weeklyRegChart');
+  if (!weeks.length) { el.innerHTML = '<div style="color:#9ca3af;font-size:.8rem;">Sin datos aún.</div>'; return; }
+  const maxV = Math.max(...weeks.map(w => Number(w.new_stores)), 1);
+  el.innerHTML = weeks.map(w => {
+    const pct = Math.round((Number(w.new_stores) / maxV) * 100);
+    const label = new Date(w.week).toLocaleDateString('es', { day: '2-digit', month: 'short' });
+    return `
+      <div class="chart-bar-row">
+        <div class="chart-bar-label">Sem. ${label}</div>
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="width:${pct}%;background:#059669;"></div>
+        </div>
+        <div class="chart-bar-value">${w.new_stores}</div>
+      </div>`;
+  }).join('');
 }
 
 // ── PLATFORM ANALYTICS ───────────────────────────────────────────────────────

@@ -152,6 +152,30 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
   }
 
   btn.disabled = true;
+  btn.textContent = "Verificando...";
+
+  // Turnstile anti-bot validation
+  const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
+  if (turnstileToken) {
+    try {
+      const verifyRes = await fetch('/api/validate-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: turnstileToken }),
+      });
+      const { success } = await verifyRes.json();
+      if (!success) {
+        err.textContent = "Verificación de seguridad fallida. Recarga la página e intenta de nuevo.";
+        err.style.display = "block";
+        btn.disabled = false;
+        btn.textContent = "Crear cuenta";
+        return;
+      }
+    } catch (_) {
+      // Allow through if validation endpoint unavailable (dev mode)
+    }
+  }
+
   btn.textContent = "Creando cuenta...";
 
   const storeName = regStoreNameEl.value.trim();

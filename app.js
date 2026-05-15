@@ -278,7 +278,7 @@ function renderProducts() {
         ${p.badge ? `<div class="product-badge ${p.badge}">${p.badgeText}</div>` : ""}
         <div class="product-image">
           ${thumb
-            ? `<img src="${thumb}" alt="${p.name}" class="product-img" />`
+            ? `<img src="${thumb}" alt="${p.name}" class="product-img" loading="lazy" />`
             : `<div class="product-img-placeholder">👕</div>`}
         </div>
         <div class="product-body">

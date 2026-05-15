@@ -21,7 +21,7 @@ async function fetchProduct(id) {
 }
 
 function injectMeta(html, { title, description, image, url }) {
-  const esc = (s) => (s || "").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const esc = (s) => (s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
   const tags = [
     `<title>${esc(title)}</title>`,
     `<meta name="description" content="${esc(description)}" />`,

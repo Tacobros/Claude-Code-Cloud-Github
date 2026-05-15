@@ -9,7 +9,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 'hero', label: 'Hero', icon: '⭐', section: 'hero',
+    id: 'hero', label: 'Encabezado', icon: '⭐', section: 'hero',
     fields: [
       { key: 'hero_badge',     label: 'Etiqueta',          type: 'text',     ph: 'Bienvenidos' },
       { key: 'hero_title',     label: 'Título principal',  type: 'text',     ph: 'Bienvenido a nuestra tienda' },

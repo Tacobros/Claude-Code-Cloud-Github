@@ -474,16 +474,19 @@ function openEmojiPicker(key, btnEl) {
 
   emojiPickerTarget = { key, btnEl };
   renderEmojiGrid(emojiCurrentCat);
-
-  // Position picker relative to button
-  const rect = btnEl.getBoundingClientRect();
   picker.style.display = 'block';
-  const pickerW = 300;
-  let left = rect.left;
-  if (left + pickerW > window.innerWidth - 8) left = window.innerWidth - pickerW - 8;
-  let top = rect.bottom + 6;
-  if (top + 300 > window.innerHeight) top = rect.top - 310;
-  picker.style.left = left + 'px';
+
+  // Position to the right of the sidebar so it never gets clipped
+  const sidebarW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--ed-sidebar')) || 280;
+  const topbarH  = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--ed-topbar'))  || 52;
+  const pickerH  = picker.offsetHeight || 340;
+  const rect     = btnEl.getBoundingClientRect();
+
+  let top = rect.top;
+  if (top + pickerH > window.innerHeight - 8) top = window.innerHeight - pickerH - 8;
+  if (top < topbarH + 4) top = topbarH + 4;
+
+  picker.style.left = (sidebarW + 10) + 'px';
   picker.style.top  = top + 'px';
 }
 

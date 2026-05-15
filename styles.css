@@ -3,7 +3,7 @@
 
 :root {
   --primary: #1a1a2e;
-  --accent: #e94560;
+  --accent: #5b8ab5;
   --accent2: #0f3460;
   --green: #25d366;
   --green-dark: #128c7e;
@@ -162,9 +162,9 @@ body {
 
 .hero-badge {
   display: inline-block;
-  background: rgba(233,69,96,.2);
-  border: 1px solid rgba(233,69,96,.4);
-  color: #ff8ca0;
+  background: rgba(91,138,181,.2);
+  border: 1px solid rgba(91,138,181,.4);
+  color: #a8c7e0;
   padding: 6px 14px;
   border-radius: 20px;
   font-size: .8rem;
@@ -203,12 +203,12 @@ body {
   text-decoration: none;
   font-size: 1rem;
   transition: transform .2s, box-shadow .2s;
-  box-shadow: 0 4px 14px rgba(233,69,96,.4);
+  box-shadow: 0 4px 14px rgba(91,138,181,.4);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(233,69,96,.5);
+  box-shadow: 0 6px 20px rgba(91,138,181,.5);
 }
 
 .btn-whatsapp {
@@ -682,7 +682,7 @@ body {
 
 .about-icon-img {
   color: var(--accent);
-  background: rgba(233,69,96,.08) !important;
+  background: rgba(91,138,181,.08) !important;
 }
 
 .about-icon-img svg { color: var(--accent); stroke: var(--accent); }
@@ -993,4 +993,12 @@ body {
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
   .about-jersey-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .leagues-display { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

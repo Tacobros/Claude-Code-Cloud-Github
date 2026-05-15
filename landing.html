@@ -72,12 +72,11 @@
 
     /* ── Animated rotating words ── */
     .hero-rotating-wrap {
-      display: inline-block;
+      display: block;
       position: relative;
       height: 1.15em;
       overflow: hidden;
-      vertical-align: bottom;
-      min-width: 320px;
+      width: 100%;
     }
     .hero-rotating-word {
       position: absolute;
@@ -151,7 +150,7 @@
     .dashboard-img img { width: 100%; display: block; }
 
     /* Steps with images */
-    .step-img { width: 100%; max-width: 200px; margin: 0 auto 24px; display: block; border-radius: 12px; }
+    .step-img { width: 100%; max-width: 200px; height: 160px; object-fit: cover; margin: 0 auto 24px; display: block; border-radius: 12px; }
 
     /* ── SOCIAL PROOF ── */
     .social-proof { padding: 36px 24px; border-top: 1px solid var(--border); }
@@ -191,7 +190,9 @@
     .how-section { background: var(--bg2); }
     .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
     .steps::before {
-      content: ''; position: absolute; top: 23px; left: calc(16.66% + 20px); right: calc(16.66% + 20px);
+      content: ''; position: absolute;
+      top: calc(160px + 24px + 24px); /* img height + margin-bottom + half of 48px circle */
+      left: calc(16.66% + 20px); right: calc(16.66% + 20px);
       height: 2px; background: linear-gradient(90deg, var(--accent), rgba(91,138,181,.2));
     }
     .step-item { text-align: center; padding: 0 28px; }

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Editor Visual — ProductSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="editor.css" />
+</head>
+<body>
+
+  <!-- Loading overlay -->
+  <div class="ed-loading" id="edLoading">
+    <div class="ed-loading-spinner"></div>
+    <p>Cargando editor...</p>
+  </div>
+
+  <!-- Top bar -->
+  <header class="ed-topbar">
+    <a href="admin.html" class="ed-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Admin
+    </a>
+    <span class="ed-topbar-title" id="edStoreName">Mi tienda</span>
+
+    <div class="ed-device-btns">
+      <button class="ed-device-btn active" data-w="100%" title="Escritorio">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </button>
+      <button class="ed-device-btn" data-w="768px" title="Tablet">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </button>
+      <button class="ed-device-btn" data-w="390px" title="Móvil">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="ed-topbar-right">
+      <a href="#" id="edViewLink" class="ed-view-link" target="_blank">Ver sitio ↗</a>
+      <span class="ed-status" id="edStatus"></span>
+      <button class="ed-save-btn" id="edSaveBtn">Guardar</button>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <div class="ed-body">
+
+    <!-- Sidebar -->
+    <aside class="ed-sidebar">
+
+      <!-- View: block list -->
+      <div class="ed-view" id="edViewBlocks">
+        <div class="ed-sidebar-section">Secciones del catálogo</div>
+        <div class="ed-block-list" id="edBlockList"></div>
+      </div>
+
+      <!-- View: block properties -->
+      <div class="ed-view" id="edViewProps" style="display:none">
+        <div class="ed-props-header">
+          <button class="ed-back-btn" id="edBackBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Volver
+          </button>
+          <span class="ed-props-icon" id="edPropsIcon"></span>
+          <span class="ed-props-title" id="edPropsTitle"></span>
+        </div>
+        <div class="ed-props-fields" id="edPropsFields"></div>
+      </div>
+
+    </aside>
+
+    <!-- Preview -->
+    <main class="ed-preview">
+      <div class="ed-frame-wrap" id="edFrameWrap">
+        <iframe id="edFrame" allow="same-origin"></iframe>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="supabase.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

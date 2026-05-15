@@ -436,7 +436,133 @@ document.addEventListener("keydown", (e) => {
 
 // Initialize
 updateWALinks();
-loadStoreSettings().then(() => loadProducts());
+loadStoreSettings().then(() => {
+  loadProducts();
+  if (new URLSearchParams(window.location.search).get('preview') === '1') {
+    initPreviewMode();
+  }
+});
+
+// ── VISUAL EDITOR PREVIEW MODE ────────────────────────────────────────────────
+function initPreviewMode() {
+  document.body.classList.add('preview-mode');
+
+  const sectionMap = {
+    hero: '.hero', catalog: '.catalog',
+    stats: '.stats', about: '.about', contact: '.contact',
+  };
+
+  Object.entries(sectionMap).forEach(([blockId, sel]) => {
+    const el = document.querySelector(sel);
+    if (!el) return;
+    el.setAttribute('data-editor-block', blockId);
+    el.classList.add('editor-section');
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('a, button, input, select')) return;
+      window.parent.postMessage({ type: 'PS_SECTION_CLICK', block: blockId }, '*');
+    });
+  });
+
+  window.addEventListener('message', (e) => {
+    if (!e.data || typeof e.data !== 'object') return;
+    const { type, field, value, block } = e.data;
+
+    if (type === 'PS_UPDATE') applyPreviewUpdate(field, value);
+
+    if (type === 'PS_HIGHLIGHT') {
+      document.querySelectorAll('.editor-section').forEach(s => s.classList.remove('editor-active'));
+      if (block && sectionMap[block]) {
+        const el = document.querySelector(sectionMap[block]);
+        if (el) {
+          el.classList.add('editor-active');
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    }
+  });
+}
+
+function applyPreviewUpdate(field, value) {
+  const el = (id) => document.getElementById(id);
+  const setText = (id, v) => { const e = el(id); if (e) e.textContent = v; };
+
+  switch (field) {
+    case 'hero_badge':    setText('heroBadge', value); break;
+    case 'hero_title':    setText('heroTitle', value); break;
+    case 'hero_subtitle': setText('heroSubtitle', value); break;
+    case 'hero_image_url': {
+      const img = el('heroProductImg');
+      if (img) { img.src = value || ''; img.style.display = value ? '' : 'none'; }
+      break;
+    }
+    case 'catalog_title':    setText('catalogTitle', value); break;
+    case 'catalog_subtitle': setText('catalogSubtitle', value); break;
+    case 'cta_title': setText('ctaTitle', value); break;
+    case 'cta_desc':  setText('ctaDesc', value); break;
+    case 'about_title': setText('aboutTitle', value); break;
+    case 'name': {
+      setText('siteLogoText', value);
+      setText('footerLogoText', value);
+      document.title = value || 'Mi tienda';
+      break;
+    }
+    case 'accent_color': {
+      document.documentElement.style.setProperty('--accent', value);
+      break;
+    }
+    case 'logo_url': {
+      const render = (id, size) => {
+        const e = el(id);
+        if (!e) return;
+        e.innerHTML = value
+          ? `<img src="${value}" style="width:${size};height:${size};object-fit:contain;border-radius:6px;">`
+          : '';
+        e.style.display = value ? '' : 'none';
+      };
+      render('siteLogoIcon', '32px');
+      render('footerLogoIcon', '24px');
+      break;
+    }
+    case 'show_gallery': {
+      const grid = el('aboutJerseyGrid');
+      const inner = document.querySelector('.about-inner');
+      if (grid) grid.style.display = value ? '' : 'none';
+      if (inner) inner.style.gridTemplateColumns = value ? '' : '1fr';
+      break;
+    }
+    default: {
+      // about1_icon, about1_title, about1_desc … about4_*
+      const aboutM = field.match(/^about([1-4])_(icon|title|desc)$/);
+      if (aboutM) {
+        const map = { icon: 'Icon', title: 'Title', desc: 'Desc' };
+        setText(`about${aboutM[1]}${map[aboutM[2]]}`, value);
+        break;
+      }
+      // stat1_value, stat1_label … stat4_*
+      const statM = field.match(/^stat([1-4])_(value|label)$/);
+      if (statM) {
+        const map = { value: 'Value', label: 'Label' };
+        setText(`stat${statM[1]}${map[statM[2]]}`, value);
+        break;
+      }
+      // gallery1_img, gallery1_title … gallery4_*
+      const galImgM = field.match(/^gallery([1-4])_img$/);
+      if (galImgM) {
+        const n = galImgM[1];
+        const img = el(`galleryItemImg${n}`);
+        const item = el(`galleryItem${n}`);
+        if (img) img.src = value || '';
+        if (item) item.style.display = value ? '' : 'none';
+        break;
+      }
+      const galTitleM = field.match(/^gallery([1-4])_title$/);
+      if (galTitleM) {
+        setText(`galleryItemTitle${galTitleM[1]}`, value);
+        break;
+      }
+    }
+  }
+}
 
 // Handle browser back/forward for product modal
 window.addEventListener("popstate", () => {

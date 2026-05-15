@@ -221,11 +221,16 @@ function renderStores(stores) {
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
 
 async function updatePlan(storeId, plan) {
+  const store = allStores.find(s => s.id === storeId);
+  const storeName = store?.name || 'esta tienda';
+  if (!confirm(`¿Cambiar el plan de "${storeName}" a ${plan}?`)) {
+    filterStores(); // re-render to reset the select
+    return;
+  }
   const { error } = await sb.rpc('superadmin_update_store', {
     p_store_id: storeId, p_plan: plan, p_status: null,
   });
   if (error) { toast('Error al cambiar el plan', 'error'); return; }
-  const store = allStores.find(s => s.id === storeId);
   if (store) store.plan = plan;
   renderStats(allStores);
   toast('Plan actualizado a ' + plan);
@@ -233,15 +238,32 @@ async function updatePlan(storeId, plan) {
 
 async function toggleStatus(storeId, current) {
   const next = current === 'active' ? 'suspended' : 'active';
+  const store = allStores.find(s => s.id === storeId);
+  const storeName = store?.name || 'esta tienda';
+  const action = next === 'suspended' ? 'SUSPENDER' : 'reactivar';
+  if (!confirm(`¿Deseas ${action} la tienda "${storeName}"?`)) return;
+
   const { error } = await sb.rpc('superadmin_update_store', {
     p_store_id: storeId, p_plan: null, p_status: next,
   });
   if (error) { toast('Error al cambiar el estado', 'error'); return; }
-  const store = allStores.find(s => s.id === storeId);
   if (store) store.status = next;
   renderStats(allStores);
   filterStores();
   toast(next === 'active' ? 'Tienda activada' : 'Tienda suspendida');
+
+  // Notificar al dueño por correo
+  if (store?.owner_email) {
+    fetch('/api/notify-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        owner_email: store.owner_email,
+        store_name: store.name,
+        new_status: next,
+      }),
+    }).catch(() => {});
+  }
 }
 
 // ── PLATFORM ANALYTICS ───────────────────────────────────────────────────────

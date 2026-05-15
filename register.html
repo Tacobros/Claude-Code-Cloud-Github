@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <link rel="stylesheet" href="admin.css" />
   <style>
     .register-card { max-width: 480px; }
@@ -115,6 +116,8 @@
             <input type="password" id="regPasswordConfirm" placeholder="Repite tu contraseña" required />
           </div>
           <div id="step2Error" class="error-msg" style="display:none;"></div>
+          <!-- Cloudflare Turnstile anti-bot widget -->
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAABkMYdE6T1jgfPdV" style="margin-top:12px;"></div>
           <div style="display:flex;gap:10px;margin-top:8px;">
             <button type="button" class="btn-login" id="backBtn"
               style="background:#1e293b;flex:0 0 44px;padding:0;font-size:1.1rem;">←</button>

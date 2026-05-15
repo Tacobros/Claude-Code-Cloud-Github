@@ -1092,6 +1092,34 @@ async function uploadDesignImage(file, type, urlFieldId, previewId) {
   showToast("Imagen subida ✓", "success");
 }
 
+// ===== CSV EXPORT =====
+function exportCSV() {
+  if (!allProducts.length) {
+    showToast("No hay productos para exportar.", "error");
+    return;
+  }
+  const headers = ["ID", "Nombre", "Descripción", "Precio", "Categoría", "Tallas", "Disponible", "Nuevo", "Más vendido"];
+  const rows = allProducts.map(p => [
+    p.id,
+    p.name || "",
+    (p.description || "").replace(/"/g, '""'),
+    p.price || "",
+    p.category || "",
+    (p.sizes || []).join("|"),
+    p.is_available ? "Sí" : "No",
+    p.is_new ? "Sí" : "No",
+    p.is_best_seller ? "Sí" : "No",
+  ].map(v => `"${v}"`).join(","));
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `productos-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ===== PLAN PAGE =====
 // ===== ANALYTICS =====
 async function loadAnalytics() {

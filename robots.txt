@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /landing.html
+Allow: /register.html
+Allow: /terms.html
+Allow: /privacy.html
+
+# Don't index admin panels
+Disallow: /admin.html
+Disallow: /superadmin.html
+
+Sitemap: https://productspot-5dc.pages.dev/sitemap.xml

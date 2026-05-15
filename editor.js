@@ -84,11 +84,20 @@ const BLOCKS = [
 
 // ── EMOJI DATA ────────────────────────────────────────────────────────────────
 const EMOJI_DB = {
-  popular: ['⭐','🌟','🏆','🎯','🎁','🎉','✨','🚀','💎','🔥','💡','🌈','🎨','🏅','👑','💫','🌙','☀️','⚡','🌊'],
-  nature:  ['🌿','🌱','🌲','🌸','🌺','🌻','🍀','🍃','🦋','🐝','🌍','🌎','🌏','🏔','🌅','🌄','🌿','🍁','🌾','🐾'],
-  objects: ['💡','🔑','🔧','🛡️','📦','🛒','🏪','📱','💻','🖥️','📷','🎵','📚','✏️','🔒','📊','📈','🎮','🏠','🚗'],
-  people:  ['👋','🤝','💪','🙌','🫶','❤️','💙','💚','🫂','👏','🙏','🤜','✊','👍','👎','💬','📞','🧑‍💼','👩‍💻','🧑‍🏫'],
-  symbols: ['✅','☑️','✔️','❌','⭕','❓','❗','➕','➖','➡️','⬆️','🔄','♻️','🔃','💯','🆕','🆓','🔴','🟢','🔵'],
+  popular:  ['⭐','🌟','🏆','🎯','🎁','🎉','✨','🚀','💎','🔥','💡','🌈','🎨','🏅','👑','💫','🌙','☀️','⚡','🌊','🎶','🏖','🌴','🦄','🎀'],
+  nature:   ['🌿','🌱','🌲','🌸','🌺','🌻','🍀','🍃','🦋','🐝','🌍','🌎','🌏','🏔','🌅','🌄','🍁','🌾','🐾','🦁','🐬','🌊','🌵','🌾','🦚'],
+  objects:  ['💡','🔑','🔧','🛡️','📦','🛒','🏪','📱','💻','🖥️','📷','🎵','📚','✏️','🔒','📊','📈','🎮','🏠','🚗','🎸','📡','🔭','🎬','🎤'],
+  people:   ['👋','🤝','💪','🙌','🫶','❤️','💙','💚','🫂','👏','🙏','✊','👍','💬','📞','🧑‍💼','🤗','😊','😎','🥳','🤩','😍','🙋','🤷','💃'],
+  symbols:  ['✅','☑️','✔️','❌','⭕','❓','❗','➕','➖','➡️','⬆️','🔄','♻️','💯','🆕','🆓','🔴','🟢','🔵','🟡','⚡','🔱','☯️','🌀','⚜️'],
+  food:     ['🍕','🍔','🌮','🍜','🍣','🍰','☕','🍺','🥗','🍎','🍓','🥑','🍳','🥩','🍟','🧁','🍫','🥤','🍹','🍦','🥐','🧀','🍱','🥘','🍲'],
+  travel:   ['✈️','🚂','🚢','🏝','🗺️','🏔','🌆','🗼','🏟','⛩','🌉','🎡','🧳','🗽','🎠','🛕','🏰','🎪','🚁','🛸','🚀','🛶','🗾','🌄','🏕'],
+  business: ['💼','📊','📈','💰','💳','🤝','🏆','📋','📌','📎','✉️','📣','🎯','🏦','💹','📉','🔖','💡','🧮','📝','🗂','📅','📧','🖊','🔐'],
+};
+
+const EMOJI_CAT_NAMES = {
+  popular: 'Popular', nature: 'Naturaleza', objects: 'Objetos',
+  people: 'Personas', symbols: 'Símbolos', food: 'Comida',
+  travel: 'Viajes', business: 'Negocios',
 };
 
 // ── EMOJI PICKER STATE ────────────────────────────────────────────────────────
@@ -497,17 +506,24 @@ function closeEmojiPicker() {
 
 function renderEmojiGrid(cat, filter = '') {
   emojiCurrentCat = cat;
-  const grid = document.getElementById('edEmojiGrid');
-  let emojis = filter
-    ? Object.values(EMOJI_DB).flat().filter((e, i, a) => a.indexOf(e) === i)
-    : (EMOJI_DB[cat] || []);
+  const grid  = document.getElementById('edEmojiGrid');
+  const label = document.getElementById('edEmojiCatLabel');
+
+  let emojis;
+  if (filter) {
+    emojis = Object.values(EMOJI_DB).flat().filter((e, i, a) => a.indexOf(e) === i);
+    if (label) label.textContent = 'Resultados';
+  } else {
+    emojis = EMOJI_DB[cat] || [];
+    if (label) label.textContent = EMOJI_CAT_NAMES[cat] || cat;
+  }
 
   grid.innerHTML = emojis.map(e =>
     `<button class="ed-emoji-opt" title="${e}">${e}</button>`
   ).join('');
 
   grid.querySelectorAll('.ed-emoji-opt').forEach(btn => {
-    btn.addEventListener('click', () => selectEmoji(btn.textContent));
+    btn.addEventListener('click', () => selectEmoji(btn.textContent.trim()));
   });
 }
 
@@ -525,7 +541,8 @@ function initEmojiPicker() {
 
   // Category buttons
   document.querySelectorAll('.ed-emoji-cat').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       document.querySelectorAll('.ed-emoji-cat').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('edEmojiSearch').value = '';

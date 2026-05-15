@@ -124,6 +124,9 @@ document.getElementById("step1Form").addEventListener("submit", async (e) => {
   btn.textContent = "Continuar →";
   step1El.style.display = "none";
   step2El.style.display = "block";
+  step2El.style.animation = "none";
+  step2El.offsetHeight; // reflow
+  step2El.style.animation = "";
   step1bar.classList.add("active");
   step2bar.classList.add("active");
 });

@@ -51,6 +51,15 @@
     .success-card h2 { margin-bottom: 8px; }
     .success-card p { color: #9ca3af; margin-bottom: 24px; line-height: 1.6; }
 
+    /* Step transition */
+    #step1, #step2, #successScreen {
+      animation: step-in .4s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes step-in {
+      from { opacity: 0; transform: translateX(18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
     /* Override admin.css accent for register page */
     :root { --accent: #5b8ab5; }
     .btn-login { background: #5b8ab5; }

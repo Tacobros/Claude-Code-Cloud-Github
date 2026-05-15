@@ -532,9 +532,19 @@ tr.row-selected { background: #0d2240 !important; }
   justify-content: center;
   padding: 20px;
   backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity .2s ease;
 }
 
-.modal-overlay.open { display: flex; }
+.modal-overlay.open {
+  display: flex;
+  animation: overlay-in .2s ease forwards;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 .modal {
   background: var(--white);
@@ -552,8 +562,33 @@ tr.row-selected { background: #0d2240 !important; }
 .confirm-modal p { color: var(--gray-600); font-size: .9rem; margin-bottom: 24px; }
 
 @keyframes modalIn {
-  from { transform: scale(.94); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
+  0%   { transform: scale(.88) translateY(20px); opacity: 0; }
+  65%  { transform: scale(1.015) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Login card entrance */
+.login-card {
+  animation: card-drop-in .5s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes card-drop-in {
+  from { opacity: 0; transform: translateY(-24px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Sidebar nav items stagger */
+.nav-item {
+  animation: nav-item-in .4s cubic-bezier(.22,1,.36,1) both;
+}
+.nav-item:nth-child(1) { animation-delay: .05s; }
+.nav-item:nth-child(2) { animation-delay: .10s; }
+.nav-item:nth-child(3) { animation-delay: .15s; }
+.nav-item:nth-child(4) { animation-delay: .20s; }
+.nav-item:nth-child(5) { animation-delay: .25s; }
+.nav-item:nth-child(6) { animation-delay: .30s; }
+@keyframes nav-item-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
 .modal-header {

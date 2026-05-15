@@ -84,6 +84,33 @@ async function checkSlugAvailability(slug) {
   }
 }
 
+// ===== PASSWORD STRENGTH =====
+function getPasswordStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return Math.min(score, 3);
+}
+
+document.getElementById("regPassword").addEventListener("input", function () {
+  const pw = this.value;
+  const bar = document.getElementById("pwStrengthBar");
+  const label = document.getElementById("pwStrengthLabel");
+  const segs = bar.querySelectorAll(".pw-seg");
+  if (!pw) { bar.style.display = "none"; label.textContent = ""; return; }
+  bar.style.display = "flex";
+  const strength = getPasswordStrength(pw);
+  const colors = ["", "#ef4444", "#f59e0b", "#22c55e"];
+  const labels = ["", "Débil", "Regular", "Fuerte"];
+  segs.forEach((seg, i) => {
+    seg.style.background = i < strength ? colors[strength] : "#1e293b";
+  });
+  label.textContent = labels[strength];
+  label.style.color = colors[strength];
+});
+
 // ===== STEP NAVIGATION =====
 const step1El = document.getElementById("step1");
 const step2El = document.getElementById("step2");

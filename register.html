@@ -119,6 +119,12 @@
           <div class="field">
             <label>Contraseña *</label>
             <input type="password" id="regPassword" placeholder="Mínimo 8 caracteres" required minlength="8" />
+            <div id="pwStrengthBar" style="display:none;margin-top:6px;display:flex;gap:4px;">
+              <div class="pw-seg" style="flex:1;height:4px;border-radius:4px;background:#1e293b;transition:background .3s;"></div>
+              <div class="pw-seg" style="flex:1;height:4px;border-radius:4px;background:#1e293b;transition:background .3s;"></div>
+              <div class="pw-seg" style="flex:1;height:4px;border-radius:4px;background:#1e293b;transition:background .3s;"></div>
+            </div>
+            <div id="pwStrengthLabel" style="font-size:.75rem;margin-top:3px;color:#6b7280;"></div>
           </div>
           <div class="field">
             <label>Confirmar contraseña *</label>

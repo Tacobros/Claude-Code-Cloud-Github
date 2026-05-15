@@ -2,7 +2,7 @@
 
 :root {
   --primary: #1a1a2e;
-  --accent: #e94560;
+  --accent: #5b8ab5;
   --green: #25d366;
   --white: #ffffff;
   --gray-50: #f9fafb;
@@ -152,7 +152,7 @@ body { font-family: 'Inter', sans-serif; background: var(--gray-50); color: var(
   transition: all .15s;
 }
 
-.btn-logout:hover { background: rgba(233,69,96,.3); color: var(--white); }
+.btn-logout:hover { background: rgba(91,138,181,.3); color: var(--white); }
 
 /* MAIN */
 .main-content {
@@ -784,7 +784,7 @@ tr.row-selected { background: #0d2240 !important; }
 
 .add-category-row input:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: #5b8ab5;
 }
 
 /* IMAGE UPLOAD */
@@ -896,7 +896,7 @@ tr.row-selected { background: #0d2240 !important; }
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(233,69,96,.85);
+  background: rgba(91,138,181,.85);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
@@ -936,7 +936,7 @@ tr.row-selected { background: #0d2240 !important; }
   align-items: center;
   justify-content: center;
 }
-.emoji-trigger:hover { border-color: var(--accent, #e94560); }
+.emoji-trigger:hover { border-color: var(--accent, #5b8ab5); }
 .about-point-fields {
   flex: 1;
   display: grid;
@@ -990,7 +990,7 @@ tr.row-selected { background: #0d2240 !important; }
   overflow: hidden;
   transition: border-color .15s;
 }
-.gallery-img-upload:hover { border-color: var(--accent, #e94560); }
+.gallery-img-upload:hover { border-color: var(--accent, #5b8ab5); }
 .gallery-preview-inner {
   width: 100%;
   height: 100%;
@@ -1008,7 +1008,7 @@ tr.row-selected { background: #0d2240 !important; }
   width: 100%;
   box-sizing: border-box;
 }
-.gallery-title-input:focus { border-color: var(--accent, #e94560); }
+.gallery-title-input:focus { border-color: var(--accent, #5b8ab5); }
 @media (max-width: 768px) {
   .gallery-editor-grid { grid-template-columns: repeat(2, 1fr); }
   .about-point-fields { grid-template-columns: 1fr; }
@@ -1039,7 +1039,7 @@ tr.row-selected { background: #0d2240 !important; }
 .plan-lock-overlay p { font-size: .9rem; color: #374151; margin: 0; }
 .plan-lock-overlay .plan-lock-btn {
   margin-top: 4px;
-  background: var(--accent, #e94560);
+  background: var(--accent, #5b8ab5);
   color: #fff;
   padding: 8px 18px;
   border-radius: 8px;
@@ -1052,4 +1052,12 @@ tr.row-selected { background: #0d2240 !important; }
 #btnAddProduct:disabled {
   background: #9ca3af !important;
   cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
 }

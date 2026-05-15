@@ -271,10 +271,10 @@ function renderProducts() {
 
   empty.style.display = "none";
 
-  grid.innerHTML = filtered.map((p) => {
+  grid.innerHTML = filtered.map((p, i) => {
     const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
     return `
-      <div class="product-card" onclick="openModal(${p.id})">
+      <div class="product-card" onclick="openModal(${p.id})" style="--i:${i}">
         ${p.badge ? `<div class="product-badge ${p.badge}">${p.badgeText}</div>` : ""}
         <div class="product-image">
           ${thumb

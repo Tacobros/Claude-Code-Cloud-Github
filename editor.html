@@ -80,6 +80,21 @@
 
   </div>
 
+  <!-- Emoji Picker Panel -->
+  <div id="edEmojiPicker" class="ed-emoji-picker" style="display:none;">
+    <div class="ed-emoji-search-wrap">
+      <input type="text" id="edEmojiSearch" class="ed-emoji-search" placeholder="Buscar emoji..." autocomplete="off" />
+    </div>
+    <div class="ed-emoji-categories">
+      <button class="ed-emoji-cat active" data-cat="popular">⭐ Popular</button>
+      <button class="ed-emoji-cat" data-cat="nature">🌿 Naturaleza</button>
+      <button class="ed-emoji-cat" data-cat="objects">💡 Objetos</button>
+      <button class="ed-emoji-cat" data-cat="people">👋 Personas</button>
+      <button class="ed-emoji-cat" data-cat="symbols">✅ Símbolos</button>
+    </div>
+    <div class="ed-emoji-grid" id="edEmojiGrid"></div>
+  </div>
+
   <script src="supabase.js"></script>
   <script src="editor.js"></script>
 </body>

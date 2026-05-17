@@ -312,6 +312,35 @@
       transform: translateY(0);
     }
 
+    /* ── Burger menu ── */
+    .nav-burger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; cursor: pointer; padding: 6px; margin-left: 8px;
+    }
+    .nav-burger span {
+      display: block; width: 22px; height: 2px;
+      background: var(--text); border-radius: 2px; transition: all .3s;
+    }
+    .nav-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .nav-mobile {
+      display: none; flex-direction: column; gap: 2px;
+      padding: 10px 16px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      color: var(--muted); text-decoration: none;
+      padding: 11px 14px; border-radius: 8px;
+      font-weight: 500; font-size: .95rem;
+      transition: background .15s, color .15s;
+      display: flex; align-items: center;
+    }
+    .nav-mobile a:not(.btn):hover { background: var(--bg3); color: var(--text); }
+    .nav-mobile .btn { margin-top: 2px; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -320,11 +349,44 @@
       .steps::before { display: none; }
       .testimonials-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
-      .nav-links .btn-ghost, .nav-links a:not(.btn) { display: none; }
+      .nav-links { display: none; }
+      .nav-burger { display: flex; }
       .footer-inner { grid-template-columns: 1fr; gap: 20px; }
       .final-cta-box { padding: 48px 24px; }
       .dashboard-inner { grid-template-columns: 1fr; gap: 32px; }
       .dashboard-img { order: -1; }
+    }
+
+    @media (max-width: 480px) {
+      .hero { padding: 64px 20px 48px; }
+      .hero h1 { font-size: clamp(2rem, 9vw, 3rem); }
+      .hero-sub { font-size: .9rem; }
+      .hero-pain { font-size: .82rem; }
+      .hero-actions { flex-direction: column; gap: 10px; align-items: stretch; }
+      .hero-actions .btn { text-align: center; justify-content: center; width: 100%; }
+      .hero-note { font-size: .75rem; }
+
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+
+      .final-cta-box { padding: 36px 20px; }
+      .final-cta-actions { flex-direction: column; gap: 10px; }
+      .final-cta-actions .btn { width: 100%; justify-content: center; text-align: center; }
+      .final-guarantees { flex-direction: column; gap: 6px; }
+
+      /* Newsletter: input y botón apilados */
+      #newsletterForm { flex-direction: column; }
+      #newsletterForm input { min-width: unset !important; width: 100%; }
+      #newsletterForm button { width: 100%; justify-content: center; }
+
+      /* Evitar zoom iOS */
+      input, select, textarea { font-size: 16px !important; }
+    }
+
+    @media (max-width: 390px) {
+      .container { padding: 0 16px; }
+      .hero { padding: 56px 16px 40px; }
+      .features-grid { gap: 12px; }
+      .testimonials-grid { gap: 12px; }
     }
   </style>
 </head>
@@ -344,6 +406,18 @@
         <a href="admin.html" class="btn btn-ghost">Entrar</a>
         <a href="register.html" class="btn btn-primary">Crear cuenta gratis</a>
       </div>
+      <button class="nav-burger" id="navBurger" aria-label="Menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <!-- Menú móvil desplegable -->
+    <div class="nav-mobile" id="navMobile">
+      <a href="#features">Funciones</a>
+      <a href="#precios">Precios</a>
+      <a href="#faq">FAQ</a>
+      <a href="index.html?s=casgt" target="_blank">Ver demo en vivo</a>
+      <a href="admin.html">Iniciar sesión</a>
+      <a href="register.html" class="btn btn-primary" style="justify-content:center;margin-top:4px;">Crear cuenta gratis →</a>
     </div>
   </nav>
 
@@ -990,6 +1064,27 @@
       const grid = document.querySelector('.pricing-grid');
       if (grid) gridObs.observe(grid);
     })();
+  </script>
+
+  <script>
+    // Burger menu móvil
+    const navBurger = document.getElementById('navBurger');
+    const navMobile = document.getElementById('navMobile');
+
+    navBurger.addEventListener('click', () => {
+      const isOpen = navBurger.classList.toggle('open');
+      navMobile.classList.toggle('open', isOpen);
+      navBurger.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Cerrar al hacer clic en un enlace
+    navMobile.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navBurger.classList.remove('open');
+        navMobile.classList.remove('open');
+        navBurger.setAttribute('aria-expanded', 'false');
+      });
+    });
   </script>
 
 </body>

@@ -141,6 +141,7 @@ async function init() {
 
   renderBlockList();
   bindTopbar();
+  initMobilePreviewToggle();
   document.getElementById('edLoading').style.display = 'none';
 }
 
@@ -471,6 +472,20 @@ function setStatus(msg, cls = '') {
   const el = document.getElementById('edStatus');
   el.textContent = msg;
   el.className = 'ed-status' + (cls ? ` ${cls}` : '');
+}
+
+// ── MOBILE PREVIEW TOGGLE ─────────────────────────────────────────────────────
+function initMobilePreviewToggle() {
+  const btn  = document.getElementById('edPreviewToggle');
+  const body = document.querySelector('.ed-body');
+
+  btn.addEventListener('click', () => {
+    const isPreview = body.classList.toggle('show-preview');
+    btn.classList.toggle('active', isPreview);
+    btn.innerHTML = isPreview
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Editar`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview`;
+  });
 }
 
 // ── EMOJI PICKER ──────────────────────────────────────────────────────────────

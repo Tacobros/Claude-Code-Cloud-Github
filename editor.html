@@ -51,8 +51,24 @@
   <!-- Main layout -->
   <div class="ed-body">
 
-    <!-- Sidebar -->
-    <aside class="ed-sidebar">
+    <!-- Preview (full screen on mobile) -->
+    <main class="ed-preview">
+      <div class="ed-frame-wrap" id="edFrameWrap">
+        <iframe id="edFrame" allow="same-origin"></iframe>
+      </div>
+    </main>
+
+    <!-- Sidebar (desktop) / Bottom Sheet (mobile) -->
+    <aside class="ed-sidebar" id="edSidebar">
+
+      <!-- Handle visible only on mobile -->
+      <div class="ed-sheet-handle" id="edSheetHandle">
+        <div class="ed-sheet-drag-bar"></div>
+        <div class="ed-sheet-peek-row">
+          <span class="ed-sheet-peek-label" id="edSheetLabel">Editar secciones</span>
+          <button class="ed-save-btn ed-save-btn-sheet" id="edSaveBtnSheet">Guardar</button>
+        </div>
+      </div>
 
       <!-- View: block list -->
       <div class="ed-view" id="edViewBlocks">
@@ -74,13 +90,6 @@
       </div>
 
     </aside>
-
-    <!-- Preview -->
-    <main class="ed-preview">
-      <div class="ed-frame-wrap" id="edFrameWrap">
-        <iframe id="edFrame" allow="same-origin"></iframe>
-      </div>
-    </main>
 
   </div>
 

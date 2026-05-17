@@ -254,52 +254,94 @@ html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; b
 .ed-props-fields::-webkit-scrollbar-thumb,
 .ed-block-list::-webkit-scrollbar-thumb { background: var(--ed-border2); border-radius: 2px; }
 
-/* Preview toggle (sólo visible en móvil vía media query) */
-.ed-preview-toggle {
-  display: none; align-items: center; gap: 5px;
-  background: var(--ed-surface2); border: 1px solid var(--ed-border2);
-  color: var(--ed-text); border-radius: 8px;
-  padding: 6px 12px; font-size: .8rem; font-weight: 600;
-  cursor: pointer; font-family: inherit; white-space: nowrap;
-  transition: background .15s;
+/* Sheet handle — oculto en desktop, visible en móvil */
+.ed-sheet-handle {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 16px 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-.ed-preview-toggle:hover { background: var(--ed-border2); }
-.ed-preview-toggle.active { background: var(--ed-accent); border-color: var(--ed-accent); }
+.ed-sheet-drag-bar {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--ed-border2); margin-bottom: 10px;
+}
+.ed-sheet-peek-row {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding-bottom: 10px;
+  border-bottom: 1px solid var(--ed-border);
+}
+.ed-sheet-peek-label {
+  font-size: .9rem; font-weight: 700; color: var(--ed-text);
+}
+.ed-save-btn-sheet {
+  background: var(--ed-accent); color: #fff; border: none;
+  padding: 7px 16px; border-radius: 8px; font-size: .82rem; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
 
 /* ── RESPONSIVE (móvil) ── */
 @media (max-width: 768px) {
-  :root { --ed-sidebar: 100vw; }
+  :root { --ed-sheet-peek: 68px; }
 
-  /* Topbar: ocultar elementos no esenciales */
-  .ed-topbar { padding: 0 12px; gap: 8px; }
-  .ed-device-btns { display: none; }
-  .ed-view-link  { display: none; }
-  .ed-status     { display: none; }
-  .ed-topbar-title { max-width: 130px; }
-  .ed-save-btn   { padding: 7px 14px; font-size: .8rem; }
+  /* Topbar simplificado */
+  .ed-topbar  { padding: 0 12px; gap: 8px; }
+  .ed-device-btns  { display: none; }
+  .ed-view-link    { display: none; }
+  .ed-status       { display: none; }
+  .ed-topbar-title { max-width: 140px; }
+  .ed-save-btn     { display: none; } /* se reemplaza por el botón del sheet */
 
-  /* Botón toggle Preview visible en móvil */
-  .ed-preview-toggle { display: flex !important; }
+  /* Ed-body: el preview llena el fondo */
+  .ed-body { flex-direction: column; }
 
-  /* Sidebar ocupa toda la pantalla */
-  .ed-sidebar { width: 100vw; }
-
-  /* Ocultar iframe por defecto */
-  .ed-preview { display: none; }
-
-  /* Modo preview: ocultar sidebar, mostrar iframe */
-  .ed-body.show-preview .ed-sidebar { display: none; }
-  .ed-body.show-preview .ed-preview  { display: flex; }
-  .ed-body.show-preview .ed-frame-wrap {
-    height: calc(100vh - var(--ed-topbar));
-    border-radius: 0;
+  /* iframe full-screen debajo del topbar */
+  .ed-preview {
+    position: fixed;
+    top: var(--ed-topbar); left: 0; right: 0; bottom: 0;
+    padding: 0; display: flex !important;
+    z-index: 1;
+  }
+  .ed-frame-wrap {
+    border-radius: 0; box-shadow: none;
+    height: 100%; width: 100%; max-width: 100%;
   }
 
-  /* Emoji picker full-width en móvil */
+  /* Bottom sheet */
+  .ed-sidebar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    width: 100%; height: auto;
+    max-height: 80vh;
+    border-radius: 18px 18px 0 0;
+    border-right: none;
+    border-top: 1px solid var(--ed-border2);
+    box-shadow: 0 -8px 40px rgba(0,0,0,.5);
+    z-index: 100;
+    transform: translateY(calc(100% - var(--ed-sheet-peek)));
+    transition: transform .35s cubic-bezier(.22,1,.36,1);
+    will-change: transform;
+  }
+
+  /* Sheet abierto */
+  .ed-sidebar.ed-sheet-open {
+    transform: translateY(0);
+  }
+
+  /* Mostrar handle en móvil */
+  .ed-sheet-handle { display: flex; }
+
+  /* Vistas del sidebar: altura calculada para no desbordarse */
+  .ed-view { height: auto; overflow: hidden; }
+  .ed-block-list   { max-height: calc(80vh - 130px); overflow-y: auto; }
+  .ed-props-fields { max-height: calc(80vh - 130px); overflow-y: auto; }
+
+  /* Emoji picker ocupa el ancho de la pantalla */
   .ed-emoji-picker {
-    left: 8px !important;
-    right: 8px !important;
-    width: auto !important;
+    left: 8px !important; right: 8px !important;
+    width: auto !important; bottom: auto;
   }
 }
 

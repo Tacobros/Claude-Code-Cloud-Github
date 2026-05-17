@@ -324,11 +324,15 @@ document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
 });
 
 document.getElementById("sidebarToggle").addEventListener("click", () => {
-  document.getElementById("sidebar").classList.toggle("open");
+  const isOpen = document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("sidebarBackdrop").classList.toggle("visible", isOpen);
 });
+
+document.getElementById("sidebarBackdrop").addEventListener("click", closeSidebar);
 
 function closeSidebar() {
   document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebarBackdrop").classList.remove("visible");
 }
 
 // ===== PRODUCTS =====

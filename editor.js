@@ -141,7 +141,7 @@ async function init() {
 
   renderBlockList();
   bindTopbar();
-  initMobilePreviewToggle();
+  initMobileSheet();
   document.getElementById('edLoading').style.display = 'none';
 }
 
@@ -204,6 +204,9 @@ function selectBlock(blockId) {
   if (selectedBlock.section) {
     postToFrame({ type: 'PS_HIGHLIGHT', block: blockId });
   }
+
+  // Notify mobile sheet to update label and open
+  window.dispatchEvent(new CustomEvent('ed-block-selected', { detail: selectedBlock.label }));
 }
 
 // ── RENDER FIELDS ─────────────────────────────────────────────────────────────
@@ -474,19 +477,50 @@ function setStatus(msg, cls = '') {
   el.className = 'ed-status' + (cls ? ` ${cls}` : '');
 }
 
-// ── MOBILE PREVIEW TOGGLE ─────────────────────────────────────────────────────
-function initMobilePreviewToggle() {
-  const btn  = document.getElementById('edPreviewToggle');
-  const body = document.querySelector('.ed-body');
+// ── MOBILE BOTTOM SHEET ───────────────────────────────────────────────────────
+function initMobileSheet() {
+  const sidebar = document.getElementById('edSidebar');
+  const handle  = document.getElementById('edSheetHandle');
+  const label   = document.getElementById('edSheetLabel');
 
-  btn.addEventListener('click', () => {
-    const isPreview = body.classList.toggle('show-preview');
-    btn.classList.toggle('active', isPreview);
-    btn.innerHTML = isPreview
-      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Editar`
-      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview`;
+  if (!handle) return;
+
+  // Wire up save button inside sheet
+  document.getElementById('edSaveBtnSheet').addEventListener('click', saveChanges);
+
+  // Toggle sheet on handle tap
+  handle.addEventListener('click', () => {
+    sidebar.classList.toggle('ed-sheet-open');
+  });
+
+  // Touch drag for natural feel
+  let startY = 0, startOpen = false;
+  handle.addEventListener('touchstart', e => {
+    startY    = e.touches[0].clientY;
+    startOpen = sidebar.classList.contains('ed-sheet-open');
+  }, { passive: true });
+
+  handle.addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dy) < 8) return; // treated as tap
+    if (dy > 40)  sidebar.classList.remove('ed-sheet-open'); // swipe down → close
+    if (dy < -40) sidebar.classList.add('ed-sheet-open');    // swipe up  → open
+  }, { passive: true });
+
+  // Update label when block is selected
+  window.addEventListener('ed-block-selected', e => {
+    label.textContent = e.detail || 'Editar secciones';
+    sidebar.classList.add('ed-sheet-open');
+  });
+
+  // Reset label on back
+  document.getElementById('edBackBtn').addEventListener('click', () => {
+    label.textContent = 'Editar secciones';
   });
 }
+
+// (kept for compat — no-op on desktop)
+function initMobilePreviewToggle() {}
 
 // ── EMOJI PICKER ──────────────────────────────────────────────────────────────
 function openEmojiPicker(key, btnEl) {

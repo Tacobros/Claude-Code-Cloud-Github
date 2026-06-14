@@ -252,11 +252,15 @@ async function toggleStatus(storeId, current) {
   filterStores();
   toast(next === 'active' ? 'Tienda activada' : 'Tienda suspendida');
 
-  // Notificar al dueño por correo
+  // Notificar al dueño por correo (el endpoint valida que seas superadmin)
   if (store?.owner_email) {
+    const { data: { session } } = await sb.auth.getSession();
     fetch('/api/notify-status', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+      },
       body: JSON.stringify({
         owner_email: store.owner_email,
         store_name: store.name,

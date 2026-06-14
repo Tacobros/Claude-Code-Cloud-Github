@@ -37,13 +37,19 @@ Deno.serve(async (req) => {
 
     const { data: store } = await sbAdmin
       .from('stores')
-      .select('id, stripe_customer_id')
+      .select('id')
       .eq('user_id', user.id)
       .single();
 
     if (!store) return fail('Store not found', 404);
 
-    let customerId = store.stripe_customer_id as string | null;
+    const { data: billing } = await sbAdmin
+      .from('store_billing')
+      .select('stripe_customer_id')
+      .eq('store_id', store.id)
+      .maybeSingle();
+
+    let customerId = billing?.stripe_customer_id as string | null;
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -52,9 +58,8 @@ Deno.serve(async (req) => {
       });
       customerId = customer.id;
       await sbAdmin
-        .from('stores')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', store.id);
+        .from('store_billing')
+        .upsert({ store_id: store.id, stripe_customer_id: customerId, updated_at: new Date().toISOString() });
     }
 
     const origin = req.headers.get('origin') || 'https://productspot.com';

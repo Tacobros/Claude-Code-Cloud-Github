@@ -1,12 +1,11 @@
 -- ============================================================
--- ProductSpot — PayPal Billing Setup
--- Ejecutar en: Supabase → SQL Editor → New query → Run
+-- ProductSpot — PayPal Billing Setup  (OBSOLETO)
 -- ============================================================
-
--- Columna para guardar el ID de suscripción de PayPal
-ALTER TABLE stores
-  ADD COLUMN IF NOT EXISTS paypal_subscription_id text,
-  ADD COLUMN IF NOT EXISTS plan_expires_at         timestamptz;
-
--- Índice para búsquedas desde el webhook
-CREATE INDEX IF NOT EXISTS idx_stores_paypal_sub ON stores (paypal_subscription_id);
+-- Las columnas de facturación (paypal_subscription_id, plan_expires_at)
+-- ya NO viven en la tabla "stores".
+--
+-- Ahora están en la tabla privada "store_billing", creada en:
+--   supabase/migrations/006_security_hardening.sql
+--
+-- No ejecutes este archivo. Ejecuta la migración 006 en su lugar.
+-- (Se conserva solo como referencia histórica.)

@@ -48,10 +48,12 @@ Deno.serve(async (req) => {
         const storeId        = subscription.metadata?.store_id;
 
         if (storeId) {
-          await sbAdmin.from('stores').update({
-            plan,
+          await sbAdmin.from('stores').update({ plan }).eq('id', storeId);
+          await sbAdmin.from('store_billing').upsert({
+            store_id: Number(storeId),
             stripe_subscription_id: subscriptionId,
-          }).eq('id', storeId);
+            updated_at: new Date().toISOString(),
+          });
         }
         break;
       }
@@ -73,10 +75,12 @@ Deno.serve(async (req) => {
         const storeId = sub.metadata?.store_id;
 
         if (storeId) {
-          await sbAdmin.from('stores').update({
-            plan: 'free',
+          await sbAdmin.from('stores').update({ plan: 'free' }).eq('id', storeId);
+          await sbAdmin.from('store_billing').upsert({
+            store_id: Number(storeId),
             stripe_subscription_id: null,
-          }).eq('id', storeId);
+            updated_at: new Date().toISOString(),
+          });
         }
         break;
       }

@@ -77,10 +77,12 @@ Deno.serve(async (req) => {
         const storeId = resource.custom_id;
         const plan    = PLAN_TO_PLAN[resource.plan_id] || 'starter';
         if (storeId) {
-          await sbAdmin.from('stores').update({
-            plan,
+          await sbAdmin.from('stores').update({ plan }).eq('id', storeId);
+          await sbAdmin.from('store_billing').upsert({
+            store_id: Number(storeId),
             paypal_subscription_id: resource.id,
-          }).eq('id', storeId);
+            updated_at: new Date().toISOString(),
+          });
         }
         break;
       }
@@ -99,10 +101,12 @@ Deno.serve(async (req) => {
       case 'BILLING.SUBSCRIPTION.SUSPENDED': {
         const storeId = resource.custom_id;
         if (storeId) {
-          await sbAdmin.from('stores').update({
-            plan: 'free',
+          await sbAdmin.from('stores').update({ plan: 'free' }).eq('id', storeId);
+          await sbAdmin.from('store_billing').upsert({
+            store_id: Number(storeId),
             paypal_subscription_id: null,
-          }).eq('id', storeId);
+            updated_at: new Date().toISOString(),
+          });
         }
         break;
       }

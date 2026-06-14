@@ -3,9 +3,30 @@ let searchQuery = "";
 let liveProducts = [];
 let storeWA = "50200000000";
 let storeWaMessage = "";
-let storeName = "CAS";
+let storeName = "";
 let storeUserId = null;
 let storeDbId = null;
+
+// Escapa texto controlado por el dueño antes de inyectarlo con innerHTML (anti-XSS)
+function esc(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Tienda suspendida por el equipo de ProductSpot
+function renderUnavailable() {
+  document.body.innerHTML = `
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:'Inter',sans-serif;background:#0a0f1e;color:#f1f5f9;">
+      <div style="font-size:3rem;margin-bottom:12px;">🔒</div>
+      <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:8px;">Catálogo no disponible</h1>
+      <p style="color:#94a3b8;max-width:420px;">Este catálogo no está disponible en este momento. Si eres el propietario, ingresa a tu panel para más información.</p>
+    </div>`;
+  document.title = "Catálogo no disponible";
+}
 
 function logEvent(eventType, productId = null) {
   if (!storeDbId) return;
@@ -43,6 +64,12 @@ async function loadStoreSettings() {
     const { data } = await query.single();
     if (!data) {
       window.location.href = `404.html?s=${encodeURIComponent(slug)}`;
+      return;
+    }
+
+    // Tienda suspendida: no mostrar el catálogo
+    if (data.status === "suspended") {
+      renderUnavailable();
       return;
     }
 
@@ -195,7 +222,9 @@ async function loadStoreSettings() {
 
     // WhatsApp links
     updateWALinks();
-  } catch (_) {}
+  } catch (e) {
+    console.error("loadStoreSettings:", e);
+  }
 }
 
 function setMetaTags({ title, description, image, url }) {
@@ -241,7 +270,9 @@ async function loadProducts() {
         images: p.image_urls && p.image_urls.length > 0 ? p.image_urls : (p.image_url ? [p.image_url] : []),
       }));
     }
-  } catch (_) {}
+  } catch (e) {
+    console.error("loadProducts:", e);
+  }
   renderProducts();
 
   const autoOpenId = new URLSearchParams(window.location.search).get("p");
@@ -275,21 +306,21 @@ function renderProducts() {
     const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
     return `
       <div class="product-card" onclick="openModal(${p.id})" style="--i:${i}">
-        ${p.badge ? `<div class="product-badge ${p.badge}">${p.badgeText}</div>` : ""}
+        ${p.badge ? `<div class="product-badge ${esc(p.badge)}">${esc(p.badgeText)}</div>` : ""}
         <div class="product-image">
           ${thumb
-            ? `<img src="${thumb}" alt="${p.name}" class="product-img" loading="lazy" />`
+            ? `<img src="${esc(thumb)}" alt="${esc(p.name)}" class="product-img" loading="lazy" />`
             : `<div class="product-img-placeholder">👕</div>`}
         </div>
         <div class="product-body">
-          <div class="product-league">${p.league}</div>
-          <div class="product-name">${p.name}</div>
-          <div class="product-desc">${p.desc}</div>
+          <div class="product-league">${esc(p.league)}</div>
+          <div class="product-name">${esc(p.name)}</div>
+          <div class="product-desc">${esc(p.desc)}</div>
           <div class="product-sizes">
-            ${(p.sizes || []).map((s) => `<span class="size-chip">${s}</span>`).join("")}
+            ${(p.sizes || []).map((s) => `<span class="size-chip">${esc(s)}</span>`).join("")}
           </div>
           <div class="product-footer">
-            <div class="product-price">${p.price} <span>GTQ</span></div>
+            <div class="product-price">${esc(p.price)} <span>GTQ</span></div>
             <a class="btn-ask" href="${waLink(p)}" target="_blank" onclick="event.stopPropagation()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Pedir
@@ -332,8 +363,8 @@ function openModal(id) {
 
   const imageHtml = images.length > 0
     ? `<div class="modal-gallery">
-        <img id="modalMainImg" src="${images[0]}" alt="${p.name}" class="modal-main-img" />
-        ${images.length > 1 ? `<div class="modal-thumbs-row">${images.map((url, i) => `<img src="${url}" class="modal-thumb-img${i === 0 ? " active" : ""}" onclick="setMainImg(this,'${url}')" />`).join("")}</div>` : ""}
+        <img id="modalMainImg" src="${esc(images[0])}" alt="${esc(p.name)}" class="modal-main-img" />
+        ${images.length > 1 ? `<div class="modal-thumbs-row">${images.map((url, i) => `<img src="${esc(url)}" class="modal-thumb-img${i === 0 ? " active" : ""}" onclick="setMainImg(this,'${esc(url)}')" />`).join("")}</div>` : ""}
       </div>`
     : `<div class="modal-product-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">👕</div>`;
 
@@ -341,15 +372,15 @@ function openModal(id) {
   content.innerHTML = `
     ${imageHtml}
     <div class="modal-body">
-      <div class="modal-league">${p.league}</div>
-      <div class="modal-name">${p.name}</div>
-      <div class="modal-desc">${p.desc}</div>
+      <div class="modal-league">${esc(p.league)}</div>
+      <div class="modal-name">${esc(p.name)}</div>
+      <div class="modal-desc">${esc(p.desc)}</div>
       <div class="modal-section-title">Tallas disponibles</div>
       <div class="modal-sizes" id="modalSizes">
-        ${(p.sizes || []).map((s) => `<button class="modal-size" onclick="selectSize(this,'${s}')">${s}</button>`).join("")}
+        ${(p.sizes || []).map((s) => `<button class="modal-size" onclick="selectSize(this,'${esc(s)}')">${esc(s)}</button>`).join("")}
       </div>
       <div class="modal-price-row">
-        <div class="modal-price">${p.price} <small style="font-size:.75rem;color:#9ca3af;font-weight:500">GTQ</small></div>
+        <div class="modal-price">${esc(p.price)} <small style="font-size:.75rem;color:#9ca3af;font-weight:500">GTQ</small></div>
         <a class="btn-modal-wa" id="modalWaBtn" href="${waLink(p)}" target="_blank">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Pedir por WhatsApp

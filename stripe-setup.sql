@@ -1,13 +1,11 @@
 -- ============================================================
--- ProductSpot — Stripe Integration Setup
--- Ejecutar en: Supabase → SQL Editor → New query → Run
+-- ProductSpot — Stripe Integration Setup  (OBSOLETO)
 -- ============================================================
-
--- Add Stripe billing columns to stores
-ALTER TABLE stores
-  ADD COLUMN IF NOT EXISTS stripe_customer_id     text,
-  ADD COLUMN IF NOT EXISTS stripe_subscription_id text,
-  ADD COLUMN IF NOT EXISTS plan_expires_at         timestamptz;
-
--- Index for webhook lookups by customer
-CREATE INDEX IF NOT EXISTS idx_stores_stripe_customer ON stores (stripe_customer_id);
+-- Las columnas de facturación (stripe_customer_id, stripe_subscription_id,
+-- plan_expires_at) ya NO viven en la tabla "stores".
+--
+-- Ahora están en la tabla privada "store_billing", creada en:
+--   supabase/migrations/006_security_hardening.sql
+--
+-- No ejecutes este archivo. Ejecuta la migración 006 en su lugar.
+-- (Se conserva solo como referencia histórica.)

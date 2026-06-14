@@ -1200,7 +1200,7 @@ function loadPlanPage() {
     {
       id: 'free',
       name: 'Free',
-      price: '$0',
+      price: 'Q0',
       period: '/ siempre gratis',
       features: [
         'Hasta 5 productos',
@@ -1211,7 +1211,7 @@ function loadPlanPage() {
     {
       id: 'starter',
       name: 'Starter',
-      price: '$5',
+      price: 'Q39.99',
       period: '/ mes',
       features: [
         'Hasta 50 productos',
@@ -1226,7 +1226,7 @@ function loadPlanPage() {
     {
       id: 'pro',
       name: 'Pro',
-      price: '$10',
+      price: 'Q80',
       period: '/ mes',
       features: [
         'Productos ilimitados',

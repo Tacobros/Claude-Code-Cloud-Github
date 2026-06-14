@@ -29,6 +29,7 @@ Stack: HTML/CSS/JS vanilla + Supabase + Cloudflare Pages. **No hay build ni fram
 - `plan`, `status`, `user_id` de `stores` están protegidos por el trigger `protect_store_fields` (migración 006): solo `service_role` o superadmin los cambian.
 - Datos de facturación → tabla `store_billing` (solo `service_role`).
 - Orden de scripts SQL: ver README. Las migraciones nuevas van en `supabase/migrations/` numeradas y deben ser **idempotentes** (`IF NOT EXISTS`, `DROP ... IF EXISTS`).
+- **Aplicación de cambios:** el usuario prefiere que apliques los cambios de Supabase tú mismo vía el conector MCP (proyecto `vowsvdzjyvpalyvkfxte`): `apply_migration` para SQL/DDL y `deploy_edge_function` para las funciones, además de guardar el archivo en el repo. No te limites a entregar instrucciones. Tras cambios DDL, corre `get_advisors`.
 
 ## Git
 

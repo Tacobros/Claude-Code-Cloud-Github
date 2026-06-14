@@ -1,6 +1,7 @@
 let activeFilter = "all";
 let searchQuery = "";
 let liveProducts = [];
+let loadError = false;
 let storeWA = "50200000000";
 let storeWaMessage = "";
 let storeName = "";
@@ -251,6 +252,7 @@ function updateWALinks() {
 
 // ===== PRODUCTS =====
 async function loadProducts() {
+  loadError = false;
   try {
     if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) {
       renderProducts();
@@ -258,7 +260,8 @@ async function loadProducts() {
     }
     let productsQuery = sb.from("products").select("*").eq("available", true).order("created_at", { ascending: false });
     if (storeUserId) productsQuery = productsQuery.eq("user_id", storeUserId);
-    const { data } = await productsQuery;
+    const { data, error } = await productsQuery;
+    if (error) throw error;
     if (data && data.length > 0) {
       liveProducts = data.map((p) => ({
         ...p,
@@ -272,6 +275,7 @@ async function loadProducts() {
     }
   } catch (e) {
     console.error("loadProducts:", e);
+    loadError = true;
   }
   renderProducts();
 
@@ -294,9 +298,26 @@ function renderProducts() {
     return matchCat && matchSearch;
   });
 
+  // Error de carga: mensaje distinto + opción de reintentar
+  if (loadError) {
+    grid.innerHTML = "";
+    empty.style.display = "block";
+    empty.querySelector("span").textContent = "⚠️";
+    document.getElementById("emptyMsg").innerHTML =
+      `No pudimos cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.<br/>
+       <button type="button" class="btn-retry" onclick="loadProducts()">Reintentar</button>`;
+    return;
+  }
+
   if (filtered.length === 0) {
     grid.innerHTML = "";
     empty.style.display = "block";
+    empty.querySelector("span").textContent = "😕";
+    const waUrl = `https://wa.me/${storeWA}?text=${encodeURIComponent(storeWaMessage || `Hola! Me interesa hacer un pedido en ${storeName}`)}`;
+    // Catálogo realmente vacío vs. búsqueda/filtro sin resultados
+    document.getElementById("emptyMsg").innerHTML = liveProducts.length === 0
+      ? `Aún no hay productos en este catálogo. <br/><a href="${waUrl}" target="_blank">Contáctanos por WhatsApp</a>`
+      : `No encontramos resultados para tu búsqueda. <br/><a href="${waUrl}" target="_blank">Contáctanos por WhatsApp</a>`;
     return;
   }
 

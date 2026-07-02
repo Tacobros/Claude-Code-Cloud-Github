@@ -113,7 +113,7 @@ let frameReady     = false;
 // Columnas de `stores` legibles desde el navegador (deben coincidir con
 // el GRANT de 006_secure_stores_and_currency.sql — select('*') ya no funciona)
 const STORE_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
-  plan, currency, accent_color, logo_url,
+  plan, status, currency, accent_color, logo_url,
   hero_badge, hero_title, hero_subtitle, hero_image_url,
   catalog_title, catalog_subtitle, cta_title, cta_desc,
   custom_categories, show_gallery,

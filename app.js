@@ -30,7 +30,7 @@ function currencySymbol() {
 // Columnas públicas de `stores` (deben coincidir con el GRANT de
 // 006_secure_stores_and_currency.sql — select("*") ya no funciona)
 const STORE_PUBLIC_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
-  plan, currency, accent_color, logo_url,
+  plan, status, currency, accent_color, logo_url,
   hero_badge, hero_title, hero_subtitle, hero_image_url,
   catalog_title, catalog_subtitle, cta_title, cta_desc,
   custom_categories, show_gallery,
@@ -78,6 +78,12 @@ async function loadStoreSettings() {
     query = query.eq("slug", slug);
     const { data } = await query.single();
     if (!data) {
+      window.location.href = `404.html?s=${encodeURIComponent(slug)}`;
+      return;
+    }
+
+    // Tiendas suspendidas por el superadmin no se muestran al público
+    if (data.status === "suspended") {
       window.location.href = `404.html?s=${encodeURIComponent(slug)}`;
       return;
     }

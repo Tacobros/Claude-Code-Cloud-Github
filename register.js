@@ -240,12 +240,19 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
 
   // Create the store record immediately if we have a session (email confirm disabled)
   if (session && userId) {
-    await sb.from("stores").insert({
+    const { error: storeError } = await sb.from("stores").insert({
       user_id: userId,
       name: storeName,
       slug,
       whatsapp,
     });
+    if (storeError) {
+      // El slug pudo ocuparse entre la verificación y el insert (u otro fallo).
+      // Guardamos los datos y el panel admin muestra el formulario para completarla.
+      localStorage.setItem("pendingStore", JSON.stringify({ name: storeName, slug, whatsapp }));
+      window.location.href = "admin.html";
+      return;
+    }
     showSuccess(true, slug);
   } else {
     // Email confirmation required — store pending data in localStorage
@@ -287,9 +294,13 @@ sb.auth.onAuthStateChange(async (event, session) => {
       const { name, slug, whatsapp } = JSON.parse(pending);
       const { data: existing } = await sb.from("stores").select("id").eq("user_id", session.user.id).maybeSingle();
       if (!existing) {
-        await sb.from("stores").insert({ user_id: session.user.id, name, slug, whatsapp });
+        const { error } = await sb.from("stores").insert({ user_id: session.user.id, name, slug, whatsapp });
+        // Si el insert falla (p. ej. slug ocupado), conservamos pendingStore:
+        // el panel admin lo detecta y muestra el formulario para corregirlo.
+        if (!error) localStorage.removeItem("pendingStore");
+      } else {
+        localStorage.removeItem("pendingStore");
       }
-      localStorage.removeItem("pendingStore");
       window.location.href = "admin.html";
     }
   }

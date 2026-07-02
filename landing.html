@@ -771,7 +771,7 @@
           <a href="register.html?plan=pro" class="plan-cta plan-cta-outline">Empezar por $10/mes</a>
         </div>
       </div>
-      <p class="plan-note">¿Tienes dudas? <a href="https://wa.me/50212345678" target="_blank">Escríbenos por WhatsApp</a> y te ayudamos a elegir el plan correcto.</p>
+      <p class="plan-note">¿Tienes dudas? <a href="#" data-support-wa target="_blank">Escríbenos por WhatsApp</a> y te ayudamos a elegir el plan correcto.</p>
     </div>
   </section>
 
@@ -886,7 +886,7 @@
     <div class="footer-inner">
       <div class="footer-brand">
         <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png" alt="ProductSpot" style="height:26px;width:auto;opacity:.8;" />
-        <p>© 2025 ProductSpot · Catálogos digitales para negocios</p>
+        <p id="footerCopyLine">© 2025 ProductSpot · Catálogos digitales para negocios</p>
       </div>
       <div class="footer-links">
         <a href="#features">Funciones</a>
@@ -901,6 +901,17 @@
   </footer>
 
   <script>
+    // Número de WhatsApp de soporte (formato internacional sin espacios
+    // ni "+"). Todos los enlaces con data-support-wa usan este número.
+    const SUPPORT_WHATSAPP = "50248871603";
+    document.querySelectorAll('a[data-support-wa]').forEach((a) => {
+      a.href = `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent('Hola! Tengo una duda sobre ProductSpot.')}`;
+    });
+
+    // Año dinámico en el pie de página
+    const footerCopyLine = document.getElementById('footerCopyLine');
+    if (footerCopyLine) footerCopyLine.textContent = `© ${new Date().getFullYear()} ProductSpot · Catálogos digitales para negocios`;
+
     // Rotating hero words
     (function() {
       const words = document.querySelectorAll('#heroRotating .hero-rotating-word');

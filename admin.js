@@ -39,6 +39,44 @@ const DEFAULT_CATEGORIES = {
   local: "Liga Nacional",
 };
 
+// Escapa texto proveniente de la BD antes de insertarlo con innerHTML
+function escapeHtml(v) {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+const CURRENCY_SYMBOLS = {
+  GTQ: "Q", USD: "$", MXN: "$", HNL: "L", NIO: "C$", CRC: "₡",
+  PAB: "B/.", DOP: "RD$", COP: "$", PEN: "S/", CLP: "$", ARS: "$",
+  BOB: "Bs", UYU: "$U", PYG: "₲", BRL: "R$", EUR: "€",
+};
+function storeCurrencyCode() {
+  return storeSettings?.currency || "GTQ";
+}
+function currencySymbol() {
+  return CURRENCY_SYMBOLS[storeCurrencyCode()] || "";
+}
+
+// Columnas de `stores` legibles desde el navegador (deben coincidir con
+// el GRANT de 006_secure_stores_and_currency.sql — select("*") ya no funciona)
+const STORE_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
+  plan, status, currency, accent_color, logo_url,
+  hero_badge, hero_title, hero_subtitle, hero_image_url,
+  catalog_title, catalog_subtitle, cta_title, cta_desc,
+  custom_categories, show_gallery,
+  gallery1_img, gallery1_title, gallery2_img, gallery2_title,
+  gallery3_img, gallery3_title, gallery4_img, gallery4_title,
+  about_title, about1_icon, about1_title, about1_desc,
+  about2_icon, about2_title, about2_desc,
+  about3_icon, about3_title, about3_desc,
+  about4_icon, about4_title, about4_desc,
+  stat1_value, stat1_label, stat2_value, stat2_label,
+  stat3_value, stat3_label, stat4_value, stat4_label`;
+
 let allProducts = [];
 let deleteTargetId = null;
 let storeSettings = {};
@@ -52,7 +90,7 @@ function getCategoryLabel(cat) {
 
 function populateCategorySelects() {
   const customOptions = customCategories.map(
-    (c) => `<option value="${c}">${c}</option>`
+    (c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`
   ).join("");
 
   const pCat = document.getElementById("pCategory");
@@ -160,29 +198,112 @@ function showLogin() {
   showLoginPanel('login');
 }
 
+// Garantiza que el usuario tenga una tienda. Devuelve true si existe
+// (o se pudo crear); false si se mostró el formulario de recuperación.
+async function ensureStore(user) {
+  const { data: existing } = await sb.from("stores").select("id").eq("user_id", user.id).maybeSingle();
+  if (existing) {
+    localStorage.removeItem("pendingStore");
+    return true;
+  }
+
+  let prefill = { name: "", slug: "", whatsapp: "" };
+  const pending = localStorage.getItem("pendingStore");
+  if (pending) {
+    try { prefill = { ...prefill, ...JSON.parse(pending) }; } catch (_) {}
+    const { error } = await sb.from("stores").insert({
+      user_id: user.id,
+      name: prefill.name,
+      slug: prefill.slug,
+      whatsapp: prefill.whatsapp,
+    });
+    if (!error) {
+      localStorage.removeItem("pendingStore");
+      return true;
+    }
+    // El insert falló (p. ej. slug ya ocupado) → dejar que el usuario lo corrija
+  }
+
+  showCreateStoreForm(user, prefill);
+  return false;
+}
+
+function showCreateStoreForm(user, prefill) {
+  const overlay = document.createElement("div");
+  overlay.id = "createStoreOverlay";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:2000;background:rgba(10,14,26,.92);display:flex;align-items:center;justify-content:center;padding:24px;";
+  overlay.innerHTML = `
+    <div style="background:#0f172a;border:1px solid #1e293b;border-radius:14px;max-width:420px;width:100%;padding:32px;">
+      <h2 style="font-size:1.2rem;margin-bottom:8px;">Completa tu tienda</h2>
+      <p style="color:#9ca3af;font-size:.875rem;margin-bottom:20px;line-height:1.5;">
+        Tu cuenta existe pero falta crear tu tienda. Completa estos datos y listo.
+      </p>
+      <div class="field" style="margin-bottom:14px;">
+        <label style="display:block;font-size:.8rem;margin-bottom:6px;">Nombre de la tienda</label>
+        <input type="text" id="recoverName" style="width:100%;" placeholder="Mi tienda" />
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <label style="display:block;font-size:.8rem;margin-bottom:6px;">Enlace (slug)</label>
+        <input type="text" id="recoverSlug" style="width:100%;" placeholder="mi-tienda" />
+        <small style="color:#6b7280;font-size:.75rem;">Solo minúsculas, números y guiones.</small>
+      </div>
+      <div class="field" style="margin-bottom:20px;">
+        <label style="display:block;font-size:.8rem;margin-bottom:6px;">WhatsApp (con código de país)</label>
+        <input type="text" id="recoverWhatsapp" style="width:100%;" placeholder="50212345678" />
+      </div>
+      <p id="recoverError" style="display:none;color:#ef4444;font-size:.825rem;margin-bottom:14px;"></p>
+      <button id="recoverBtn" class="btn-primary" style="width:100%;padding:12px;border-radius:8px;border:none;cursor:pointer;font-weight:700;">Crear mi tienda</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  document.getElementById("recoverName").value = prefill.name || "";
+  document.getElementById("recoverSlug").value = prefill.slug || "";
+  document.getElementById("recoverWhatsapp").value = prefill.whatsapp || "";
+
+  document.getElementById("recoverBtn").addEventListener("click", async () => {
+    const err = document.getElementById("recoverError");
+    err.style.display = "none";
+    const name = document.getElementById("recoverName").value.trim();
+    const slug = slugify(document.getElementById("recoverSlug").value);
+    const whatsapp = document.getElementById("recoverWhatsapp").value.replace(/\D/g, "");
+    if (!name || !slug) {
+      err.textContent = "El nombre y el enlace son obligatorios.";
+      err.style.display = "block";
+      return;
+    }
+    if (whatsapp.length < 8 || whatsapp.length > 15) {
+      err.textContent = "Número de WhatsApp inválido. Usa formato internacional sin espacios.";
+      err.style.display = "block";
+      return;
+    }
+    const btn = document.getElementById("recoverBtn");
+    btn.disabled = true;
+    btn.textContent = "Creando...";
+    const { error } = await sb.from("stores").insert({ user_id: user.id, name, slug, whatsapp });
+    if (error) {
+      err.textContent = error.message?.includes("duplicate") || error.code === "23505"
+        ? "Ese enlace ya está en uso, elige otro."
+        : "No se pudo crear la tienda: " + error.message;
+      err.style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "Crear mi tienda";
+      return;
+    }
+    localStorage.removeItem("pendingStore");
+    window.location.reload();
+  });
+}
+
 async function showApp(user) {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("adminApp").style.display = "flex";
   document.getElementById("sidebarUser").textContent = user.email;
 
-  // Create store from registration if email confirmation was required
-  const pending = localStorage.getItem("pendingStore");
-  if (pending) {
-    const { name, slug, whatsapp } = JSON.parse(pending);
-    const { data: existing } = await sb.from("stores").select("id").eq("user_id", user.id).maybeSingle();
-    if (!existing) {
-      await sb.from("stores").insert({ user_id: user.id, name, slug, whatsapp });
-    }
-    localStorage.removeItem("pendingStore");
-  } else {
-    // Check if user has a store at all; if not, send to registration
-    const { data: existing } = await sb.from("stores").select("id").eq("user_id", user.id).maybeSingle();
-    if (!existing) {
-      await sb.auth.signOut();
-      window.location.href = "register.html?error=no_store";
-      return;
-    }
-  }
+  // Red de seguridad: si la cuenta no tiene tienda (registro interrumpido,
+  // email confirmado en otro dispositivo, slug duplicado, etc.), la crea
+  // desde pendingStore o muestra un formulario para completarla.
+  const hasStore = await ensureStore(user);
+  if (!hasStore) return; // el formulario recarga la app al terminar
 
   loadProducts(user);
   loadSettings(user);
@@ -378,22 +499,26 @@ function renderTable() {
     return;
   }
 
-  const rows = filtered.map((p) => `
-    <tr id="row-${p.id}">
-      <td class="td-check"><input type="checkbox" value="${p.id}" onchange="onRowCheck(this)" aria-label="Seleccionar ${p.name}" /></td>
-      <td class="td-emoji">${(p.image_urls && p.image_urls.length > 0) ? `<img src="${p.image_urls[0]}" class="td-img" alt="${p.name}" />` : p.image_url ? `<img src="${p.image_url}" class="td-img" alt="${p.name}" />` : "📦"}</td>
+  const rows = filtered.map((p) => {
+    const thumb = (p.image_urls && p.image_urls.length > 0) ? p.image_urls[0] : p.image_url;
+    const sizes = (p.sizes || []).length ? ` · ${escapeHtml((p.sizes || []).join(", "))}` : "";
+    return `
+    <tr id="row-${Number(p.id)}">
+      <td class="td-check"><input type="checkbox" value="${Number(p.id)}" onchange="onRowCheck(this)" aria-label="Seleccionar ${escapeHtml(p.name)}" /></td>
+      <td class="td-emoji">${thumb ? `<img src="${escapeHtml(thumb)}" class="td-img" alt="${escapeHtml(p.name)}" />` : "📦"}</td>
       <td class="td-name">
-        <strong>${p.name}</strong>
-        <small>Q${p.price} GTQ · ${(p.sizes || []).join(", ")}</small>
+        <strong>${escapeHtml(p.name)}</strong>
+        <small>${currencySymbol()}${escapeHtml(p.price)} ${escapeHtml(storeCurrencyCode())}${sizes}</small>
       </td>
-      <td><span class="badge badge-${p.category}">${getCategoryLabel(p.category)}</span></td>
+      <td><span class="badge badge-${escapeHtml(p.category)}">${escapeHtml(getCategoryLabel(p.category))}</span></td>
       <td class="${p.available ? 'status-on' : 'status-off'}">${p.available ? "✓ Visible" : "✗ Oculto"}</td>
       <td class="td-actions">
-        <button class="btn-edit" onclick="openEditModal(${p.id})">Editar</button>
-        <button class="btn-delete" onclick="askDelete(${p.id})">Eliminar</button>
+        <button class="btn-edit" onclick="openEditModal(${Number(p.id)})">Editar</button>
+        <button class="btn-delete" onclick="askDelete(${Number(p.id)})">Eliminar</button>
       </td>
     </tr>
-  `).join("");
+  `;
+  }).join("");
 
   document.getElementById("productsTable").innerHTML = `
     <table>
@@ -402,7 +527,7 @@ function renderTable() {
           <th class="td-check"><input type="checkbox" id="checkAll" onchange="toggleAllRows(this)" aria-label="Seleccionar todos" /></th>
           <th style="width:52px"></th>
           <th>Producto</th>
-          <th>Liga</th>
+          <th>Categoría</th>
           <th>Estado</th>
           <th>Acciones</th>
         </tr>
@@ -611,7 +736,7 @@ async function loadSettings(user) {
     if (!u) { showLogin(); return; }
     user = u;
   }
-  const { data } = await sb.from("stores").select("*").eq("user_id", user.id).single();
+  const { data } = await sb.from("stores").select(STORE_COLS).eq("user_id", user.id).single();
 
   // Set slug URL prefix: subdomain format on platform, ?s= param locally
   const host = window.location.hostname;
@@ -632,6 +757,8 @@ async function loadSettings(user) {
     document.getElementById("storeSlug").value = data.slug || "";
     updateCatalogLink(data.slug || "");
     document.getElementById("storeWhatsapp").value = data.whatsapp || "";
+    const currencySel = document.getElementById("storeCurrency");
+    if (currencySel) currencySel.value = data.currency || "GTQ";
     document.getElementById("storeWaMessage").value = data.wa_message || "";
     document.getElementById("storeDesc").value = data.description || "";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";
@@ -708,6 +835,8 @@ async function loadSettings(user) {
     currentPlan = data.plan || 'free';
     loadPlanPage();
     enforcePlanLimits();
+    // Re-render con la moneda de la tienda (los productos pudieron cargarse antes)
+    if (allProducts.length > 0) renderTable();
   }
 }
 
@@ -869,6 +998,7 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     name: document.getElementById("storeName").value.trim(),
     slug: slug || null,
     whatsapp: document.getElementById("storeWhatsapp").value.replace(/\D/g, ''),
+    currency: document.getElementById("storeCurrency")?.value || "GTQ",
     wa_message: document.getElementById("storeWaMessage").value.trim() || null,
     description: document.getElementById("storeDesc").value.trim(),
     accent_color: document.getElementById("storeAccent").value,
@@ -963,7 +1093,7 @@ function renderCustomCategories() {
   }
   list.innerHTML = customCategories.map((c, i) => `
     <span class="category-chip">
-      ${c}
+      ${escapeHtml(c)}
       <button type="button" onclick="removeCategory(${i})" title="Eliminar">✕</button>
     </span>
   `).join("");
@@ -1182,7 +1312,7 @@ async function loadAnalytics() {
     return `
       <div style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;">
-          <span style="color:#e2e8f0;">${name}</span>
+          <span style="color:#e2e8f0;">${escapeHtml(name)}</span>
           <span style="color:#6b7280;">${count} vista${count !== 1 ? "s" : ""}</span>
         </div>
         <div style="height:6px;background:#1e293b;border-radius:99px;">

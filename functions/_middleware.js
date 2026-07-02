@@ -7,7 +7,7 @@ const HEADERS = {
 };
 
 async function fetchStore(slug) {
-  const url = `${SUPABASE_URL}/rest/v1/stores?slug=eq.${encodeURIComponent(slug)}&select=name,hero_subtitle,hero_image_url,logo_url&limit=1`;
+  const url = `${SUPABASE_URL}/rest/v1/stores?slug=eq.${encodeURIComponent(slug)}&select=name,hero_subtitle,hero_image_url,logo_url,currency&limit=1`;
   const res = await fetch(url, { headers: HEADERS });
   const data = await res.json();
   return data?.[0] || null;
@@ -71,7 +71,7 @@ export async function onRequest({ request, next }) {
       const product = await fetchProduct(productId);
       if (product) {
         title       = `${product.name} — ${store.name}`;
-        description = product.description || `${product.name} · Q${product.price} GTQ`;
+        description = product.description || `${product.name} · ${product.price} ${store.currency || "GTQ"}`;
         image       = product.image_urls?.[0] || product.image_url || image;
       }
     }

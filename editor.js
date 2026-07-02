@@ -110,12 +110,28 @@ let pendingChanges = {};
 let selectedBlock  = null;
 let frameReady     = false;
 
+// Columnas de `stores` legibles desde el navegador (deben coincidir con
+// el GRANT de 006_secure_stores_and_currency.sql — select('*') ya no funciona)
+const STORE_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
+  plan, currency, accent_color, logo_url,
+  hero_badge, hero_title, hero_subtitle, hero_image_url,
+  catalog_title, catalog_subtitle, cta_title, cta_desc,
+  custom_categories, show_gallery,
+  gallery1_img, gallery1_title, gallery2_img, gallery2_title,
+  gallery3_img, gallery3_title, gallery4_img, gallery4_title,
+  about_title, about1_icon, about1_title, about1_desc,
+  about2_icon, about2_title, about2_desc,
+  about3_icon, about3_title, about3_desc,
+  about4_icon, about4_title, about4_desc,
+  stat1_value, stat1_label, stat2_value, stat2_label,
+  stat3_value, stat3_label, stat4_value, stat4_label`;
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 async function init() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) { window.location.href = 'admin.html'; return; }
 
-  const { data, error } = await sb.from('stores').select('*').eq('user_id', user.id).single();
+  const { data, error } = await sb.from('stores').select(STORE_COLS).eq('user_id', user.id).single();
   if (error || !data) { window.location.href = 'admin.html'; return; }
   storeData = data;
 

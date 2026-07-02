@@ -6,6 +6,42 @@ let storeWaMessage = "";
 let storeName = "CAS";
 let storeUserId = null;
 let storeDbId = null;
+let storeCurrency = "GTQ";
+
+// Escapa texto proveniente de la BD antes de insertarlo con innerHTML
+function escapeHtml(v) {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+const CURRENCY_SYMBOLS = {
+  GTQ: "Q", USD: "$", MXN: "$", HNL: "L", NIO: "C$", CRC: "₡",
+  PAB: "B/.", DOP: "RD$", COP: "$", PEN: "S/", CLP: "$", ARS: "$",
+  BOB: "Bs", UYU: "$U", PYG: "₲", BRL: "R$", EUR: "€",
+};
+function currencySymbol() {
+  return CURRENCY_SYMBOLS[storeCurrency] || "";
+}
+
+// Columnas públicas de `stores` (deben coincidir con el GRANT de
+// 006_secure_stores_and_currency.sql — select("*") ya no funciona)
+const STORE_PUBLIC_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
+  plan, currency, accent_color, logo_url,
+  hero_badge, hero_title, hero_subtitle, hero_image_url,
+  catalog_title, catalog_subtitle, cta_title, cta_desc,
+  custom_categories, show_gallery,
+  gallery1_img, gallery1_title, gallery2_img, gallery2_title,
+  gallery3_img, gallery3_title, gallery4_img, gallery4_title,
+  about_title, about1_icon, about1_title, about1_desc,
+  about2_icon, about2_title, about2_desc,
+  about3_icon, about3_title, about3_desc,
+  about4_icon, about4_title, about4_desc,
+  stat1_value, stat1_label, stat2_value, stat2_label,
+  stat3_value, stat3_label, stat4_value, stat4_label`;
 
 function logEvent(eventType, productId = null) {
   if (!storeDbId) return;
@@ -38,7 +74,7 @@ async function loadStoreSettings() {
       window.location.href = "landing.html";
       return;
     }
-    let query = sb.from("stores").select("*");
+    let query = sb.from("stores").select(STORE_PUBLIC_COLS);
     query = query.eq("slug", slug);
     const { data } = await query.single();
     if (!data) {
@@ -47,8 +83,9 @@ async function loadStoreSettings() {
     }
 
     storeName = data.name || "";
-    storeWA = data.whatsapp || storeWA;
+    storeWA = String(data.whatsapp || "").replace(/\D/g, "") || storeWA;
     storeWaMessage = data.wa_message || "";
+    storeCurrency = data.currency || "GTQ";
     storeUserId = data.user_id;
     storeDbId = data.id;
     logEvent("catalog_view");
@@ -91,8 +128,8 @@ async function loadStoreSettings() {
     const headerIcon = document.getElementById("siteLogoIcon");
     const footerIcon = document.getElementById("footerLogoIcon");
     if (data.logo_url) {
-      if (headerIcon) { headerIcon.innerHTML = `<img src="${data.logo_url}" alt="${storeName}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;" />`; headerIcon.style.display = ""; }
-      if (footerIcon) { footerIcon.innerHTML = `<img src="${data.logo_url}" alt="${storeName}" style="width:24px;height:24px;object-fit:contain;border-radius:4px;" />`; footerIcon.style.display = ""; }
+      if (headerIcon) { headerIcon.innerHTML = `<img src="${escapeHtml(data.logo_url)}" alt="${escapeHtml(storeName)}" style="width:32px;height:32px;object-fit:contain;border-radius:6px;" />`; headerIcon.style.display = ""; }
+      if (footerIcon) { footerIcon.innerHTML = `<img src="${escapeHtml(data.logo_url)}" alt="${escapeHtml(storeName)}" style="width:24px;height:24px;object-fit:contain;border-radius:4px;" />`; footerIcon.style.display = ""; }
     } else {
       if (headerIcon) headerIcon.style.display = "none";
       if (footerIcon) footerIcon.style.display = "none";
@@ -102,11 +139,23 @@ async function loadStoreSettings() {
     const footerLogoText = document.getElementById("footerLogoText");
     if (footerLogoText) footerLogoText.textContent = storeName;
 
-    // Sello ProductSpot — solo en tiendas con plan gratuito
+    // Sello ProductSpot — solo en tiendas con plan gratuito.
+    // El enlace apunta a la landing en el dominio raíz de la plataforma
+    // (con UTM para medir cuántos registros trae el sello).
     const productspotBadge = document.getElementById("productspotBadge");
-    if (productspotBadge && (!data.plan || data.plan === "free")) productspotBadge.style.display = "";
+    if (productspotBadge && (!data.plan || data.plan === "free")) {
+      const badgeLink = productspotBadge.querySelector("a");
+      if (badgeLink) {
+        const host = window.location.hostname;
+        const parts = host.split(".");
+        const minParts = host.endsWith(".pages.dev") ? 4 : 3;
+        const rootDomain = parts.length >= minParts ? parts.slice(1).join(".") : host;
+        badgeLink.href = `https://${rootDomain}/landing.html?utm_source=badge`;
+      }
+      productspotBadge.style.display = "";
+    }
     const footerCopy = document.getElementById("footerCopy");
-    if (footerCopy) footerCopy.textContent = storeName ? `© 2025 ${storeName}` : "";
+    if (footerCopy) footerCopy.textContent = storeName ? `© ${new Date().getFullYear()} ${storeName}` : "";
 
     // Hero content
     const heroBadge = document.getElementById("heroBadge");
@@ -233,7 +282,7 @@ async function loadProducts() {
     if (data && data.length > 0) {
       liveProducts = data.map((p) => ({
         ...p,
-        price: `Q${p.price}`,
+        price: `${currencySymbol()}${p.price}`,
         league: p.category || "",
         badgeText: p.badge === "popular" ? "Más vendida" : p.badge === "new" ? "Nueva" : p.badge || "",
         desc: p.description || "",
@@ -274,23 +323,23 @@ function renderProducts() {
   grid.innerHTML = filtered.map((p, i) => {
     const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
     return `
-      <div class="product-card" onclick="openModal(${p.id})" style="--i:${i}">
-        ${p.badge ? `<div class="product-badge ${p.badge}">${p.badgeText}</div>` : ""}
+      <div class="product-card" onclick="openModal(${Number(p.id)})" style="--i:${i}">
+        ${p.badge ? `<div class="product-badge ${escapeHtml(p.badge)}">${escapeHtml(p.badgeText)}</div>` : ""}
         <div class="product-image">
           ${thumb
-            ? `<img src="${thumb}" alt="${p.name}" class="product-img" loading="lazy" />`
-            : `<div class="product-img-placeholder">👕</div>`}
+            ? `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(p.name)}" class="product-img" loading="lazy" />`
+            : `<div class="product-img-placeholder">📦</div>`}
         </div>
         <div class="product-body">
-          <div class="product-league">${p.league}</div>
-          <div class="product-name">${p.name}</div>
-          <div class="product-desc">${p.desc}</div>
+          <div class="product-league">${escapeHtml(p.league)}</div>
+          <div class="product-name">${escapeHtml(p.name)}</div>
+          <div class="product-desc">${escapeHtml(p.desc)}</div>
           <div class="product-sizes">
-            ${(p.sizes || []).map((s) => `<span class="size-chip">${s}</span>`).join("")}
+            ${(p.sizes || []).map((s) => `<span class="size-chip">${escapeHtml(s)}</span>`).join("")}
           </div>
           <div class="product-footer">
-            <div class="product-price">${p.price} <span>GTQ</span></div>
-            <a class="btn-ask" href="${waLink(p)}" target="_blank" onclick="event.stopPropagation()">
+            <div class="product-price">${escapeHtml(p.price)} <span>${escapeHtml(storeCurrency)}</span></div>
+            <a class="btn-ask" href="${escapeHtml(waLink(p))}" target="_blank" onclick="event.stopPropagation()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Pedir
             </a>
@@ -332,25 +381,29 @@ function openModal(id) {
 
   const imageHtml = images.length > 0
     ? `<div class="modal-gallery">
-        <img id="modalMainImg" src="${images[0]}" alt="${p.name}" class="modal-main-img" />
-        ${images.length > 1 ? `<div class="modal-thumbs-row">${images.map((url, i) => `<img src="${url}" class="modal-thumb-img${i === 0 ? " active" : ""}" onclick="setMainImg(this,'${url}')" />`).join("")}</div>` : ""}
+        <img id="modalMainImg" src="${escapeHtml(images[0])}" alt="${escapeHtml(p.name)}" class="modal-main-img" />
+        ${images.length > 1 ? `<div class="modal-thumbs-row">${images.map((url, i) => `<img src="${escapeHtml(url)}" class="modal-thumb-img${i === 0 ? " active" : ""}" onclick="setMainImg(this,${i})" />`).join("")}</div>` : ""}
       </div>`
-    : `<div class="modal-product-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">👕</div>`;
+    : `<div class="modal-product-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">📦</div>`;
+
+  const sizesHtml = (p.sizes && p.sizes.length > 0)
+    ? `<div class="modal-section-title">Tallas disponibles</div>
+      <div class="modal-sizes" id="modalSizes">
+        ${p.sizes.map((s, i) => `<button class="modal-size" onclick="selectSize(this,${i})">${escapeHtml(s)}</button>`).join("")}
+      </div>`
+    : "";
 
   const content = document.getElementById("modalContent");
   content.innerHTML = `
     ${imageHtml}
     <div class="modal-body">
-      <div class="modal-league">${p.league}</div>
-      <div class="modal-name">${p.name}</div>
-      <div class="modal-desc">${p.desc}</div>
-      <div class="modal-section-title">Tallas disponibles</div>
-      <div class="modal-sizes" id="modalSizes">
-        ${(p.sizes || []).map((s) => `<button class="modal-size" onclick="selectSize(this,'${s}')">${s}</button>`).join("")}
-      </div>
+      <div class="modal-league">${escapeHtml(p.league)}</div>
+      <div class="modal-name">${escapeHtml(p.name)}</div>
+      <div class="modal-desc">${escapeHtml(p.desc)}</div>
+      ${sizesHtml}
       <div class="modal-price-row">
-        <div class="modal-price">${p.price} <small style="font-size:.75rem;color:#9ca3af;font-weight:500">GTQ</small></div>
-        <a class="btn-modal-wa" id="modalWaBtn" href="${waLink(p)}" target="_blank">
+        <div class="modal-price">${escapeHtml(p.price)} <small style="font-size:.75rem;color:#9ca3af;font-weight:500">${escapeHtml(storeCurrency)}</small></div>
+        <a class="btn-modal-wa" id="modalWaBtn" href="${escapeHtml(waLink(p))}" target="_blank">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Pedir por WhatsApp
         </a>
@@ -369,7 +422,7 @@ function openModal(id) {
   history.pushState({ productId: p.id }, "", newUrl);
   setMetaTags({
     title: `${p.name} — ${storeName}`,
-    description: p.desc || `${p.name} · ${p.price} GTQ`,
+    description: p.desc || `${p.name} · ${p.price} ${storeCurrency}`,
     image: p.images?.[0] || "",
     url: newUrl,
   });
@@ -379,17 +432,21 @@ function openModal(id) {
   window._currentProduct = p;
 }
 
-function setMainImg(thumb, url) {
-  document.getElementById("modalMainImg").src = url;
+function setMainImg(thumb, index) {
+  const p = window._currentProduct;
+  if (!p || !p.images || !p.images[index]) return;
+  document.getElementById("modalMainImg").src = p.images[index];
   document.querySelectorAll(".modal-thumb-img").forEach((t) => t.classList.remove("active"));
   thumb.classList.add("active");
 }
 
-function selectSize(btn, size) {
+function selectSize(btn, index) {
   document.querySelectorAll(".modal-size").forEach((b) => b.classList.remove("selected"));
   btn.classList.add("selected");
   const p = window._currentProduct;
-  if (p) document.getElementById("modalWaBtn").href = waLink(p, size);
+  if (p && p.sizes && p.sizes[index] != null) {
+    document.getElementById("modalWaBtn").href = waLink(p, p.sizes[index]);
+  }
 }
 
 function closeModal() {

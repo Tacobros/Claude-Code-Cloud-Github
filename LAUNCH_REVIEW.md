@@ -219,12 +219,12 @@ llegan por WhatsApp, sin comisiones."* Y en la landing, una sección comparativa
 
 ## 5. Checklist de lanzamiento sugerido (orden de ejecución)
 
-1. [ ] Restringir columnas públicas de `stores` (2.1)
-2. [ ] Escapar HTML en catálogo y admin (2.2)
-3. [ ] Campo `currency` por tienda y quitar "Q/GTQ" quemado (2.4)
-4. [ ] Limpiar textos de camisolas: buscador, 👕, tallas condicionales (2.5)
-5. [ ] Número de WhatsApp real en landing + verificar dominio del sello (2.6)
-6. [ ] Red de seguridad "cuenta sin tienda" + manejo de slug duplicado (2.3)
+1. [x] Restringir columnas públicas de `stores` (2.1) — ver `supabase/migrations/006_secure_stores_and_currency.sql` ⚠️ ejecutar en Supabase ANTES de desplegar el frontend
+2. [x] Escapar HTML en catálogo y admin (2.2)
+3. [x] Campo `currency` por tienda y quitar "Q/GTQ" quemado (2.4) — selector de moneda en Ajustes del admin
+4. [x] Limpiar textos de camisolas: buscador, 👕, tallas condicionales (2.5)
+5. [x] Número de WhatsApp centralizado en landing (constante `SUPPORT_WHATSAPP`, ⚠️ falta poner el número real) + sello con dominio dinámico y `utm_source=badge` + año dinámico
+6. [x] Red de seguridad "cuenta sin tienda" + manejo de slug duplicado (2.3)
 7. [ ] Decidir pasarela única (Stripe O PayPal) y alinear FAQ/textos (2.6)
 8. [ ] Reclutar 5-10 betas del nicho elegido y reemplazar testimonios (4.3)
 9. [ ] Lanzar 🚀 y medir activación (4.4)

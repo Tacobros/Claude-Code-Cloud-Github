@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 258 64" width="258" height="64">
+  <!-- ProductSpot — lockup horizontal para fondos oscuros. -->
+  <g transform="translate(0,8) scale(0.75)">
+    <rect x="2" y="2" width="28" height="28" rx="9" fill="#F8FAFC"/>
+    <rect x="2" y="34" width="28" height="28" rx="9" fill="#F8FAFC"/>
+    <rect x="34" y="34" width="28" height="28" rx="9" fill="#F8FAFC"/>
+    <circle cx="48" cy="16" r="14" fill="#E94560"/>
+  </g>
+  <text x="62" y="43" font-family="'Space Grotesk','Inter',sans-serif" font-size="30" font-weight="700" letter-spacing="-0.5" fill="#F8FAFC">Product<tspan fill="#E94560">Spot</tspan></text>
+</svg>

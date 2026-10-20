@@ -23,6 +23,7 @@ function updateCatalogLink(slug) {
 
   const el = document.getElementById("catalogLink");
   if (el) el.textContent = url || "— ingresa un slug para ver tu enlace —";
+  if (typeof initCatalogQR === "function") initCatalogQR();
 
   // Keep sidebar "Ver catálogo" link in sync
   const sidebarLink = document.querySelector('.nav-item[data-catalog]');
@@ -331,7 +332,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
       || error.message?.toLowerCase().includes('not confirmed');
     if (isUnconfirmed) {
       err.innerHTML = `Tu correo no ha sido verificado.
-        <a href="#" id="resendVerification" style="color:#5b8ab5;text-decoration:underline;">Reenviar correo de verificación</a>`;
+        <a href="#" id="resendVerification" style="color:#e94560;text-decoration:underline;">Reenviar correo de verificación</a>`;
       document.getElementById("resendVerification")?.addEventListener("click", async (ev) => {
         ev.preventDefault();
         const { error: resendErr } = await sb.auth.resend({ type: 'signup', email });
@@ -440,6 +441,7 @@ document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
     document.getElementById(`page${page.charAt(0).toUpperCase() + page.slice(1)}`).classList.add("active");
     document.getElementById("topbarTitle").textContent = item.querySelector("span:last-child").textContent;
     if (page === "analytics") loadAnalytics();
+    if (page === "orders") loadOrders();
     closeSidebar();
   });
 });
@@ -568,9 +570,8 @@ function openEditModal(id) {
   if (!currentImageUrls.length && p.image_url) currentImageUrls = [p.image_url];
   renderImageGrid();
 
-  document.querySelectorAll(".size-toggle input").forEach((cb) => {
-    cb.checked = (p.sizes || []).includes(cb.value);
-  });
+  document.getElementById("pVariantLabel").value = p.variant_label || "";
+  document.getElementById("pSizesText").value = (p.sizes || []).join(", ");
 
   document.getElementById("formError").style.display = "none";
   document.getElementById("productModalOverlay").classList.add("open");
@@ -604,7 +605,8 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
   btn.disabled = true;
   btn.textContent = "Guardando...";
 
-  const sizes = [...document.querySelectorAll(".size-toggle input:checked")].map((cb) => cb.value);
+  const sizes = document.getElementById("pSizesText").value
+    .split(",").map((s) => s.trim()).filter(Boolean).slice(0, 20);
 
   const payload = {
     name: document.getElementById("pName").value.trim(),
@@ -614,6 +616,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     badge: document.getElementById("pBadge").value || null,
     available: document.getElementById("pAvailable").checked,
     sizes,
+    variant_label: document.getElementById("pVariantLabel").value.trim() || null,
     image_urls: currentImageUrls,
     image_url: currentImageUrls[0] || null,
   };
@@ -863,7 +866,7 @@ function enforcePlanLimits() {
     const pct = limits.maxProducts === Infinity ? 0
       : Math.min(100, (allProducts.length / limits.maxProducts) * 100);
     bar.style.width = `${pct}%`;
-    bar.style.background = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#5b8ab5';
+    bar.style.background = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#e94560';
   }
   if (badge) {
     const labels = { free: 'Plan Free', starter: 'Plan Starter', pro: 'Plan Pro' };
@@ -1423,6 +1426,61 @@ async function openBillingPortal() {
   }
   window.location.href = data.url;
 }
+
+// ===== PEDIDOS =====
+async function loadOrders() {
+  const el = document.getElementById("ordersTable");
+  if (!el) return;
+  if (!storeSettings?.id) { el.innerHTML = `<div class="loading">Guarda la configuración de tu tienda primero.</div>`; return; }
+  el.innerHTML = `<div class="loading">Cargando pedidos...</div>`;
+  const { data, error } = await sb.from("orders")
+    .select("id, items, total, currency, created_at")
+    .eq("store_id", storeSettings.id)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) { el.innerHTML = `<div class="loading">Error al cargar: ${escapeHtml(error.message)}</div>`; return; }
+  if (!data || data.length === 0) {
+    el.innerHTML = `<div class="loading">Aún no hay pedidos. Comparte tu enlace o tu código QR para recibir los primeros 🎉</div>`;
+    return;
+  }
+  const rows = data.map((o) => {
+    const items = Array.isArray(o.items) ? o.items : [];
+    const list = items.map((it) =>
+      `<li>${Number(it.q) || 1}× ${escapeHtml(it.n || "Producto")}${it.v ? ` <span style="color:#9ca3af">(${escapeHtml(it.v)})</span>` : ""}</li>`
+    ).join("");
+    const fecha = new Date(o.created_at).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+    const sym = CURRENCY_SYMBOLS[o.currency] || "";
+    return `<tr class="order-row">
+      <td class="order-date">${escapeHtml(fecha)}</td>
+      <td><ul class="order-items">${list || "<li>—</li>"}</ul></td>
+      <td class="order-total">${o.total != null ? `${sym}${escapeHtml(o.total)} ${escapeHtml(o.currency || "")}` : "—"}</td>
+    </tr>`;
+  }).join("");
+  el.innerHTML = `<table><thead><tr><th style="width:120px;">Fecha</th><th>Pedido</th><th style="width:130px;">Total</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ===== QR DEL CATÁLOGO =====
+function initCatalogQR() {
+  const container = document.getElementById("qrContainer");
+  if (!container || typeof QRCode === "undefined") return;
+  const link = document.getElementById("catalogLink")?.textContent || "";
+  if (!link.startsWith("http")) { container.innerHTML = ""; return; }
+  container.innerHTML = "";
+  // Se genera grande (592px) para que impreso se vea nítido; el CSS lo muestra a 148px.
+  new QRCode(container, { text: link, width: 592, height: 592, correctLevel: QRCode.CorrectLevel.M });
+}
+
+document.getElementById("btnDownloadQR")?.addEventListener("click", () => {
+  const canvas = document.querySelector("#qrContainer canvas");
+  const img = document.querySelector("#qrContainer img");
+  const dataUrl = canvas ? canvas.toDataURL("image/png") : (img ? img.src : null);
+  if (!dataUrl) { showToast("Guarda tu tienda primero para generar el QR", "error"); return; }
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = `qr-${storeSettings?.slug || "catalogo"}.png`;
+  a.click();
+  showToast("QR descargado ✓", "success");
+});
 
 // ===== TOAST =====
 function showToast(msg, type = "") {

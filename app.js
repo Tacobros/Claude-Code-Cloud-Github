@@ -288,6 +288,7 @@ async function loadProducts() {
     if (data && data.length > 0) {
       liveProducts = data.map((p) => ({
         ...p,
+        priceNum: Number(p.price) || 0,
         price: `${currencySymbol()}${p.price}`,
         league: p.category || "",
         badgeText: p.badge === "popular" ? "Más vendida" : p.badge === "new" ? "Nueva" : p.badge || "",
@@ -345,7 +346,8 @@ function renderProducts() {
           </div>
           <div class="product-footer">
             <div class="product-price">${escapeHtml(p.price)} <span>${escapeHtml(storeCurrency)}</span></div>
-            <a class="btn-ask" href="${escapeHtml(waLink(p))}" target="_blank" onclick="event.stopPropagation()">
+            <button class="btn-add" title="Agregar al pedido" aria-label="Agregar al pedido" onclick="event.stopPropagation(); addToCart(${Number(p.id)}, null, this)">+</button>
+            <a class="btn-ask" href="${escapeHtml(waLink(p))}" target="_blank" onclick="event.stopPropagation(); trackOrder(${Number(p.id)}, null)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Pedir
             </a>
@@ -357,10 +359,24 @@ function renderProducts() {
 }
 
 function waLink(p, size = "") {
+  const vlabel = (p.variant_label || "talla").toLowerCase();
   const msg = size
-    ? `Hola! Vi el catálogo de ${storeName} y quiero pedir: *${p.name}* talla *${size}* - Precio: ${p.price}`
+    ? `Hola! Vi el catálogo de ${storeName} y quiero pedir: *${p.name}* ${vlabel} *${size}* - Precio: ${p.price}`
     : `Hola! Vi el catálogo de ${storeName} y me interesa: *${p.name}* - Precio: ${p.price}`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
+}
+
+// Registra el pedido (botones "Pedir" individuales) para la página Pedidos del admin
+function trackOrder(productId, size) {
+  const p = liveProducts.find((x) => String(x.id) === String(productId));
+  if (!p || !storeDbId) return;
+  sb.from("orders").insert({
+    store_id: storeDbId,
+    items: [{ n: p.name, q: 1, v: size || null, p: p.priceNum }],
+    total: p.priceNum,
+    currency: storeCurrency,
+  }).then(() => {});
+  logEvent("whatsapp_click", p.id);
 }
 
 function getProductUrl(productId) {
@@ -393,7 +409,7 @@ function openModal(id) {
     : `<div class="modal-product-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">📦</div>`;
 
   const sizesHtml = (p.sizes && p.sizes.length > 0)
-    ? `<div class="modal-section-title">Tallas disponibles</div>
+    ? `<div class="modal-section-title">${escapeHtml(p.variant_label || "Tallas disponibles")}</div>
       <div class="modal-sizes" id="modalSizes">
         ${p.sizes.map((s, i) => `<button class="modal-size" onclick="selectSize(this,${i})">${escapeHtml(s)}</button>`).join("")}
       </div>`
@@ -414,12 +430,16 @@ function openModal(id) {
           Pedir por WhatsApp
         </a>
       </div>
+      <button class="btn-share-link" id="modalAddBtn" onclick="addToCartFromModal(this)">＋ Agregar al pedido</button>
       <button class="btn-share-link" id="shareLinkBtn" onclick="copyProductLink('${p.id}')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         Compartir enlace
       </button>
     </div>
   `;
+
+  window._selectedSize = null;
+  document.getElementById("modalWaBtn")?.addEventListener("click", () => trackOrder(p.id, window._selectedSize));
 
   logEvent("product_view", p.id);
 
@@ -451,6 +471,7 @@ function selectSize(btn, index) {
   btn.classList.add("selected");
   const p = window._currentProduct;
   if (p && p.sizes && p.sizes[index] != null) {
+    window._selectedSize = p.sizes[index];
     document.getElementById("modalWaBtn").href = waLink(p, p.sizes[index]);
   }
 }
@@ -501,6 +522,7 @@ document.addEventListener("keydown", (e) => {
 updateWALinks();
 loadStoreSettings().then(() => {
   loadProducts();
+  loadCart();
   if (new URLSearchParams(window.location.search).get('preview') === '1') {
     initPreviewMode();
   }
@@ -636,4 +658,142 @@ window.addEventListener("popstate", () => {
     document.getElementById("modalOverlay").classList.remove("open");
     document.body.style.overflow = "";
   }
+});
+
+// ── PEDIDO MULTI-PRODUCTO ────────────────────────────────────────────────────
+let cart = [];
+
+function cartStorageKey() { return `ps_cart_${storeDbId || "x"}`; }
+
+function loadCart() {
+  try { cart = JSON.parse(sessionStorage.getItem(cartStorageKey())) || []; } catch (_) { cart = []; }
+  if (!Array.isArray(cart)) cart = [];
+  renderCartUI();
+}
+
+function saveCart() {
+  try { sessionStorage.setItem(cartStorageKey(), JSON.stringify(cart)); } catch (_) {}
+}
+
+function addToCart(productId, size = null, btnEl = null) {
+  const p = liveProducts.find((x) => String(x.id) === String(productId));
+  if (!p) return;
+  const key = `${p.id}|${size || ""}`;
+  const existing = cart.find((i) => i.key === key);
+  if (existing) existing.q += 1;
+  else cart.push({ key, id: p.id, n: p.name, v: size || null, q: 1, p: p.priceNum });
+  saveCart();
+  renderCartUI();
+  if (btnEl) {
+    btnEl.classList.add("added");
+    const prev = btnEl.textContent;
+    btnEl.textContent = "✓";
+    setTimeout(() => { btnEl.classList.remove("added"); btnEl.textContent = prev; }, 900);
+  }
+}
+
+function addToCartFromModal(btnEl) {
+  const p = window._currentProduct;
+  if (!p) return;
+  addToCart(p.id, window._selectedSize || null);
+  if (btnEl) {
+    const prev = btnEl.textContent;
+    btnEl.textContent = "✓ Agregado al pedido";
+    setTimeout(() => { btnEl.textContent = prev; }, 1200);
+  }
+}
+
+function cartCount() { return cart.reduce((s, i) => s + i.q, 0); }
+function cartTotal() { return cart.reduce((s, i) => s + (Number(i.p) || 0) * i.q, 0); }
+
+function changeCartQty(index, delta) {
+  const item = cart[index];
+  if (!item) return;
+  item.q += delta;
+  if (item.q <= 0) cart.splice(index, 1);
+  saveCart();
+  renderCartUI();
+}
+
+function removeCartItem(index) {
+  cart.splice(index, 1);
+  saveCart();
+  renderCartUI();
+}
+
+function cartWaLink() {
+  const lines = cart.map((i) => {
+    const variant = i.v ? ` (${i.v})` : "";
+    return `• ${i.q}× ${i.n}${variant} — ${currencySymbol()}${i.p} c/u`;
+  });
+  const msg = `Hola! Vi el catálogo de ${storeName} y quiero hacer este pedido:\n${lines.join("\n")}\n\nTotal: *${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
+  return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
+}
+
+function renderCartUI() {
+  const bar = document.getElementById("cartBar");
+  if (!bar) return;
+  const count = cartCount();
+  bar.classList.toggle("visible", count > 0);
+  if (count > 0) {
+    document.getElementById("cartCount").textContent = `${count} producto${count !== 1 ? "s" : ""}`;
+    document.getElementById("cartTotalSmall").textContent = `Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}`;
+  } else {
+    closeCart();
+  }
+
+  const itemsEl = document.getElementById("cartItems");
+  if (itemsEl) {
+    itemsEl.innerHTML = cart.length === 0
+      ? `<p class="cart-empty">Tu pedido está vacío.</p>`
+      : cart.map((i, idx) => `
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${escapeHtml(i.n)}</div>
+            <div class="cart-item-meta">${i.v ? `${escapeHtml(i.v)} · ` : ""}${currencySymbol()}${escapeHtml(i.p)} c/u</div>
+          </div>
+          <div class="cart-qty">
+            <button type="button" onclick="changeCartQty(${idx}, -1)" aria-label="Quitar uno">−</button>
+            <span>${i.q}</span>
+            <button type="button" onclick="changeCartQty(${idx}, 1)" aria-label="Agregar uno">+</button>
+          </div>
+          <button type="button" class="cart-remove" onclick="removeCartItem(${idx})" aria-label="Eliminar">✕</button>
+        </div>
+      `).join("");
+  }
+  const totalEl = document.getElementById("cartTotal");
+  if (totalEl) totalEl.textContent = `${currencySymbol()}${cartTotal()} ${storeCurrency}`;
+  const sendBtn = document.getElementById("btnSendCart");
+  if (sendBtn) sendBtn.href = cartWaLink();
+}
+
+function openCart() {
+  renderCartUI();
+  document.getElementById("cartOverlay")?.classList.add("open");
+}
+function closeCart() {
+  document.getElementById("cartOverlay")?.classList.remove("open");
+}
+
+document.getElementById("btnOpenCart")?.addEventListener("click", openCart);
+document.getElementById("btnClearCart")?.addEventListener("click", () => { cart = []; saveCart(); renderCartUI(); });
+document.getElementById("cartOverlay")?.addEventListener("click", (e) => {
+  if (e.target === document.getElementById("cartOverlay")) closeCart();
+});
+document.getElementById("btnSendCart")?.addEventListener("click", () => {
+  if (cart.length === 0) return;
+  if (storeDbId) {
+    sb.from("orders").insert({
+      store_id: storeDbId,
+      items: cart.map((i) => ({ n: i.n, q: i.q, v: i.v, p: i.p })),
+      total: cartTotal(),
+      currency: storeCurrency,
+    }).then(() => {});
+    logEvent("whatsapp_click");
+  }
+  // El pedido ya va en camino a WhatsApp: se limpia para evitar envíos duplicados
+  setTimeout(() => { cart = []; saveCart(); renderCartUI(); }, 800);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeCart();
 });

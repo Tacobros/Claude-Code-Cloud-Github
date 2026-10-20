@@ -22,7 +22,7 @@ export async function onRequestPost({ request, env }) {
   const body = isSuspended
     ? `<p>Hola,</p>
        <p>Tu catálogo <strong>${store_name}</strong> ha sido <strong>suspendido</strong> por el equipo de ProductSpot.</p>
-       <p>Si crees que esto es un error, contáctanos respondiendo este correo o por WhatsApp desde <a href="https://productspot-5dc.pages.dev/landing.html">nuestra página</a>.</p>
+       <p>Si crees que esto es un error, contáctanos respondiendo este correo o por WhatsApp desde <a href="https://productspot.pages.dev/landing.html">nuestra página</a>.</p>
        <p>— El equipo de ProductSpot</p>`
     : `<p>Hola,</p>
        <p>Tu catálogo <strong>${store_name}</strong> ha sido <strong>reactivado</strong>. Ya está disponible para tus clientes.</p>

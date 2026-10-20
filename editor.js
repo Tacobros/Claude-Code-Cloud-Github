@@ -298,17 +298,17 @@ function createFieldEl(field, value) {
 
       const swatch = document.createElement('div');
       swatch.className = 'ed-color-swatch';
-      swatch.style.background = value || '#5b8ab5';
+      swatch.style.background = value || '#e94560';
 
       const picker = document.createElement('input');
       picker.type = 'color';
-      picker.value = value || '#5b8ab5';
+      picker.value = value || '#e94560';
       swatch.appendChild(picker);
 
       const hex = document.createElement('input');
       hex.type = 'text';
       hex.className = 'ed-color-hex';
-      hex.value = (value || '#5b8ab5').toUpperCase();
+      hex.value = (value || '#e94560').toUpperCase();
       hex.maxLength = 7;
 
       const sync = (v) => {

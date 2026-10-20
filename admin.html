@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel Admin — ProductSpot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/brand/logo-icon.svg" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="admin.css" />
   <style>
@@ -129,9 +130,14 @@
   <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="login-screen">
     <div class="login-card">
-      <div class="login-logo" style="justify-content:center;margin-bottom:8px;">
-        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
-             alt="ProductSpot" style="height:40px;width:auto;" />
+      <div class="login-logo" style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:8px;">
+        <svg width="34" height="34" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="2" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <rect x="2" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <rect x="34" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <circle cx="48" cy="16" r="14" fill="#e94560"/>
+        </svg>
+        <span class="brand-wordmark" style="font-size:1.3rem;">Product<em>Spot</em></span>
       </div>
 
       <!-- Panel: login -->
@@ -205,9 +211,14 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-logo">
-        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
-             alt="ProductSpot" style="height:24px;width:auto;filter:brightness(0) invert(1);" />
+      <div class="sidebar-logo" style="display:flex;align-items:center;gap:8px;">
+        <svg width="22" height="22" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="2" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <rect x="2" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <rect x="34" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <circle cx="48" cy="16" r="14" fill="#e94560"/>
+        </svg>
+        <span class="brand-wordmark" style="font-size:1rem;">Product<em>Spot</em></span>
       </div>
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="products">
@@ -221,6 +232,10 @@
         <a href="#" class="nav-item" data-page="analytics">
           <span class="nav-icon">📊</span>
           <span>Estadísticas</span>
+        </a>
+        <a href="#" class="nav-item" data-page="orders">
+          <span class="nav-icon">🧾</span>
+          <span>Pedidos</span>
         </a>
         <a href="#" class="nav-item" data-page="plan">
           <span class="nav-icon">💳</span>
@@ -661,8 +676,27 @@
               <button class="btn-copy" id="btnCopyLink">Copiar enlace</button>
             </div>
             <p class="hint">Comparte este enlace con tus clientes para que vean tu catálogo.</p>
+            <div class="qr-card-body" style="margin-top:18px;">
+              <div id="qrContainer" aria-label="Código QR de tu catálogo"></div>
+              <div class="qr-actions">
+                <p class="hint" style="margin:0;">Imprime este código QR y pégalo en tu mostrador, empaques o publícalo en tus estados: tus clientes abren el catálogo con la cámara.</p>
+                <button type="button" class="btn-primary" id="btnDownloadQR">⬇ Descargar QR (PNG)</button>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- ORDERS PAGE -->
+      <div id="pageOrders" class="page">
+        <div class="page-header">
+          <div><h2>Pedidos</h2><p style="margin:0;font-size:.8rem;color:#6b7280;">Lo que tus clientes pidieron desde el catálogo</p></div>
+          <button class="btn-primary" onclick="loadOrders()">↻ Actualizar</button>
+        </div>
+        <div class="table-container" id="ordersTable">
+          <div class="loading">Cargando pedidos...</div>
+        </div>
+        <p class="hint" style="margin-top:12px;">Cada vez que un cliente toca "Pedir" o envía su pedido por WhatsApp, queda registrado aquí. La conversación sigue en tu WhatsApp.</p>
       </div>
 
       <!-- ANALYTICS PAGE -->
@@ -756,16 +790,15 @@
               <option value="new">Nueva</option>
             </select>
           </div>
-          <div class="field span-2">
-            <label>Tallas disponibles</label>
-            <div class="sizes-selector">
-              <label class="size-toggle"><input type="checkbox" value="XS"> XS</label>
-              <label class="size-toggle"><input type="checkbox" value="S"> S</label>
-              <label class="size-toggle"><input type="checkbox" value="M"> M</label>
-              <label class="size-toggle"><input type="checkbox" value="L"> L</label>
-              <label class="size-toggle"><input type="checkbox" value="XL"> XL</label>
-              <label class="size-toggle"><input type="checkbox" value="XXL"> XXL</label>
-            </div>
+          <div class="field">
+            <label>Tipo de opción (si aplica)</label>
+            <input type="text" id="pVariantLabel" placeholder="Ej: Talla, Color, Sabor, Tamaño" maxlength="30" />
+            <small>Déjalo vacío si el producto no tiene opciones.</small>
+          </div>
+          <div class="field">
+            <label>Opciones disponibles</label>
+            <input type="text" id="pSizesText" placeholder="Ej: S, M, L, XL  ·  o: Fresa, Chocolate" maxlength="120" />
+            <small>Sepáralas con comas.</small>
           </div>
           <div class="field span-2">
             <label>Disponible en catálogo</label>
@@ -796,6 +829,7 @@
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="supabase.js"></script>
   <script src="admin.js"></script>
 </body>

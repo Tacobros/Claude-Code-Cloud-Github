@@ -8,7 +8,7 @@
   --ed-border2:  #2d3f55;
   --ed-text:     #f1f5f9;
   --ed-muted:    #64748b;
-  --ed-accent:   #5b8ab5;
+  --ed-accent:   #e94560;
   --ed-green:    #22c55e;
   --ed-sidebar:  280px;
   --ed-topbar:   52px;
@@ -71,7 +71,7 @@ html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; b
   cursor: pointer; font-family: inherit; transition: background .15s, opacity .15s;
   white-space: nowrap;
 }
-.ed-save-btn:hover   { background: #4a7a9b; }
+.ed-save-btn:hover   { background: #c22844; }
 .ed-save-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 /* ── BODY LAYOUT ── */
@@ -104,7 +104,7 @@ html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; b
   border: 1px solid transparent;
 }
 .ed-block-item:hover { background: var(--ed-surface2); border-color: var(--ed-border2); }
-.ed-block-item.active { background: rgba(91,138,181,.12); border-color: rgba(91,138,181,.3); }
+.ed-block-item.active { background: rgba(233,69,96,.12); border-color: rgba(233,69,96,.3); }
 
 .ed-block-icon { font-size: 1.15rem; width: 28px; flex-shrink: 0; text-align: center; }
 .ed-block-label { font-size: .88rem; font-weight: 600; flex: 1; }

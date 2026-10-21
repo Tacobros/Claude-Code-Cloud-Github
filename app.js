@@ -735,6 +735,11 @@ function renderCartUI() {
   if (!bar) return;
   const count = cartCount();
   bar.classList.toggle("visible", count > 0);
+  const headerCount = document.getElementById("headerCartCount");
+  if (headerCount) {
+    headerCount.hidden = count === 0;
+    headerCount.textContent = count;
+  }
   if (count > 0) {
     document.getElementById("cartCount").textContent = `${count} producto${count !== 1 ? "s" : ""}`;
     document.getElementById("cartTotalSmall").textContent = `Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}`;
@@ -776,6 +781,7 @@ function closeCart() {
 }
 
 document.getElementById("btnOpenCart")?.addEventListener("click", openCart);
+document.getElementById("headerCartBtn")?.addEventListener("click", openCart);
 document.getElementById("btnClearCart")?.addEventListener("click", () => { cart = []; saveCart(); renderCartUI(); });
 document.getElementById("cartOverlay")?.addEventListener("click", (e) => {
   if (e.target === document.getElementById("cartOverlay")) closeCart();

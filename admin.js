@@ -442,6 +442,7 @@ document.querySelectorAll(".nav-item[data-page]").forEach((item) => {
     document.getElementById("topbarTitle").textContent = item.querySelector("span:last-child").textContent;
     if (page === "analytics") loadAnalytics();
     if (page === "orders") loadOrders();
+    if (page === "home") loadHome();
     closeSidebar();
   });
 });
@@ -840,6 +841,7 @@ async function loadSettings(user) {
     enforcePlanLimits();
     // Re-render con la moneda de la tienda (los productos pudieron cargarse antes)
     if (allProducts.length > 0) renderTable();
+    loadHome();
   }
 }
 
@@ -1425,6 +1427,80 @@ async function openBillingPortal() {
     return;
   }
   window.location.href = data.url;
+}
+
+// ===== INICIO =====
+async function loadHome() {
+  const greeting = document.getElementById("homeGreeting");
+  if (!greeting) return;
+  const h = new Date().getHours();
+  greeting.textContent = (h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches") + " 👋";
+  const line = document.getElementById("homeStoreLine");
+  if (line && storeSettings?.name) {
+    line.textContent = `${storeSettings.name} · ${document.getElementById("catalogLink")?.textContent || ""}`;
+  }
+  const viewLink = document.getElementById("homeViewLink");
+  if (viewLink && storeSettings?.slug) viewLink.href = `index.html?s=${storeSettings.slug}`;
+
+  const checklist = document.getElementById("homeChecklist");
+  if (checklist) {
+    const items = [
+      { done: allProducts.length > 0, label: "Agrega tu primer producto" },
+      { done: !!(storeSettings?.logo_url || storeSettings?.hero_title), label: "Personaliza tu tienda (logo, textos)" },
+      { done: false, label: "Comparte tu enlace o tu QR" },
+    ];
+    checklist.innerHTML = items.map((i) => `
+      <span class="check-item ${i.done ? "check-done" : ""}">
+        ${i.done
+          ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4"><circle cx="12" cy="12" r="10"></circle><path d="m8 12 3 3 5-6"></path></svg>'
+          : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c22844" stroke-width="2.4"><circle cx="12" cy="12" r="10"></circle></svg>'}
+        ${i.label}
+      </span>`).join("");
+  }
+
+  if (storeSettings?.id) {
+    const { data: orders } = await sb.from("orders")
+      .select("items,total,currency,created_at")
+      .eq("store_id", storeSettings.id)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const deHoy = (orders || []).filter((o) => new Date(o.created_at) >= hoy);
+    const elToday = document.getElementById("homeOrdersToday");
+    if (elToday) elToday.textContent = deHoy.length;
+    const hint = document.getElementById("homeOrdersHint");
+    if (hint) hint.textContent = (orders || []).length ? `${orders.length} recientes en total` : "Comparte tu enlace para recibir el primero";
+    const recent = document.getElementById("homeRecentOrders");
+    if (recent) {
+      const top = (orders || []).slice(0, 4);
+      recent.innerHTML = top.length === 0
+        ? '<div class="loading">Aún no hay pedidos. Tu enlace y tu QR están listos para compartir 🎉</div>'
+        : top.map((o) => {
+            const its = Array.isArray(o.items) ? o.items : [];
+            const resumen = its.map((it) => `${Number(it.q) || 1}× ${escapeHtml(it.n || "Producto")}`).join(" · ");
+            const fecha = new Date(o.created_at).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+            const sym = CURRENCY_SYMBOLS[o.currency] || "";
+            return `<div class="home-order-row"><span class="home-order-total">${sym}${escapeHtml(o.total ?? "")}</span><span class="home-order-items">${resumen || "—"}</span><span class="home-order-date">${escapeHtml(fecha)}</span></div>`;
+          }).join("");
+    }
+  }
+
+  const isPaid = currentPlan === "starter" || currentPlan === "pro";
+  if (isPaid && storeSettings?.id) {
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: ev } = await sb.from("store_events").select("event_type").gte("created_at", since);
+    if (ev) {
+      const v = document.getElementById("homeViews");
+      const w = document.getElementById("homeWa");
+      if (v) v.textContent = ev.filter((e) => e.event_type === "catalog_view").length;
+      if (w) w.textContent = ev.filter((e) => e.event_type === "whatsapp_click").length;
+    }
+  } else {
+    const vh = document.getElementById("homeViewsHint");
+    const wh = document.getElementById("homeWaHint");
+    if (vh) vh.textContent = "Disponible en Starter";
+    if (wh) wh.textContent = "Disponible en Starter";
+  }
 }
 
 // ===== PEDIDOS =====

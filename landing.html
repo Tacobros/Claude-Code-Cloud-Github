@@ -9,6 +9,83 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="/brand/logo-icon.svg" />
   <style>
+    /* ── Rediseño 2.0: héroe asimétrico con demo dibujada ── */
+    .hero2 { position: relative; overflow: hidden; }
+    .hero2-spot { position: absolute; top: -220px; right: -120px; width: 780px; height: 780px; border-radius: 999px; background: radial-gradient(circle, rgba(233,69,96,.2) 0%, rgba(233,69,96,.05) 45%, transparent 68%); pointer-events: none; }
+    .hero2-inner { max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 48px; padding: 56px 24px 88px; position: relative; }
+    .hero2-copy { flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
+    .hero2-title { font-family: 'Space Grotesk', 'Inter', sans-serif; font-size: clamp(2.5rem, 5.4vw, 4.3rem); line-height: 1.04; letter-spacing: -0.03em; font-weight: 700; text-wrap: balance; margin: 0; }
+    .hero2-title em { font-style: normal; color: var(--accent); }
+    .hero2-sub { font-size: 1.08rem; line-height: 1.65; color: var(--muted); max-width: 480px; margin: 0; }
+    .hero2-phone-col { flex: 1 1 380px; min-width: 0; display: flex; justify-content: center; position: relative; padding: 16px 0; }
+    .mock-phone { width: 290px; background: #10182e; border: 1.5px solid var(--border); border-radius: 34px; padding: 13px 11px; box-shadow: 0 30px 80px rgba(0,0,0,.5), 0 10px 40px rgba(233,69,96,.16); animation: demo-float-in .8s .5s ease both; }
+    .mock-screen { background: #f7f8fc; border-radius: 23px; overflow: hidden; }
+    .mock-head { background: #0f172a; color: #f1f5f9; padding: 13px 14px 11px; }
+    .mock-head strong { font-family: 'Space Grotesk', sans-serif; font-size: .92rem; display: block; }
+    .mock-head span { font-size: .6rem; color: #94a3b8; }
+    .mock-chips { display: flex; gap: 6px; padding: 9px 11px 2px; }
+    .mock-chip { font-size: .6rem; font-weight: 600; border-radius: 999px; padding: 4px 10px; color: #5b6478; border: 1px solid #e3e7f0; }
+    .mock-chip.on { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+    .mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 9px 11px 12px; }
+    .mock-card { background: #fff; border: 1px solid #e3e7f0; border-radius: 11px; overflow: hidden; }
+    .mock-card-img { height: 82px; position: relative; background-size: cover; background-position: center; }
+    .mock-badge { position: absolute; top: 5px; left: 5px; font-size: .48rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: #ffb454; color: #0f172a; border-radius: 999px; padding: 2px 7px; }
+    .mock-card-body { padding: 7px 8px; }
+    .mock-card-body b { display: block; font-size: .62rem; color: #0f172a; font-weight: 600; margin-bottom: 4px; }
+    .mock-card-foot { display: flex; justify-content: space-between; align-items: center; }
+    .mock-price { font-size: .68rem; font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums; }
+    .mock-buy { font-size: .52rem; font-weight: 700; color: #fff; background: #1fa855; border-radius: 7px; padding: 3px 8px; }
+    .mock-cartbar { margin: 0 11px 11px; background: #0f172a; border-radius: 999px; padding: 7px 7px 7px 12px; display: flex; justify-content: space-between; align-items: center; }
+    .mock-cartbar span { font-size: .58rem; color: #cbd5e1; font-weight: 600; }
+    .mock-cartbar b { font-size: .58rem; font-weight: 700; color: #fff; background: var(--accent); border-radius: 999px; padding: 4px 9px; }
+    .mock-wa { position: absolute; right: 0; bottom: 42px; width: 225px; background: #0b141a; border: 1px solid #1f2c33; border-radius: 15px 15px 15px 4px; padding: 11px 13px; box-shadow: 0 16px 48px rgba(0,0,0,.55); animation: demo-float-in .8s 1.1s ease both; }
+    .mock-wa-head { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+    .mock-wa-dot { width: 18px; height: 18px; border-radius: 999px; background: #1fa855; display: inline-flex; align-items: center; justify-content: center; }
+    .mock-wa-head b { font-size: .66rem; color: #e9edef; }
+    .mock-wa-head i { margin-left: auto; font-style: normal; font-size: .54rem; color: #8696a0; }
+    .mock-wa-msg { margin: 0; background: #202c33; border-radius: 9px; padding: 8px 10px; font-size: .62rem; line-height: 1.5; color: #e9edef; }
+    /* Antes / Después */
+    .ba-grid { display: flex; gap: 24px; flex-wrap: wrap; }
+    .ba-card { flex: 1 1 380px; min-width: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .ba-card.good { background: linear-gradient(170deg, rgba(233,69,96,.1), var(--bg2) 55%); border-color: rgba(233,69,96,.4); }
+    .ba-label { font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .ba-card.good .ba-label { color: #f58298; }
+    .ba-bubble { align-self: flex-start; background: #202c33; color: #cbd5e1; border-radius: 12px 12px 12px 3px; padding: 8px 12px; font-size: .8rem; }
+    .ba-bubble.me { align-self: flex-end; background: #163a2c; color: #d1fae5; border-radius: 12px 12px 3px 12px; }
+    .ba-product { background: #fff; border-radius: 14px; padding: 14px; display: flex; gap: 12px; align-items: center; }
+    .ba-product-img { width: 64px; height: 64px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; }
+    .ba-product-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .ba-product-info small { font-size: .64rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: #c22844; }
+    .ba-product-info b { font-size: .86rem; color: #0f172a; }
+    .ba-product-info span { font-size: .74rem; color: #5b6478; }
+    .ba-product-buy { margin-left: auto; flex-shrink: 0; font-size: .7rem; font-weight: 700; color: #fff; background: #1fa855; border-radius: 9px; padding: 7px 11px; }
+    .ba-note { margin: 0; font-size: .82rem; line-height: 1.55; color: var(--muted); }
+    /* Mini-mockups de los pasos */
+    .step-mock { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 7px; text-align: left; }
+    .step-mock-label { font-size: .6rem; color: var(--muted); }
+    .step-mock-input { background: var(--bg3); border-radius: 7px; padding: 7px 10px; font-size: .68rem; color: var(--text); }
+    .step-mock-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .step-mock-thumb { height: 52px; border-radius: 8px; background-size: cover; background-position: center; }
+    .step-mock-thumb.add { border: 1.5px dashed var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); font-weight: 600; background: none; }
+    .step-mock-link { align-self: center; background: var(--bg3); border-radius: 999px; padding: 6px 12px; font-size: .62rem; color: #cbd5e1; }
+    .step-mock-msg { align-self: flex-start; background: #163a2c; color: #d1fae5; border-radius: 10px; padding: 7px 10px; font-size: .66rem; }
+    /* Vitrina de la tienda demo */
+    .demo-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 28px; }
+    .demo-card { background: #fff; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); transition: transform var(--motion-fast) var(--ease-spot), box-shadow var(--motion-fast); }
+    .demo-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(233,69,96,.22); }
+    .demo-card-img { aspect-ratio: 4 / 5; max-width: 100%; background-size: cover; background-position: center; position: relative; }
+    .demo-card-body { padding: 12px 14px 14px; }
+    .demo-card-body b { display: block; font-size: .88rem; color: #0f172a; font-weight: 600; margin-bottom: 6px; }
+    .demo-card-foot { display: flex; justify-content: space-between; align-items: center; }
+    .demo-card-price { font-size: .95rem; font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums; }
+    .demo-card-buy { font-size: .72rem; font-weight: 700; color: #fff; background: #1fa855; border-radius: 9px; padding: 7px 12px; }
+    @media (max-width: 760px) {
+      .demo-cards { grid-template-columns: 1fr 1fr; }
+      .demo-cards .demo-card:last-child { display: none; }
+      .mock-wa { right: -4px; }
+    }
+  </style>
+  <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -439,7 +516,7 @@
         <a href="#features">Funciones</a>
         <a href="#precios">Precios</a>
         <a href="#faq">FAQ</a>
-        <a href="index.html?s=casgt" target="_blank">Ver demo</a>
+        <a href="index.html?s=dulcesmaria" target="_blank">Ver demo</a>
         <a href="admin.html" class="btn btn-ghost">Entrar</a>
         <a href="register.html" class="btn btn-primary">Crear cuenta gratis</a>
       </div>
@@ -452,45 +529,66 @@
       <a href="#features">Funciones</a>
       <a href="#precios">Precios</a>
       <a href="#faq">FAQ</a>
-      <a href="index.html?s=casgt" target="_blank">Ver demo en vivo</a>
+      <a href="index.html?s=dulcesmaria" target="_blank">Ver demo en vivo</a>
       <a href="admin.html">Iniciar sesión</a>
       <a href="register.html" class="btn btn-primary" style="justify-content:center;margin-top:4px;">Crear cuenta gratis →</a>
     </div>
   </nav>
 
   <!-- HERO -->
-  <section class="hero">
-    <div class="hero-bg-glow"></div>
-    <div class="hero-badge">
-      <div class="hero-badge-dot"></div>
-      Catálogos digitales para negocios que venden por WhatsApp
-    </div>
-    <h1>Tu catálogo digital,<br />
-      <span class="hero-rotating-wrap" id="heroRotating" aria-live="polite">
-        <span class="hero-rotating-word active">listo en 5 minutos</span>
-        <span class="hero-rotating-word">sin escribir código</span>
-        <span class="hero-rotating-word">con tu marca</span>
-        <span class="hero-rotating-word">sin comisiones</span>
-        <span class="hero-rotating-word">a tu medida</span>
-      </span>
-    </h1>
-    <p class="hero-sub">Publica tus productos, comparte el enlace y recibe pedidos directo por WhatsApp. Sin código, sin comisiones, sin complicaciones.</p>
-    <div class="hero-pain">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-      Sin pagar comisión por cada pedido como en los marketplaces
-    </div>
-    <div class="hero-actions">
-      <a href="register.html" class="btn btn-primary">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Crear mi catálogo gratis
-      </a>
-      <a href="index.html?s=casgt" target="_blank" class="btn btn-outline">Ver demo en vivo →</a>
-    </div>
-    <p class="hero-note"><span>✓ Gratis para siempre</span> &nbsp;·&nbsp; Sin tarjeta de crédito &nbsp;·&nbsp; Listo en minutos</p>
+  <section class="hero hero2">
+    <div class="hero2-spot" aria-hidden="true"></div>
+    <div class="hero2-inner">
+      <div class="hero2-copy">
+        <div class="hero-badge" style="margin:0;">
+          <div class="hero-badge-dot"></div>
+          Para negocios que venden por WhatsApp
+        </div>
+        <h1 class="hero2-title">Deja de mandar fotos sueltas.<br><em>Pon tu negocio bajo el reflector.</em></h1>
+        <p class="hero2-sub">Tu catálogo profesional con tu propia marca, listo en 10 minutos. Tus clientes eligen, arman su pedido y te llega directo a WhatsApp.</p>
+        <div class="hero-actions" style="margin:0;">
+          <a href="register.html" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Crear mi catálogo gratis
+          </a>
+          <a href="index.html?s=dulcesmaria" target="_blank" class="btn btn-outline">Ver una tienda real →</a>
+        </div>
+        <p class="hero-note" style="margin:0;"><span>✓ Gratis para siempre</span> &nbsp;·&nbsp; Sin comisiones &nbsp;·&nbsp; Sin tarjeta</p>
+      </div>
 
-    <!-- HERO IMAGE -->
-    <div class="hero-img-wrap">
-      <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Realistic%20smartphone%20mockup%20showing%20a%20clean%20e-commerce%20product%20catalog%20mobile%20app%20with%20WhatsApp%20button,%20dark%20blue%20background,%20professional%20product%20cards%20visible%20on%20screen,%20soft%20glow%20lighting,%20no%20text%20overlay%20(1).jpg" alt="ProductSpot en tu teléfono" loading="eager" />
+      <!-- Demo dibujada: catálogo vivo + pedido llegando -->
+      <div class="hero2-phone-col" aria-hidden="true">
+        <div class="mock-phone">
+          <div class="mock-screen">
+            <div class="mock-head"><strong>Dulces María</strong><span>Repostería artesanal · Pedidos por WhatsApp</span></div>
+            <div class="mock-chips">
+              <span class="mock-chip on">Todos</span><span class="mock-chip">Pasteles</span><span class="mock-chip">Galletas</span>
+            </div>
+            <div class="mock-grid">
+              <div class="mock-card">
+                <div class="mock-card-img" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/90e7954d-2ddd-4450-b0a2-39ccc4b1c4c8.jpg');"><span class="mock-badge">Más vendido</span></div>
+                <div class="mock-card-body"><b>Pastel de fresas</b>
+                  <div class="mock-card-foot"><span class="mock-price">Q250</span><span class="mock-buy">Pedir</span></div>
+                </div>
+              </div>
+              <div class="mock-card">
+                <div class="mock-card-img" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/83c90908-d2be-4abb-b30c-117d8933acac.jpg');"></div>
+                <div class="mock-card-body"><b>Galletas · 12 uds</b>
+                  <div class="mock-card-foot"><span class="mock-price">Q80</span><span class="mock-buy">Pedir</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-cartbar"><span>2 productos · Q410</span><b>Ver pedido</b></div>
+          </div>
+        </div>
+        <div class="mock-wa">
+          <div class="mock-wa-head">
+            <span class="mock-wa-dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 2a10 10 0 0 0-8.5 15.3L2 22l4.9-1.4A10 10 0 1 0 12 2z"/></svg></span>
+            <b>Nuevo pedido</b><i>ahora</i>
+          </div>
+          <p class="mock-wa-msg">Hola, quiero hacer este pedido:<br>• 1× Pastel de fresas — Q250<br>• 2× Galletas surtidas — Q160<br><strong>Total: Q410</strong></p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -610,30 +708,45 @@
   <section class="dashboard-section">
     <div class="dashboard-inner container">
       <div class="dashboard-content reveal">
-        <div class="tag">Panel de administración</div>
-        <h2>Todo el control desde un solo lugar</h2>
-        <p>Gestiona tus productos, personaliza tu tienda y controla tu catálogo desde un panel intuitivo. Sin curva de aprendizaje.</p>
+        <div class="tag">El problema</div>
+        <h2>Tus clientes dejan de preguntar y empiezan a pedir</h2>
+        <p>Cuando vendes mandando fotos sueltas, cada cliente pregunta lo mismo: precio, opciones, disponibilidad. Con un catálogo, toda esa conversación ya está respondida.</p>
         <div class="dashboard-points">
           <div class="dashboard-point">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Agrega y edita productos en segundos
+            Precios y opciones visibles: cero "¿cuánto cuesta?"
           </div>
           <div class="dashboard-point">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Sube tu logo, cambia colores y personaliza textos
+            El pedido llega armado y completo a tu WhatsApp
           </div>
           <div class="dashboard-point">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Organiza por categorías y gestiona disponibilidad
+            Cada pedido queda registrado en tu panel
           </div>
           <div class="dashboard-point">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Accede desde cualquier dispositivo, en cualquier momento
+            Tu marca se ve profesional en cada compartida
           </div>
         </div>
       </div>
-      <div class="dashboard-img reveal reveal-delay-2">
-        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Clean%20admin%20dashboard%20interface%20on%20laptop%20screen,%20dark%20theme,%20product%20management%20panel%20with%20cards%20and%20sidebar%20navigation,%20blue%20accent%20color,%20realistic%20perspective%20mockup,%20no%20text.jpg" alt="Panel admin de ProductSpot" loading="lazy" />
+      <div class="reveal reveal-delay-2" style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:12px;">
+        <div class="ba-card">
+          <span class="ba-label">Hoy: el chat caótico</span>
+          <span class="ba-bubble">foto1.jpg · foto2.jpg · foto3.jpg…</span>
+          <span class="ba-bubble me">¿Y esto cuánto cuesta?</span>
+          <span class="ba-bubble me">¿Hay para 12 porciones? ¿Me mandas más fotos?</span>
+          <p class="ba-note">Cada venta son veinte mensajes, y la mitad se queda a medias.</p>
+        </div>
+        <div class="ba-card good">
+          <span class="ba-label">Con ProductSpot</span>
+          <div class="ba-product">
+            <div class="ba-product-img" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/90e7954d-2ddd-4450-b0a2-39ccc4b1c4c8.jpg');"></div>
+            <div class="ba-product-info"><small>Pasteles</small><b>Pastel de fresas · Q250</b><span>Tamaños: 8 y 12 porciones</span></div>
+            <span class="ba-product-buy">Pedir</span>
+          </div>
+          <p class="ba-note">Foto, precio, opciones y botón de pedido en un solo enlace. El cliente llega sabiendo qué quiere.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -648,7 +761,12 @@
       </div>
       <div class="steps">
         <div class="step-item reveal">
-          <img class="step-img" src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Person%20on%20phone%20signing%20up%20to%20an%20app,%20minimal%20flat%20illustration,%20blue%20tones.jpg" alt="Crear cuenta" loading="lazy" />
+          <div class="step-mock" aria-hidden="true">
+            <span class="step-mock-label">Nombre de tu tienda</span>
+            <span class="step-mock-input">Dulces María</span>
+            <span class="step-mock-label">Tu WhatsApp</span>
+            <span class="step-mock-input">+502 4887 1603</span>
+          </div>
           <div class="step-num">1</div>
           <h3>Crea tu cuenta gratis</h3>
           <p>Elige el nombre de tu tienda y tu URL única. Sin tarjeta de crédito, sin compromisos.</p>
@@ -658,7 +776,14 @@
           </div>
         </div>
         <div class="step-item reveal reveal-delay-2">
-          <img class="step-img" src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Person%20uploading%20product%20photos%20to%20a%20website%20on%20laptop,%20minimal%20flat%20illustration,%20blue%20tones.jpg" alt="Subir productos" loading="lazy" />
+          <div class="step-mock" aria-hidden="true">
+            <div class="step-mock-thumbs">
+              <div class="step-mock-thumb" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/90e7954d-2ddd-4450-b0a2-39ccc4b1c4c8.jpg');"></div>
+              <div class="step-mock-thumb" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/950dbaf2-1b09-47d6-b91a-946b465d0e87.jpg');"></div>
+              <div class="step-mock-thumb add">+</div>
+            </div>
+            <span class="step-mock-input" style="align-self:stretch;">Pastel de fresas · Q250</span>
+          </div>
           <div class="step-num">2</div>
           <h3>Sube tus productos</h3>
           <p>Agrega fotos, precios y descripciones desde tu panel. El diseño del catálogo se hace solo.</p>
@@ -668,7 +793,10 @@
           </div>
         </div>
         <div class="step-item reveal reveal-delay-4">
-          <img class="step-img" src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/WhatsApp%20chat%20notification%20on%20phone%20with%20shopping%20order,%20minimal%20flat%20illustration,%20blue%20tones%20(1).jpg" alt="Recibir pedidos" loading="lazy" />
+          <div class="step-mock" aria-hidden="true">
+            <span class="step-mock-link">productspot.pages.dev/?s=dulcesmaria</span>
+            <span class="step-mock-msg">Quiero pedir: 1× Pastel de fresas…</span>
+          </div>
           <div class="step-num">3</div>
           <h3>Comparte y recibe pedidos</h3>
           <p>Copia tu enlace y compártelo donde quieras. Tus clientes ordenan por WhatsApp al instante.</p>
@@ -685,68 +813,33 @@
   <section class="section" id="testimonios">
     <div class="container">
       <div class="section-header reveal">
-        <div class="tag">Testimonios</div>
-        <h2>Negocios que ya están vendiendo más</h2>
-        <p>Emprendedores que dejaron de enviar listas de precios y ahora tienen un catálogo profesional.</p>
+        <div class="tag">Tienda real</div>
+        <h2>Así se ve un catálogo hecho con ProductSpot</h2>
+        <p>Dulces María es nuestra tienda de demostración: explórala, arma un pedido y mira lo que recibirían tus clientes.</p>
       </div>
-      <div class="testimonials-grid">
-        <div class="testimonial-card reveal">
-          <div class="stars">
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <div class="demo-cards reveal">
+        <a class="demo-card" href="index.html?s=dulcesmaria" target="_blank" style="text-decoration:none;">
+          <div class="demo-card-img" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/90e7954d-2ddd-4450-b0a2-39ccc4b1c4c8.jpg');"></div>
+          <div class="demo-card-body"><b>Pastel de fresas con crema</b>
+            <div class="demo-card-foot"><span class="demo-card-price">Q250</span><span class="demo-card-buy">Pedir</span></div>
           </div>
-          <p class="testimonial-text">"Antes mandaba fotos sueltas por WhatsApp y la gente se confundía con los precios. Ahora comparto mi enlace y los clientes ya llegan sabiendo exactamente qué quieren. Las ventas me subieron un montón."</p>
-          <div class="testimonial-author">
-            <div class="author-avatar">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div>
-              <div class="author-name">María Fernanda G.</div>
-              <div class="author-biz">Tienda de ropa · Guatemala, GT</div>
-            </div>
+        </a>
+        <a class="demo-card" href="index.html?s=dulcesmaria" target="_blank" style="text-decoration:none;">
+          <div class="demo-card-img" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/950dbaf2-1b09-47d6-b91a-946b465d0e87.jpg');"></div>
+          <div class="demo-card-body"><b>Cupcakes de vainilla · 6 uds</b>
+            <div class="demo-card-foot"><span class="demo-card-price">Q120</span><span class="demo-card-buy">Pedir</span></div>
           </div>
-        </div>
-        <div class="testimonial-card reveal reveal-delay-2">
-          <div class="stars">
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </a>
+        <a class="demo-card" href="index.html?s=dulcesmaria" target="_blank" style="text-decoration:none;">
+          <div class="demo-card-img" style="background-image:url('https://d2ol7oe51mr4n9.cloudfront.net/user_3D2JpqLiBR3qL3AsmAc90iHP2nK/ad66229d-9091-41cd-9a86-7abefc5342bd.jpg');"></div>
+          <div class="demo-card-body"><b>Pie de limón</b>
+            <div class="demo-card-foot"><span class="demo-card-price">Q180</span><span class="demo-card-buy">Pedir</span></div>
           </div>
-          <p class="testimonial-text">"Lo que más me gustó es que no me cobran comisión por cada pedido. Tenía miedo de perder plata como en otras plataformas. Acá todo lo que vendo es mío. Y el catálogo se ve súper profesional."</p>
-          <div class="testimonial-author">
-            <div class="author-avatar">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div>
-              <div class="author-name">Carlos Mendoza</div>
-              <div class="author-biz">Accesorios deportivos · Guatemala, GT</div>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial-card reveal reveal-delay-4">
-          <div class="stars">
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            <svg class="star" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          </div>
-          <p class="testimonial-text">"En 10 minutos ya tenía mi catálogo listo. Lo subí a mi bio de Instagram y ese mismo día me llegaron pedidos. Mis clientes me dicen que se ve muy profesional. Vale muchísimo lo que cuesta."</p>
-          <div class="testimonial-author">
-            <div class="author-avatar">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div>
-              <div class="author-name">Sofía Ramírez</div>
-              <div class="author-biz">Cosméticos y belleza · Guatemala, GT</div>
-            </div>
-          </div>
-        </div>
+        </a>
+      </div>
+      <div class="reveal" style="text-align:center;">
+        <a href="index.html?s=dulcesmaria" target="_blank" class="btn btn-primary">Explorar la tienda demo →</a>
+        <p style="margin-top:14px;font-size:.78rem;color:var(--muted);">Tienda de demostración creada con ProductSpot. La tuya puede estar lista hoy.</p>
       </div>
     </div>
   </section>
@@ -894,7 +987,7 @@
         <p>Deja de enviar listas de precios por WhatsApp. Dale a tu negocio la imagen que merece, en minutos y sin gastar de más.</p>
         <div class="final-cta-actions">
           <a href="register.html" class="btn btn-primary">Crear mi catálogo gratis →</a>
-          <a href="index.html?s=casgt" target="_blank" class="btn btn-outline">Ver demo en vivo</a>
+          <a href="index.html?s=dulcesmaria" target="_blank" class="btn btn-outline">Ver demo en vivo</a>
         </div>
         <div class="final-guarantees">
           <div class="guarantee">
@@ -937,7 +1030,7 @@
         <a href="#features">Funciones</a>
         <a href="#precios">Precios</a>
         <a href="#faq">FAQ</a>
-        <a href="index.html?s=casgt">Demo</a>
+        <a href="index.html?s=dulcesmaria">Demo</a>
       </div>
       <div class="footer-cta">
         <a href="register.html" class="btn btn-primary">Crear cuenta gratis</a>
@@ -970,6 +1063,7 @@
     // Rotating hero words
     (function() {
       const words = document.querySelectorAll('#heroRotating .hero-rotating-word');
+      if (!words.length) return;
       let current = 0;
       setInterval(() => {
         const prev = current;

@@ -184,6 +184,26 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
   btn.disabled = true;
   btn.textContent = "Verificando...";
 
+  // Reactiva el formulario y reinicia Turnstile (los tokens son de un solo uso
+  // y expiran a los 5 min; sin esto, reintentar siempre falla la verificación)
+  const failAttempt = (message) => {
+    err.textContent = message;
+    err.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Crear cuenta";
+    try { if (window.turnstile) window.turnstile.reset(); } catch (_) {}
+  };
+
+  // Validaciones locales ANTES de consumir el token de Turnstile
+  const storeName = regStoreNameEl.value.trim();
+  const slug = slugify(regSlugEl.value);
+  const whatsapp = document.getElementById("regWhatsapp").value.replace(/\D/g, '');
+
+  if (whatsapp.length < 8 || whatsapp.length > 15) {
+    failAttempt("Número de WhatsApp inválido. Usa formato internacional sin espacios (ej: 50212345678).");
+    return;
+  }
+
   // Turnstile anti-bot validation
   const turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value;
   if (turnstileToken) {
@@ -195,10 +215,7 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
       });
       const { success } = await verifyRes.json();
       if (!success) {
-        err.textContent = "Verificación de seguridad fallida. Recarga la página e intenta de nuevo.";
-        err.style.display = "block";
-        btn.disabled = false;
-        btn.textContent = "Crear cuenta";
+        failAttempt("La verificación de seguridad expiró. Vuelve a presionar «Crear cuenta» para intentarlo de nuevo.");
         return;
       }
     } catch (_) {
@@ -208,18 +225,6 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
 
   btn.textContent = "Creando cuenta...";
 
-  const storeName = regStoreNameEl.value.trim();
-  const slug = slugify(regSlugEl.value);
-  const whatsapp = document.getElementById("regWhatsapp").value.replace(/\D/g, '');
-
-  if (whatsapp.length < 8 || whatsapp.length > 15) {
-    err.textContent = "Número de WhatsApp inválido. Usa formato internacional sin espacios (ej: 50212345678).";
-    err.style.display = "block";
-    btn.disabled = false;
-    btn.textContent = "Crear cuenta";
-    return;
-  }
-
   const adminUrl = `${window.location.origin}/admin.html`;
   const { data: authData, error: authError } = await sb.auth.signUp({
     email,
@@ -228,10 +233,20 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
   });
 
   if (authError) {
-    err.textContent = authError.message;
-    err.style.display = "block";
-    btn.disabled = false;
-    btn.textContent = "Crear cuenta";
+    const m = (authError.message || "").toLowerCase();
+    let friendly;
+    if (m.includes("confirmation") || m.includes("sending") || m.includes("email") && m.includes("error")) {
+      friendly = "No pudimos enviar el correo de confirmación, así que tu cuenta aún no se creó. Inténtalo de nuevo en unos minutos, o escríbenos por WhatsApp desde la página principal y la activamos por ti.";
+    } else if (m.includes("already registered") || m.includes("already been registered")) {
+      friendly = "Este correo ya tiene una cuenta. Inicia sesión en el panel admin, o usa «¿Olvidaste tu contraseña?».";
+    } else if (m.includes("rate limit") || m.includes("too many")) {
+      friendly = "Demasiados intentos seguidos. Espera un par de minutos y vuelve a intentar.";
+    } else if (m.includes("password")) {
+      friendly = "La contraseña no cumple los requisitos: usa al menos 8 caracteres.";
+    } else {
+      friendly = "No se pudo crear la cuenta: " + authError.message;
+    }
+    failAttempt(friendly);
     return;
   }
 

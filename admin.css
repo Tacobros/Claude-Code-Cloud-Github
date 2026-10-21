@@ -1126,3 +1126,41 @@ tr.row-selected { background: #0d2240 !important; }
 .order-items li { font-size: .85rem; color: var(--gray-600); }
 .order-total { font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; font-weight: 700; }
 .order-date { white-space: nowrap; color: var(--gray-400); font-size: .8rem; }
+
+/* ===== REDISEÑO 2.0: login dividido + inicio ===== */
+.login-screen { gap: 0; }
+.login-brand {
+  display: none; position: relative; overflow: hidden;
+  flex-direction: column; justify-content: space-between;
+  width: 420px; min-height: 520px; padding: 36px;
+  background: #0a0f1e; border-radius: 18px 0 0 18px;
+}
+.login-brand-spot {
+  position: absolute; top: -160px; left: -120px; width: 540px; height: 540px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(233,69,96,.25) 0%, rgba(233,69,96,0) 65%);
+}
+.login-brand-claim {
+  position: relative; margin: 0;
+  font-family: 'Space Grotesk', 'Inter', sans-serif; font-size: 2rem; line-height: 1.15;
+  font-weight: 700; color: #f1f5f9; letter-spacing: -0.02em;
+}
+.brand-wordmark-dark { color: #0f172a; }
+@media (min-width: 960px) {
+  .login-brand { display: flex; }
+  .login-screen .login-card { border-radius: 0 18px 18px 0; }
+}
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 600 .85rem/1 'Inter', sans-serif; color: var(--gray-800);
+  background: var(--white); border: 1.5px solid var(--gray-200);
+  border-radius: 9px; padding: 10px 16px; cursor: pointer;
+}
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.home-order-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+.home-order-row:last-child { border-bottom: none; }
+.home-order-total { width: 64px; flex-shrink: 0; text-align: center; font: 700 .78rem/2.4 'Inter', sans-serif; color: var(--accent); background: rgba(233,69,96,.1); border-radius: 999px; font-variant-numeric: tabular-nums; }
+.home-order-items { flex: 1; min-width: 0; font-size: .82rem; color: var(--gray-800); overflow-wrap: anywhere; }
+.home-order-date { font-size: .72rem; color: var(--gray-400); white-space: nowrap; }
+.check-done { color: var(--gray-400); text-decoration: line-through; }
+.check-item { display: flex; align-items: center; gap: 8px; }

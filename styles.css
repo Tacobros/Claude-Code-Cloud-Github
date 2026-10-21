@@ -1319,3 +1319,45 @@ body {
 .btn-send-cart:active { transform: scale(.98); }
 .cart-empty { text-align: center; color: var(--gray-400); font-size: .9rem; padding: 18px 0; }
 .cart-close { position: absolute; } /* no usado: el overlay cierra al tocar fuera */
+
+/* ===== REDISEÑO 2.0: el producto es la estrella ===== */
+/* Banda de marca compacta en lugar del hero gigante */
+.hero { padding: 36px 0 40px; background: linear-gradient(160deg, #0f172a 0%, #1a2440 100%); }
+.hero-inner { gap: 32px; align-items: center; }
+.hero-content h1 { font-size: clamp(1.45rem, 3vw, 2.1rem); font-weight: 700; line-height: 1.2; }
+.hero-content .hero-badge { margin-bottom: 10px; }
+.hero-subtitle, .hero-content p { font-size: .95rem; }
+.hero-actions { margin-top: 18px; }
+.hero-actions .btn-primary, .hero-actions .btn-whatsapp { padding: 11px 20px; font-size: .9rem; }
+.hero-product-img { max-height: 230px; width: 100%; object-fit: cover; border-radius: 18px; box-shadow: 0 16px 48px rgba(0,0,0,.35); }
+@media (max-width: 820px) {
+  .hero { padding: 26px 0 30px; }
+  .hero-inner { gap: 18px; }
+  .hero-image { display: none; }
+}
+
+/* Stats como franja discreta */
+.stats { padding: 16px 0; }
+.stats-grid .stat strong { font-size: 1.05rem; }
+.stats-grid .stat span { font-size: .72rem; }
+
+/* Fotos protagonistas 4:5 */
+.product-image { height: auto; aspect-ratio: 4 / 5; max-width: 100%; background: var(--gray-100); }
+.product-image img.product-img { object-fit: cover; }
+
+/* Carrito en el header */
+.header-cart {
+  position: relative; width: 40px; height: 40px; border-radius: 999px;
+  border: 1.5px solid var(--gray-200); background: var(--white); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: border-color var(--motion-fast) var(--ease-spot), transform var(--motion-fast);
+}
+.header-cart:hover { border-color: var(--accent); }
+.header-cart:active { transform: scale(.95); }
+.header-cart-count {
+  position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px;
+  border-radius: 999px; background: var(--accent); color: #fff;
+  font: 700 .68rem/18px 'Inter', sans-serif; text-align: center; padding: 0 4px;
+  animation: spot-pop var(--motion-base) var(--ease-spring);
+}
+@keyframes spot-pop { 0% { transform: scale(.4); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }

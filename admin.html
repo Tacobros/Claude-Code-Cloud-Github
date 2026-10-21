@@ -129,15 +129,29 @@
 
   <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="login-screen">
-    <div class="login-card">
-      <div class="login-logo" style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:8px;">
-        <svg width="34" height="34" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <div class="login-brand" aria-hidden="true">
+      <div class="login-brand-spot"></div>
+      <span style="display:inline-flex;align-items:center;gap:10px;position:relative;">
+        <svg width="30" height="30" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
           <rect x="2" y="2" width="28" height="28" rx="9" fill="#f8fafc"/>
           <rect x="2" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
           <rect x="34" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
           <circle cx="48" cy="16" r="14" fill="#e94560"/>
         </svg>
-        <span class="brand-wordmark" style="font-size:1.3rem;">Product<em>Spot</em></span>
+        <span class="brand-wordmark" style="font-size:1.25rem;">Product<em>Spot</em></span>
+      </span>
+      <p class="login-brand-claim">Tus productos,<br/>bajo el reflector.</p>
+      <span style="font-size:.75rem;color:#5b6478;position:relative;">© 2026 ProductSpot</span>
+    </div>
+    <div class="login-card">
+      <div class="login-logo" style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <svg width="26" height="26" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="2" width="28" height="28" rx="9" fill="#0f172a"/>
+          <rect x="2" y="34" width="28" height="28" rx="9" fill="#0f172a"/>
+          <rect x="34" y="34" width="28" height="28" rx="9" fill="#0f172a"/>
+          <circle cx="48" cy="16" r="14" fill="#e94560"/>
+        </svg>
+        <span class="brand-wordmark brand-wordmark-dark" style="font-size:1.1rem;">Product<em>Spot</em></span>
       </div>
 
       <!-- Panel: login -->
@@ -221,13 +235,21 @@
         <span class="brand-wordmark" style="font-size:1rem;">Product<em>Spot</em></span>
       </div>
       <nav class="sidebar-nav">
-        <a href="#" class="nav-item active" data-page="products">
+        <a href="#" class="nav-item active" data-page="home">
+          <span class="nav-icon">🏠</span>
+          <span>Inicio</span>
+        </a>
+        <a href="#" class="nav-item" data-page="products">
           <span class="nav-icon">📦</span>
           <span>Productos</span>
         </a>
+        <a href="#" class="nav-item" data-page="settings">
+          <span class="nav-icon">🏪</span>
+          <span>Mi tienda</span>
+        </a>
         <a href="editor.html" class="nav-item" target="_blank">
-          <span class="nav-icon">⚙️</span>
-          <span>Editar catálogo</span>
+          <span class="nav-icon">🎨</span>
+          <span>Editor visual</span>
         </a>
         <a href="#" class="nav-item" data-page="analytics">
           <span class="nav-icon">📊</span>
@@ -256,12 +278,65 @@
       <!-- TOP BAR -->
       <div class="topbar">
         <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-        <h1 class="topbar-title" id="topbarTitle">Productos</h1>
+        <h1 class="topbar-title" id="topbarTitle">Inicio</h1>
         <div class="topbar-actions" id="topbarActions"></div>
       </div>
 
       <!-- PAGES -->
-      <div id="pageProducts" class="page active">
+      <!-- HOME PAGE -->
+      <div id="pageHome" class="page active">
+        <div class="page-header">
+          <div>
+            <h2 id="homeGreeting">Hola</h2>
+            <p id="homeStoreLine" style="margin:0;font-size:.8rem;color:#6b7280;">Cargando tu tienda…</p>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="#" id="homeViewLink" target="_blank" class="btn-secondary" style="text-decoration:none;">👁 Ver mi catálogo</a>
+            <button class="btn-primary" onclick="openAddModal()">+ Agregar producto</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+          <div class="settings-card" style="padding:20px;">
+            <div style="font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;">Pedidos hoy</div>
+            <div id="homeOrdersToday" style="font-family:'Space Grotesk','Inter',sans-serif;font-size:2.1rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;">—</div>
+            <div id="homeOrdersHint" style="font-size:.75rem;color:#6b7280;"></div>
+          </div>
+          <div class="settings-card" style="padding:20px;">
+            <div style="font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;">Vistas · 7 días</div>
+            <div id="homeViews" style="font-family:'Space Grotesk','Inter',sans-serif;font-size:2.1rem;font-weight:800;font-variant-numeric:tabular-nums;">—</div>
+            <div id="homeViewsHint" style="font-size:.75rem;color:#6b7280;"></div>
+          </div>
+          <div class="settings-card" style="padding:20px;">
+            <div style="font-size:.72rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;">Clicks a WhatsApp · 7 días</div>
+            <div id="homeWa" style="font-family:'Space Grotesk','Inter',sans-serif;font-size:2.1rem;font-weight:800;color:#1fa855;font-variant-numeric:tabular-nums;">—</div>
+            <div id="homeWaHint" style="font-size:.75rem;color:#6b7280;"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+          <div class="settings-card" style="flex:2 1 380px;min-width:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <h3 style="margin:0;">Pedidos recientes</h3>
+              <a href="#" onclick="document.querySelector('.nav-item[data-page=orders]').click();return false;" style="font-size:.8rem;font-weight:700;color:var(--accent);text-decoration:none;">Ver todos →</a>
+            </div>
+            <div id="homeRecentOrders"><div class="loading">Cargando…</div></div>
+          </div>
+          <div style="flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:16px;">
+            <div class="settings-card">
+              <h3 style="margin-top:0;">Pon tu tienda a punto</h3>
+              <div id="homeChecklist" style="display:flex;flex-direction:column;gap:9px;font-size:.85rem;color:#4b5563;"></div>
+            </div>
+            <div class="settings-card" style="background:#0f172a;color:#f1f5f9;border:none;">
+              <h3 style="margin-top:0;color:#f1f5f9;">Comparte tu catálogo</h3>
+              <p style="font-size:.8rem;color:#94a3b8;margin:0 0 12px;">Tu enlace y tu QR listos para estados, bio y mostrador.</p>
+              <a href="#" onclick="document.querySelector('.nav-item[data-page=settings]')?.click();return false;" id="homeShareBtn" style="display:inline-block;text-decoration:none;font-size:.8rem;font-weight:700;color:#0f172a;background:#ffb454;border-radius:9px;padding:9px 14px;">Ir a mi enlace y QR →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pageProducts" class="page">
         <div class="page-header">
           <div style="flex:1;">
             <h2>Mis productos</h2>

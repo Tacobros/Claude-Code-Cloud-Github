@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SuperAdmin — ProductSpot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="admin.css" />
   <style>
@@ -244,10 +244,10 @@
   <!-- LOGIN -->
   <div id="loginScreen" class="login-screen" style="display:none;">
     <div class="login-card">
-      <div class="login-logo" style="justify-content:center;margin-bottom:20px;">
-        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
-             alt="ProductSpot" style="height:44px;width:auto;" />
-      </div>
+      <span class="login-logo" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;margin-bottom:20px;width:100%;">
+          <svg width="26" height="26" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="9" fill="#0f172a"/><rect x="2" y="34" width="28" height="28" rx="9" fill="#0f172a"/><rect x="34" y="34" width="28" height="28" rx="9" fill="#0f172a"/><circle cx="48" cy="16" r="14" fill="#5b8ab5"/></svg>
+          <span class="brand-wordmark brand-wordmark-dark" style="font-size:1.1rem;">Product<em style="color:#5b8ab5;">Spot</em></span>
+        </span>
       <div style="text-align:center;margin-bottom:24px;">
         <span style="background:#5b8ab5;color:#fff;font-size:.72rem;font-weight:700;padding:4px 14px;border-radius:99px;letter-spacing:.06em;text-transform:uppercase;">
           SuperAdmin
@@ -273,8 +273,10 @@
 
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-logo">
-        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png"
-             alt="ProductSpot" style="height:26px;width:auto;filter:brightness(0) invert(1);" />
+        <span style="display:inline-flex;align-items:center;gap:8px;">
+          <svg width="22" height="22" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="9" fill="#f8fafc"/><rect x="2" y="34" width="28" height="28" rx="9" fill="#f8fafc"/><rect x="34" y="34" width="28" height="28" rx="9" fill="#f8fafc"/><circle cx="48" cy="16" r="14" fill="#5b8ab5"/></svg>
+          <span class="brand-wordmark" style="font-size:1rem;">Product<em style="color:#5b8ab5;">Spot</em></span>
+        </span>
       </div>
       <div class="sidebar-section-label">SuperAdmin</div>
       <nav class="sidebar-nav">

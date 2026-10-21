@@ -66,15 +66,34 @@
     .btn-login { background: #e94560; }
     .btn-login:hover { background: #c22844; }
     .field input:focus, .field textarea:focus, .field select:focus { border-color: #e94560; }
-    .login-screen { background: linear-gradient(135deg, #0a1628 0%, #0d2240 100%); }
   </style>
 </head>
 <body>
 
   <div id="registerScreen" class="login-screen">
+    <div class="login-brand" aria-hidden="true">
+      <div class="login-brand-spot"></div>
+      <span style="display:inline-flex;align-items:center;gap:10px;position:relative;">
+        <svg width="30" height="30" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <rect x="2" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <rect x="34" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+          <circle cx="48" cy="16" r="14" fill="#e94560"/>
+        </svg>
+        <span class="brand-wordmark" style="font-size:1.25rem;">Product<em>Spot</em></span>
+      </span>
+      <p class="login-brand-claim">Tus productos,<br/>bajo el reflector.</p>
+      <span style="font-size:.75rem;color:#5b6478;position:relative;">© 2026 ProductSpot</span>
+    </div>
     <div class="login-card register-card">
-      <div class="login-logo" style="justify-content:center;">
-        <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png" alt="ProductSpot" style="height:52px;width:auto;" />
+      <div class="login-logo" style="display:flex;align-items:center;gap:9px;margin-bottom:8px;">
+        <svg width="26" height="26" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="2" y="2" width="28" height="28" rx="9" fill="#0f172a"/>
+          <rect x="2" y="34" width="28" height="28" rx="9" fill="#0f172a"/>
+          <rect x="34" y="34" width="28" height="28" rx="9" fill="#0f172a"/>
+          <circle cx="48" cy="16" r="14" fill="#e94560"/>
+        </svg>
+        <span class="brand-wordmark brand-wordmark-dark" style="font-size:1.1rem;">Product<em>Spot</em></span>
       </div>
 
       <div class="step-indicator">

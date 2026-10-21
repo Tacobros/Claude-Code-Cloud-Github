@@ -1212,6 +1212,12 @@ body {
   content: attr(data-label);
   position: absolute;
   top: 8px; left: 8px;
+  /* Reset explícito: secciones como .hero traen un ::after decorativo
+     (círculo 500px) cuyas dimensiones se mezclaban con esta etiqueta */
+  right: auto; bottom: auto;
+  width: max-content; height: auto;
+  border-radius: 4px;
+  z-index: 40;
   background: rgba(233,69,96,.9);
   color: #fff;
   font-size: .7rem; font-weight: 700;

@@ -94,6 +94,12 @@ const EMOJI_DB = {
   business: ['💼','📊','📈','💰','💳','🤝','🏆','📋','📌','📎','✉️','📣','🎯','🏦','💹','📉','🔖','💡','🧮','📝','🗂','📅','📧','🖊','🔐'],
 };
 
+// Emojis que muestra el catálogo cuando el campo está vacío (deben coincidir
+// con los estáticos de index.html) — así el botón refleja lo que se ve de verdad
+const EMOJI_FIELD_DEFAULTS = {
+  about1_icon: '✅', about2_icon: '🚚', about3_icon: '💬', about4_icon: '🔄',
+};
+
 const EMOJI_CAT_NAMES = {
   popular: 'Popular', nature: 'Naturaleza', objects: 'Objetos',
   people: 'Personas', symbols: 'Símbolos', food: 'Comida',
@@ -282,7 +288,7 @@ function createFieldEl(field, value) {
       btn.type = 'button';
       btn.className = 'ed-emoji-btn';
       btn.dataset.key = field.key;
-      const displayEmoji = value || '😊';
+      const displayEmoji = value || EMOJI_FIELD_DEFAULTS[field.key] || '😊';
       btn.innerHTML = `<span class="ed-emoji-val">${displayEmoji}</span><span class="ed-emoji-btn-hint">Cambiar</span>`;
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -340,17 +346,19 @@ function createFieldEl(field, value) {
 
       const uploadLabel = document.createElement('label');
       uploadLabel.className = 'ed-upload-btn';
-      uploadLabel.innerHTML = `
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
-        Subir imagen
-      `;
+      uploadLabel.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>`;
+      const uploadTxt = document.createElement('span');
+      uploadTxt.textContent = value ? 'Cambiar imagen' : 'Subir imagen';
+      uploadLabel.appendChild(uploadTxt);
+
       const fileInput = document.createElement('input');
       fileInput.type  = 'file';
       fileInput.accept = 'image/*';
       fileInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        uploadLabel.textContent = 'Subiendo...';
+        uploadTxt.textContent = 'Subiendo...';
+        fileInput.disabled = true;
         const url = await uploadImage(file, field.uploadKey || 'img');
         if (url) {
           preview.className = 'ed-img-preview';
@@ -358,10 +366,9 @@ function createFieldEl(field, value) {
           urlInput.value = url;
           handleChange(field.key, url);
         }
-        uploadLabel.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
-          Cambiar imagen
-        `;
+        uploadTxt.textContent = url ? 'Cambiar imagen' : 'Reintentar subida';
+        fileInput.disabled = false;
+        fileInput.value = '';
       });
       uploadLabel.appendChild(fileInput);
       actions.appendChild(uploadLabel);
@@ -481,7 +488,12 @@ async function uploadImage(file, type) {
   const ext  = file.name.split('.').pop();
   const path = `design/${storeData.id}/${type}-${Date.now()}.${ext}`;
   const { error } = await sb.storage.from('product-images').upload(path, file, { upsert: true });
-  if (error) { console.error(error); return null; }
+  if (error) {
+    console.error(error);
+    setStatus('Error al subir imagen', '');
+    alert('No se pudo subir la imagen: ' + (error.message || 'error desconocido') + '\nIntenta de nuevo o pega una URL de imagen.');
+    return null;
+  }
   const { data } = sb.storage.from('product-images').getPublicUrl(path);
   return data.publicUrl;
 }
@@ -546,21 +558,39 @@ function openEmojiPicker(key, btnEl) {
     closeEmojiPicker(); return;
   }
 
-  emojiPickerTarget = { key, btnEl };
+  // Emoji en uso (cambio pendiente > valor guardado > default del catálogo)
+  const current = pendingChanges[key] ?? storeData[key] ?? EMOJI_FIELD_DEFAULTS[key] ?? '';
+  emojiPickerTarget = { key, btnEl, current };
+
+  // Abrir en la categoría que contiene el emoji actual, para que se vea marcado
+  if (current) {
+    const cat = Object.keys(EMOJI_DB).find(c => EMOJI_DB[c].includes(current));
+    if (cat) {
+      emojiCurrentCat = cat;
+      document.querySelectorAll('.ed-emoji-cat').forEach(b =>
+        b.classList.toggle('active', b.dataset.cat === cat)
+      );
+    }
+  }
+  document.getElementById('edEmojiSearch').value = '';
   renderEmojiGrid(emojiCurrentCat);
   picker.style.display = 'block';
 
-  // Position to the right of the sidebar so it never gets clipped
+  // El sidebar está a la DERECHA: el picker se ancla pegado a su borde izquierdo
   const sidebarW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--ed-sidebar')) || 280;
   const topbarH  = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--ed-topbar'))  || 52;
   const pickerH  = picker.offsetHeight || 340;
+  const pickerW  = picker.offsetWidth  || 320;
   const rect     = btnEl.getBoundingClientRect();
 
   let top = rect.top;
   if (top + pickerH > window.innerHeight - 8) top = window.innerHeight - pickerH - 8;
   if (top < topbarH + 4) top = topbarH + 4;
 
-  picker.style.left = (sidebarW + 10) + 'px';
+  let left = window.innerWidth - sidebarW - pickerW - 14;
+  if (left < 8) left = 8;
+
+  picker.style.left = left + 'px';
   picker.style.top  = top + 'px';
 }
 
@@ -583,9 +613,13 @@ function renderEmojiGrid(cat, filter = '') {
     if (label) label.textContent = EMOJI_CAT_NAMES[cat] || cat;
   }
 
+  const current = emojiPickerTarget ? emojiPickerTarget.current : '';
   grid.innerHTML = emojis.map(e =>
-    `<button class="ed-emoji-opt" title="${e}">${e}</button>`
+    `<button class="ed-emoji-opt${e === current ? ' current' : ''}" title="${e === current ? 'Emoji actual' : e}">${e}</button>`
   ).join('');
+
+  const cur = grid.querySelector('.ed-emoji-opt.current');
+  if (cur) cur.scrollIntoView({ block: 'nearest' });
 
   grid.querySelectorAll('.ed-emoji-opt').forEach(btn => {
     btn.addEventListener('click', () => selectEmoji(btn.textContent.trim()));
@@ -628,6 +662,23 @@ function initEmojiPicker() {
     }
   });
 }
+
+// ── UX GUARDS ─────────────────────────────────────────────────────────────────
+// Aviso al salir con cambios sin guardar
+window.addEventListener('beforeunload', (e) => {
+  if (Object.keys(pendingChanges).length) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// Ctrl/Cmd + S guarda
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    e.preventDefault();
+    saveChanges();
+  }
+});
 
 // ── START ─────────────────────────────────────────────────────────────────────
 init();

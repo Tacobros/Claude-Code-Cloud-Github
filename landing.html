@@ -61,7 +61,7 @@
     .ba-product-buy { margin-left: auto; flex-shrink: 0; font-size: .7rem; font-weight: 700; color: #fff; background: #1fa855; border-radius: 9px; padding: 7px 11px; }
     .ba-note { margin: 0; font-size: .82rem; line-height: 1.55; color: var(--muted); }
     /* Mini-mockups de los pasos */
-    .step-mock { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 7px; text-align: left; }
+    .step-mock { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 7px; text-align: left; height: 140px; justify-content: center; }
     .step-mock-label { font-size: .6rem; color: var(--muted); }
     .step-mock-input { background: var(--bg3); border-radius: 7px; padding: 7px 10px; font-size: .68rem; color: var(--text); }
     .step-mock-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
@@ -298,7 +298,7 @@
     .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
     .steps::before {
       content: ''; position: absolute;
-      top: calc(160px + 24px + 24px); /* img height + margin-bottom + half of 48px circle */
+      top: calc(140px + 20px + 24px); /* alto fijo del mock + margin-bottom + mitad del círculo de 48px */
       left: calc(16.66% + 20px); right: calc(16.66% + 20px);
       height: 2px; background: linear-gradient(90deg, var(--accent), rgba(233,69,96,.2));
     }

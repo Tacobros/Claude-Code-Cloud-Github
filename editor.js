@@ -5,7 +5,8 @@ const BLOCKS = [
     fields: [
       { key: 'name',         label: 'Nombre de la tienda', type: 'text' },
       { key: 'accent_color', label: 'Color de acento',     type: 'color' },
-      { key: 'logo_url',     label: 'Logo',                type: 'image', uploadKey: 'logo' },
+      { key: 'logo_url',     label: 'Logo',                type: 'image', uploadKey: 'logo',
+        hint: 'Recomendado: cuadrado, 512 × 512 px, PNG con fondo transparente. Máx. 2MB.' },
     ]
   },
   {
@@ -14,7 +15,8 @@ const BLOCKS = [
       { key: 'hero_badge',     label: 'Etiqueta',          type: 'text',     ph: 'Bienvenidos' },
       { key: 'hero_title',     label: 'Título principal',  type: 'text',     ph: 'Bienvenido a nuestra tienda' },
       { key: 'hero_subtitle',  label: 'Subtítulo',         type: 'textarea', ph: 'Explora nuestro catálogo...' },
-      { key: 'hero_image_url', label: 'Imagen de portada', type: 'image',    uploadKey: 'hero' },
+      { key: 'hero_image_url', label: 'Imagen de portada', type: 'image',    uploadKey: 'hero',
+        hint: 'Recomendado: horizontal, 1200 × 800 px o más (se recorta para llenar el espacio). Máx. 2MB. Si es tu logo, súbelo mejor en «Marca y colores» → Logo.' },
     ]
   },
   {
@@ -393,6 +395,12 @@ function createFieldEl(field, value) {
       wrap.appendChild(preview);
       wrap.appendChild(actions);
       wrap.appendChild(urlInput);
+      if (field.hint) {
+        const hint = document.createElement('p');
+        hint.className = 'ed-field-hint';
+        hint.textContent = field.hint;
+        wrap.appendChild(hint);
+      }
       break;
     }
 

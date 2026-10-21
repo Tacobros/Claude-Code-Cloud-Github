@@ -200,6 +200,7 @@ html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; b
   transition: background .15s, border-color .15s;
 }
 .ed-upload-btn:hover { background: var(--ed-border2); border-color: var(--ed-accent); }
+.ed-field-hint { font-size: .72rem; color: var(--ed-muted); margin-top: 6px; line-height: 1.5; }
 .ed-upload-btn input[type=file] { display: none; }
 
 /* Toggle */

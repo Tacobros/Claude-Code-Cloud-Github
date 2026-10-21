@@ -5,27 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Política de Privacidad — ProductSpot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/brand/logo-icon.svg" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1f2937; line-height: 1.7; }
-    .header { background: #0a1628; padding: 18px 24px; display: flex; align-items: center; gap: 16px; }
-    .header img { height: 36px; width: auto; }
-    .header a { color: #94a3b8; font-size: .875rem; text-decoration: none; }
+    .header { background: #0f172a; padding: 18px 24px; display: flex; align-items: center; gap: 16px; }
+    .brand { display: inline-flex; align-items: center; gap: 9px; }
+    .brand-wordmark { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 700; letter-spacing: -0.02em; font-size: 1.1rem; color: #f8fafc; }
+    .brand-wordmark em { font-style: normal; color: #e94560; }
+    .header a { color: #94a3b8; font-size: .875rem; text-decoration: none; margin-left: auto; }
     .header a:hover { color: #fff; }
     .container { max-width: 760px; margin: 0 auto; padding: 48px 24px; }
-    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; }
-    .meta { color: #6b7280; font-size: .875rem; margin-bottom: 40px; }
-    h2 { font-size: 1.1rem; font-weight: 700; margin: 32px 0 10px; color: #111827; }
+    h1 { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+    h1::after { content: ""; display: block; width: 44px; height: 4px; border-radius: 99px; background: #e94560; margin-top: 10px; }
+    .meta { color: #6b7280; font-size: .875rem; margin: 14px 0 40px; }
+    h2 { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.01em; font-size: 1.1rem; font-weight: 700; margin: 32px 0 10px; color: #111827; }
     p { margin-bottom: 14px; color: #374151; }
     ul { margin: 0 0 14px 20px; color: #374151; }
     ul li { margin-bottom: 6px; }
-    a { color: #2563eb; }
+    ul li::marker { color: #e94560; }
+    a { color: #c22844; }
   </style>
 </head>
 <body>
   <div class="header">
-    <img src="https://vowsvdzjyvpalyvkfxte.supabase.co/storage/v1/object/public/assets/Sleek%20Logotype%20for%20ProductSpot%20Featuring%20Spotlight.png" alt="ProductSpot" />
+    <a href="landing.html" class="brand" style="margin-left:0;text-decoration:none;">
+      <svg width="24" height="24" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="2" y="2" width="28" height="28" rx="9" fill="#f8fafc"/>
+        <rect x="2" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+        <rect x="34" y="34" width="28" height="28" rx="9" fill="#f8fafc"/>
+        <circle cx="48" cy="16" r="14" fill="#e94560"/>
+      </svg>
+      <span class="brand-wordmark">Product<em>Spot</em></span>
+    </a>
     <a href="landing.html">← Volver</a>
   </div>
   <div class="container">

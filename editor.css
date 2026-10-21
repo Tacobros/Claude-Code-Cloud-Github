@@ -420,3 +420,8 @@ html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; b
   transition: background .1s; line-height: 1;
 }
 .ed-emoji-opt:hover { background: var(--ed-surface2); }
+.ed-emoji-opt.current {
+  background: rgba(233,69,96,.16);
+  box-shadow: inset 0 0 0 2px var(--ed-accent);
+  border-radius: 8px;
+}

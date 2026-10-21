@@ -537,10 +537,16 @@ function initPreviewMode() {
     stats: '.stats', about: '.about', contact: '.contact',
   };
 
+  const sectionLabels = {
+    hero: 'Encabezado', catalog: 'Catálogo',
+    stats: 'Estadísticas', about: 'Nosotros', contact: 'Contacto',
+  };
+
   Object.entries(sectionMap).forEach(([blockId, sel]) => {
     const el = document.querySelector(sel);
     if (!el) return;
     el.setAttribute('data-editor-block', blockId);
+    el.setAttribute('data-label', sectionLabels[blockId] || blockId);
     el.classList.add('editor-section');
     el.addEventListener('click', (e) => {
       if (e.target.closest('a, button, input, select')) return;

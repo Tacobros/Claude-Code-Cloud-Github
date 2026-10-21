@@ -32,7 +32,9 @@ function updateCatalogLink(slug) {
   }
 }
 
-const DEFAULT_CATEGORIES = {
+// Etiquetas para valores antiguos guardados cuando las categorías venían fijas;
+// las tiendas nuevas usan solo sus categorías personalizadas.
+const LEGACY_CATEGORY_LABELS = {
   laliga: "LaLiga",
   premier: "Premier League",
   ligue1: "Ligue 1",
@@ -86,7 +88,7 @@ let currentImageUrls = [];
 let currentPlan = 'free';
 
 function getCategoryLabel(cat) {
-  return DEFAULT_CATEGORIES[cat] || cat;
+  return LEGACY_CATEGORY_LABELS[cat] || cat;
 }
 
 function populateCategorySelects() {
@@ -95,15 +97,11 @@ function populateCategorySelects() {
   ).join("");
 
   const pCat = document.getElementById("pCategory");
-  [...pCat.options].filter((o) => !DEFAULT_CATEGORIES[o.value] && o.value !== "").forEach((o) => o.remove());
+  [...pCat.options].filter((o) => o.value !== "").forEach((o) => o.remove());
   pCat.insertAdjacentHTML("beforeend", customOptions);
 
   const filterSel = document.getElementById("adminFilter");
-  const defaultFilterOptions = `
-    <option value="all">Todas las categorías</option>
-    ${Object.entries(DEFAULT_CATEGORIES).map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}
-  `;
-  filterSel.innerHTML = defaultFilterOptions + customOptions;
+  filterSel.innerHTML = `<option value="all">Todas las categorías</option>` + customOptions;
 }
 
 // ===== IMAGE UPLOAD =====
@@ -611,7 +609,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
 
   const payload = {
     name: document.getElementById("pName").value.trim(),
-    category: document.getElementById("pCategory").value,
+    category: document.getElementById("pCategory").value || null,
     price: parseInt(document.getElementById("pPrice").value),
     description: document.getElementById("pDesc").value.trim(),
     badge: document.getElementById("pBadge").value || null,
@@ -1114,7 +1112,7 @@ document.getElementById("btnAddCategory").addEventListener("click", () => {
   const input = document.getElementById("newCategoryInput");
   const name = input.value.trim();
   if (!name) return;
-  if (customCategories.includes(name) || Object.values(DEFAULT_CATEGORIES).includes(name)) {
+  if (customCategories.includes(name)) {
     showToast("Esa categoría ya existe", "error");
     return;
   }

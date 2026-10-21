@@ -98,7 +98,7 @@
       </div>
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Buscar producto..." />
-        <span class="search-icon">🔍</span>
+        <span class="search-icon" data-icon="search" data-icon-size="17"></span>
       </div>
       <div class="products-grid" id="productsGrid">
         <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line price"></div></div></div>
@@ -107,7 +107,7 @@
         <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div><div class="skeleton-line price"></div></div></div>
       </div>
       <div class="empty-state" id="emptyState" style="display:none;">
-        <span>😕</span>
+        <span class="empty-ico" data-icon="frown" data-icon-size="40"></span>
         <p id="emptyMsg">No encontramos ese producto. <br/><a href="#" id="emptyWaLink" target="_blank">Contáctanos por WhatsApp</a></p>
       </div>
     </div>
@@ -233,6 +233,7 @@
   </a>
 
   <script src="supabase.js"></script>
+  <script src="icons.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -335,7 +335,7 @@ function renderProducts() {
         <div class="product-image">
           ${thumb
             ? `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(p.name)}" class="product-img" loading="lazy" />`
-            : `<div class="product-img-placeholder">📦</div>`}
+            : `<div class="product-img-placeholder">${psIcon("image", 34)}</div>`}
         </div>
         <div class="product-body">
           <div class="product-league">${escapeHtml(p.league)}</div>
@@ -406,7 +406,7 @@ function openModal(id) {
         <img id="modalMainImg" src="${escapeHtml(images[0])}" alt="${escapeHtml(p.name)}" class="modal-main-img" />
         ${images.length > 1 ? `<div class="modal-thumbs-row">${images.map((url, i) => `<img src="${escapeHtml(url)}" class="modal-thumb-img${i === 0 ? " active" : ""}" onclick="setMainImg(this,${i})" />`).join("")}</div>` : ""}
       </div>`
-    : `<div class="modal-product-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460)">📦</div>`;
+    : `<div class="modal-product-image" style="background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#64748b;">${psIcon("image", 44)}</div>`;
 
   const sizesHtml = (p.sizes && p.sizes.length > 0)
     ? `<div class="modal-section-title">${escapeHtml(p.variant_label || "Tallas disponibles")}</div>

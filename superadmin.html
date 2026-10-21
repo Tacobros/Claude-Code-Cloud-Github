@@ -281,13 +281,13 @@
       <div class="sidebar-section-label">SuperAdmin</div>
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="dashboard">
-          <span class="nav-icon">📊</span> Dashboard
+          <span class="nav-icon" data-icon="chart"></span> Dashboard
         </a>
         <a href="#" class="nav-item" data-page="analytics">
-          <span class="nav-icon">📈</span> Analíticas
+          <span class="nav-icon" data-icon="trendingUp"></span> Analíticas
         </a>
         <a href="#" class="nav-item" data-page="stores">
-          <span class="nav-icon">🏪</span> Tiendas
+          <span class="nav-icon" data-icon="store"></span> Tiendas
         </a>
       </nav>
       <div class="sidebar-user" id="saUserEmail"></div>
@@ -296,7 +296,7 @@
 
     <main class="main-content">
       <div class="topbar">
-        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menú" data-icon="menu" data-icon-size="20"></button>
         <div class="topbar-title" id="topbarTitle">Dashboard</div>
         <button class="btn-primary" id="refreshBtn" style="margin-left:auto;">↻ Actualizar</button>
       </div>
@@ -446,6 +446,7 @@
   </div>
 
   <script src="supabase.js"></script>
+  <script src="icons.js"></script>
   <script src="superadmin.js"></script>
 </body>
 </html>

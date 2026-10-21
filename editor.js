@@ -1,7 +1,7 @@
 // ── BLOCK SCHEMA ──────────────────────────────────────────────────────────────
 const BLOCKS = [
   {
-    id: 'brand', label: 'Marca y colores', icon: '🎨', section: null,
+    id: 'brand', label: 'Marca y colores', icon: 'droplet', section: null,
     fields: [
       { key: 'name',         label: 'Nombre de la tienda', type: 'text' },
       { key: 'accent_color', label: 'Color de acento',     type: 'color' },
@@ -10,7 +10,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 'hero', label: 'Encabezado', icon: '⭐', section: 'hero',
+    id: 'hero', label: 'Encabezado', icon: 'star', section: 'hero',
     fields: [
       { key: 'hero_badge',     label: 'Etiqueta',          type: 'text',     ph: 'Bienvenidos' },
       { key: 'hero_title',     label: 'Título principal',  type: 'text',     ph: 'Bienvenido a nuestra tienda' },
@@ -20,14 +20,14 @@ const BLOCKS = [
     ]
   },
   {
-    id: 'catalog', label: 'Catálogo', icon: '📦', section: 'catalog',
+    id: 'catalog', label: 'Catálogo', icon: 'box', section: 'catalog',
     fields: [
       { key: 'catalog_title',    label: 'Título',    type: 'text', ph: 'Catálogo' },
       { key: 'catalog_subtitle', label: 'Subtítulo', type: 'text', ph: 'Explora nuestros productos' },
     ]
   },
   {
-    id: 'stats', label: 'Estadísticas', icon: '📊', section: 'stats',
+    id: 'stats', label: 'Estadísticas', icon: 'chart', section: 'stats',
     fields: [
       { type: 'divider', label: 'Estadística 1' },
       { key: 'stat1_value', label: 'Valor',    type: 'text', ph: 'ej: 100+' },
@@ -44,7 +44,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 'about', label: 'Nosotros', icon: 'ℹ️', section: 'about',
+    id: 'about', label: 'Nosotros', icon: 'info', section: 'about',
     fields: [
       { key: 'about_title', label: 'Título de sección', type: 'text' },
       { type: 'divider', label: 'Característica 1' },
@@ -76,7 +76,7 @@ const BLOCKS = [
     ]
   },
   {
-    id: 'contact', label: 'Contacto', icon: '💬', section: 'contact',
+    id: 'contact', label: 'Contacto', icon: 'chat', section: 'contact',
     fields: [
       { key: 'cta_title', label: 'Título',      type: 'text',     ph: '¿Listo para hacer tu pedido?' },
       { key: 'cta_desc',  label: 'Descripción', type: 'textarea', ph: 'Escríbenos por WhatsApp...' },
@@ -198,7 +198,7 @@ function renderBlockList() {
   const list = document.getElementById('edBlockList');
   list.innerHTML = BLOCKS.map(b => `
     <div class="ed-block-item" data-id="${b.id}">
-      <span class="ed-block-icon">${b.icon}</span>
+      <span class="ed-block-icon">${psIcon(b.icon, 16)}</span>
       <span class="ed-block-label">${b.label}</span>
       <svg class="ed-block-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
@@ -220,7 +220,7 @@ function selectBlock(blockId) {
 
   document.getElementById('edViewBlocks').style.display = 'none';
   document.getElementById('edViewProps').style.display  = '';
-  document.getElementById('edPropsIcon').textContent  = selectedBlock.icon;
+  document.getElementById('edPropsIcon').innerHTML = psIcon(selectedBlock.icon, 16);
   document.getElementById('edPropsTitle').textContent = selectedBlock.label;
 
   renderFields(selectedBlock);

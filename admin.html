@@ -236,35 +236,35 @@
       </div>
       <nav class="sidebar-nav">
         <a href="#" class="nav-item active" data-page="home">
-          <span class="nav-icon">🏠</span>
+          <span class="nav-icon" data-icon="home"></span>
           <span>Inicio</span>
         </a>
         <a href="#" class="nav-item" data-page="products">
-          <span class="nav-icon">📦</span>
+          <span class="nav-icon" data-icon="box"></span>
           <span>Productos</span>
         </a>
         <a href="#" class="nav-item" data-page="settings">
-          <span class="nav-icon">🏪</span>
+          <span class="nav-icon" data-icon="sliders"></span>
           <span>Mi tienda</span>
         </a>
         <a href="editor.html" class="nav-item" target="_blank">
-          <span class="nav-icon">🎨</span>
+          <span class="nav-icon" data-icon="layout"></span>
           <span>Editor visual</span>
         </a>
         <a href="#" class="nav-item" data-page="analytics">
-          <span class="nav-icon">📊</span>
+          <span class="nav-icon" data-icon="chart"></span>
           <span>Estadísticas</span>
         </a>
         <a href="#" class="nav-item" data-page="orders">
-          <span class="nav-icon">🧾</span>
+          <span class="nav-icon" data-icon="cart"></span>
           <span>Pedidos</span>
         </a>
         <a href="#" class="nav-item" data-page="plan">
-          <span class="nav-icon">💳</span>
+          <span class="nav-icon" data-icon="card"></span>
           <span>Mi plan</span>
         </a>
         <a href="index.html" class="nav-item" data-catalog target="_blank">
-          <span class="nav-icon">👁️</span>
+          <span class="nav-icon" data-icon="eye"></span>
           <span>Ver catálogo</span>
         </a>
       </nav>
@@ -277,7 +277,7 @@
 
       <!-- TOP BAR -->
       <div class="topbar">
-        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Menú" data-icon="menu" data-icon-size="20"></button>
         <h1 class="topbar-title" id="topbarTitle">Inicio</h1>
         <div class="topbar-actions" id="topbarActions"></div>
       </div>
@@ -291,7 +291,7 @@
             <p id="homeStoreLine" style="margin:0;font-size:.8rem;color:#6b7280;">Cargando tu tienda…</p>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <a href="#" id="homeViewLink" target="_blank" class="btn-secondary" style="text-decoration:none;">👁 Ver mi catálogo</a>
+            <a href="#" id="homeViewLink" target="_blank" class="btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:7px;"><span data-icon="eye" data-icon-size="15" style="display:inline-flex;"></span>Ver mi catálogo</a>
             <button class="btn-primary" onclick="openAddModal()">+ Agregar producto</button>
           </div>
         </div>
@@ -356,7 +356,7 @@
         <!-- Onboarding banner: visible only when store has 0 products -->
         <div id="onboardingBanner" style="display:none;background:linear-gradient(135deg,#0d2240,#1e3a5f);border:1px solid #2d4a6b;border-radius:14px;padding:24px 28px;margin-bottom:20px;">
           <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
-            <div style="font-size:2rem;line-height:1;">🚀</div>
+            <div style="color:#ffb454;line-height:0;" data-icon="zap" data-icon-size="30"></div>
             <div style="flex:1;min-width:200px;">
               <h3 style="margin:0 0 6px;font-size:1rem;color:#f1f5f9;">¡Bienvenido a ProductSpot!</h3>
               <p style="margin:0 0 16px;color:#94a3b8;font-size:.875rem;line-height:1.5;">Tu catálogo está listo. Sigue estos pasos para empezar a recibir pedidos por WhatsApp:</p>
@@ -491,7 +491,7 @@
                 <label>Logo de la tienda</label>
                 <div class="image-upload-area" id="logoUploadArea" style="height:80px;">
                   <div id="logoPreviewContainer">
-                    <span>🖼️</span>
+                    <span data-icon="image" data-icon-size="22" style="display:inline-flex;color:#64748b;"></span>
                     <p style="font-size:.8rem;margin:0">Haz clic para subir logo</p>
                     <small>PNG o SVG · Máx 2MB</small>
                   </div>
@@ -503,7 +503,7 @@
                 <label>Imagen de fondo del Hero</label>
                 <div class="image-upload-area" id="heroUploadArea" style="height:80px;">
                   <div id="heroPreviewContainer">
-                    <span>🌄</span>
+                    <span data-icon="image" data-icon-size="22" style="display:inline-flex;color:#64748b;"></span>
                     <p style="font-size:.8rem;margin:0">Haz clic para subir imagen</p>
                     <small>JPG, PNG o WEBP · Máx 2MB · Recomendado: horizontal, 1200 × 800 px o más</small>
                   </div>
@@ -906,6 +906,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="supabase.js"></script>
+  <script src="icons.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

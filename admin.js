@@ -508,7 +508,7 @@ function renderTable() {
     return `
     <tr id="row-${Number(p.id)}">
       <td class="td-check"><input type="checkbox" value="${Number(p.id)}" onchange="onRowCheck(this)" aria-label="Seleccionar ${escapeHtml(p.name)}" /></td>
-      <td class="td-emoji">${thumb ? `<img src="${escapeHtml(thumb)}" class="td-img" alt="${escapeHtml(p.name)}" />` : "📦"}</td>
+      <td class="td-emoji">${thumb ? `<img src="${escapeHtml(thumb)}" class="td-img" alt="${escapeHtml(p.name)}" />` : `<span style="display:inline-flex;color:#94a3b8;">${psIcon("image", 20)}</span>`}</td>
       <td class="td-name">
         <strong>${escapeHtml(p.name)}</strong>
         <small>${currencySymbol()}${escapeHtml(p.price)} ${escapeHtml(storeCurrencyCode())}${sizes}</small>
@@ -954,7 +954,7 @@ function applyLockOverlays(isPaid) {
       if (!overlay) {
         overlay = document.createElement('div');
         overlay.className = 'plan-lock-overlay';
-        overlay.innerHTML = `<span>🔒</span><p>Disponible en <strong>Starter</strong> o <strong>Pro</strong></p><a href="#" class="plan-lock-btn" onclick="document.querySelector('.nav-item[data-page=plan]').click();return false;">Ver planes →</a>`;
+        overlay.innerHTML = `<span style="display:inline-flex;">${psIcon('lock', 26)}</span><p>Disponible en <strong>Starter</strong> o <strong>Pro</strong></p><a href="#" class="plan-lock-btn" onclick="document.querySelector('.nav-item[data-page=plan]').click();return false;">Ver planes →</a>`;
         card.style.position = 'relative';
         card.appendChild(overlay);
       }
@@ -1269,7 +1269,7 @@ async function loadAnalytics() {
     document.getElementById('analyticsRange').textContent = '';
     document.getElementById('topProductsList').innerHTML = `
       <div style="text-align:center;padding:40px 24px;">
-        <div style="font-size:2.5rem;margin-bottom:12px;">📊</div>
+        <div style="margin-bottom:12px;color:#5b8ab5;">${psIcon("chart", 40)}</div>
         <h3 style="font-size:1rem;margin-bottom:8px;color:#e2e8f0;">Estadísticas disponibles en Starter y Pro</h3>
         <p style="color:#6b7280;font-size:.875rem;margin-bottom:20px;line-height:1.6;">
           Activa el plan Starter para ver vistas del catálogo, clicks en WhatsApp y tus productos más populares.
@@ -1434,7 +1434,7 @@ async function loadHome() {
   const greeting = document.getElementById("homeGreeting");
   if (!greeting) return;
   const h = new Date().getHours();
-  greeting.textContent = (h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches") + " 👋";
+  greeting.textContent = (h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches");
   const line = document.getElementById("homeStoreLine");
   if (line && storeSettings?.name) {
     line.textContent = `${storeSettings.name} · ${document.getElementById("catalogLink")?.textContent || ""}`;
@@ -1474,7 +1474,7 @@ async function loadHome() {
     if (recent) {
       const top = (orders || []).slice(0, 4);
       recent.innerHTML = top.length === 0
-        ? '<div class="loading">Aún no hay pedidos. Tu enlace y tu QR están listos para compartir 🎉</div>'
+        ? '<div class="loading">Aún no hay pedidos. Tu enlace y tu QR están listos para compartir.</div>'
         : top.map((o) => {
             const its = Array.isArray(o.items) ? o.items : [];
             const resumen = its.map((it) => `${Number(it.q) || 1}× ${escapeHtml(it.n || "Producto")}`).join(" · ");
@@ -1516,7 +1516,7 @@ async function loadOrders() {
     .limit(100);
   if (error) { el.innerHTML = `<div class="loading">Error al cargar: ${escapeHtml(error.message)}</div>`; return; }
   if (!data || data.length === 0) {
-    el.innerHTML = `<div class="loading">Aún no hay pedidos. Comparte tu enlace o tu código QR para recibir los primeros 🎉</div>`;
+    el.innerHTML = `<div class="loading">Aún no hay pedidos. Comparte tu enlace o tu código QR para recibir los primeros.</div>`;
     return;
   }
   const rows = data.map((o) => {

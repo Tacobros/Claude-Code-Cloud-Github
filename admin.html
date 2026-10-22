@@ -787,6 +787,18 @@
           <div><h2>Estadísticas</h2><p id="analyticsRange">Últimos 30 días</p></div>
           <button class="btn-primary" onclick="loadAnalytics()">↻ Actualizar</button>
         </div>
+        <div class="an-range" id="anRangeControls" style="display:none;">
+          <button type="button" class="an-rbtn" data-days="7">7 días</button>
+          <button type="button" class="an-rbtn active" data-days="30">30 días</button>
+          <button type="button" class="an-rbtn" data-days="90">90 días</button>
+          <span class="an-custom">
+            <input type="date" id="anFrom" aria-label="Desde" />
+            <span style="color:#6b7280;">→</span>
+            <input type="date" id="anTo" aria-label="Hasta" />
+            <button type="button" class="an-rbtn" id="anApply">Aplicar</button>
+          </span>
+        </div>
+        <p id="anProHint" class="hint" style="display:none;margin:-8px 0 20px;">El histórico con filtro por fechas está disponible en el plan <strong>Pro</strong>.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
           <div class="settings-card" style="text-align:center;padding:24px 16px;">
             <div id="statViews" style="font-size:2.2rem;font-weight:800;color:var(--accent);">—</div>

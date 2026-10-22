@@ -225,73 +225,46 @@ document.getElementById("step2Form").addEventListener("submit", async (e) => {
 
   btn.textContent = "Creando cuenta...";
 
-  // Alta vía Edge Function: crea la cuenta ya confirmada, sin depender del
-  // correo de confirmación (el SMTP integrado de Supabase bloqueaba registros).
-  // Si la función no responde, caemos al flujo clásico de Supabase Auth.
+  // Alta con verificación de correo: Supabase envía el enlace de confirmación
+  // por el SMTP propio (Brevo). La tienda se crea al confirmar y volver al
+  // panel (pendingStore), o de inmediato si la sesión llega en el registro.
   let userId = null;
   let session = null;
 
-  let fnStatus = 0, fnBody = null, fnUnavailable = false;
-  try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({ email, password: pass }),
-    });
-    fnStatus = res.status;
-    fnBody = await res.json().catch(() => null);
-  } catch (_) {
-    fnUnavailable = true;
+  const adminUrl = `${window.location.origin}/admin.html`;
+  const { data: authData, error: authError } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: { emailRedirectTo: adminUrl },
+  });
+
+  if (authError) {
+    const m = (authError.message || "").toLowerCase();
+    let friendly;
+    if (m.includes("confirmation") || m.includes("sending") || m.includes("email") && m.includes("error")) {
+      friendly = "No pudimos enviar el correo de confirmación, así que tu cuenta aún no se creó. Inténtalo de nuevo en unos minutos, o escríbenos por WhatsApp desde la página principal y la activamos por ti.";
+    } else if (m.includes("already registered") || m.includes("already been registered")) {
+      friendly = "Este correo ya tiene una cuenta. Inicia sesión en el panel admin, o usa «¿Olvidaste tu contraseña?».";
+    } else if (m.includes("rate limit") || m.includes("too many")) {
+      friendly = "Demasiados intentos seguidos. Espera un par de minutos y vuelve a intentar.";
+    } else if (m.includes("password")) {
+      friendly = "La contraseña no cumple los requisitos: usa al menos 8 caracteres.";
+    } else {
+      friendly = "No se pudo crear la cuenta: " + authError.message;
+    }
+    failAttempt(friendly);
+    return;
   }
 
-  if (!fnUnavailable && fnStatus === 200 && fnBody && fnBody.ok) {
-    const { data: loginData, error: loginError } = await sb.auth.signInWithPassword({ email, password: pass });
-    if (loginError) {
-      failAttempt("Tu cuenta se creó, pero no pudimos iniciar sesión automáticamente. Entra al panel admin con tu correo y contraseña.");
-      return;
-    }
-    userId = loginData.user?.id;
-    session = loginData.session;
-  } else if (!fnUnavailable && fnStatus === 409) {
+  // Correo ya registrado: Supabase no da error (anti-enumeración) pero
+  // devuelve un usuario sin identidades
+  if (authData.user && Array.isArray(authData.user.identities) && authData.user.identities.length === 0) {
     failAttempt("Este correo ya tiene una cuenta. Inicia sesión en el panel admin, o usa «¿Olvidaste tu contraseña?».");
     return;
-  } else if (!fnUnavailable && fnStatus === 400 && fnBody && fnBody.error === "weak_password") {
-    failAttempt("La contraseña debe tener al menos 8 caracteres.");
-    return;
-  } else {
-    // Flujo clásico (Edge Function caída o error inesperado)
-    const adminUrl = `${window.location.origin}/admin.html`;
-    const { data: authData, error: authError } = await sb.auth.signUp({
-      email,
-      password: pass,
-      options: { emailRedirectTo: adminUrl },
-    });
-
-    if (authError) {
-      const m = (authError.message || "").toLowerCase();
-      let friendly;
-      if (m.includes("confirmation") || m.includes("sending") || m.includes("email") && m.includes("error")) {
-        friendly = "No pudimos enviar el correo de confirmación, así que tu cuenta aún no se creó. Inténtalo de nuevo en unos minutos, o escríbenos por WhatsApp desde la página principal y la activamos por ti.";
-      } else if (m.includes("already registered") || m.includes("already been registered")) {
-        friendly = "Este correo ya tiene una cuenta. Inicia sesión en el panel admin, o usa «¿Olvidaste tu contraseña?».";
-      } else if (m.includes("rate limit") || m.includes("too many")) {
-        friendly = "Demasiados intentos seguidos. Espera un par de minutos y vuelve a intentar.";
-      } else if (m.includes("password")) {
-        friendly = "La contraseña no cumple los requisitos: usa al menos 8 caracteres.";
-      } else {
-        friendly = "No se pudo crear la cuenta: " + authError.message;
-      }
-      failAttempt(friendly);
-      return;
-    }
-
-    userId = authData.user?.id;
-    session = authData.session;
   }
+
+  userId = authData.user?.id;
+  session = authData.session;
 
   // Create the store record immediately if we have a session (email confirm disabled)
   if (session && userId) {

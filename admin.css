@@ -1241,7 +1241,7 @@ tr.row-selected { background: #0d2240 !important; }
 .pay-chip input { accent-color: #e94560; }
 
 /* ── Asistente de plantilla ── */
-.wizard-modal { max-width: 560px; }
+.wizard-modal { max-width: 560px; padding: 26px 24px 22px; }
 .wizard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .wizard-opt {
   border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 16px 12px;

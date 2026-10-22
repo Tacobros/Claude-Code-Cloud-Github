@@ -812,6 +812,7 @@ function addToCart(productId, sel = null, btnEl = null, unit = null) {
   else cart.push({ key, id: p.id, n: p.name, v: sel || null, q: 1, p: unit != null ? unit : p.priceNum });
   saveCart();
   renderCartUI();
+  flashCartBar();
   if (btnEl) {
     btnEl.classList.add("added");
     const prev = btnEl.textContent;
@@ -864,7 +865,7 @@ function renderCartUI() {
   const bar = document.getElementById("cartBar");
   if (!bar) return;
   const count = cartCount();
-  bar.classList.toggle("visible", count > 0);
+  if (count === 0) bar.classList.remove("visible");
   const headerCount = document.getElementById("headerCartCount");
   if (headerCount) {
     headerCount.hidden = count === 0;
@@ -902,6 +903,16 @@ function renderCartUI() {
   if (sendBtn) sendBtn.href = cartWaLink();
 }
 
+// Muestra la barra de pedido unos segundos y se oculta sola; el ícono de la
+// bolsa en el header queda como acceso permanente al pedido
+function flashCartBar() {
+  const bar = document.getElementById("cartBar");
+  if (!bar || cartCount() === 0) return;
+  bar.classList.add("visible");
+  clearTimeout(window._cartBarTimer);
+  window._cartBarTimer = setTimeout(() => bar.classList.remove("visible"), 3500);
+}
+
 function openCart() {
   renderCartUI();
   document.getElementById("cartOverlay")?.classList.add("open");
@@ -912,7 +923,13 @@ function closeCart() {
 
 document.getElementById("btnOpenCart")?.addEventListener("click", openCart);
 document.getElementById("headerCartBtn")?.addEventListener("click", openCart);
-document.getElementById("btnClearCart")?.addEventListener("click", () => { cart = []; saveCart(); renderCartUI(); });
+document.getElementById("btnClearCart")?.addEventListener("click", () => {
+  clearTimeout(window._cartBarTimer);
+  document.getElementById("cartBar")?.classList.remove("visible");
+});
+document.getElementById("btnEmptyCart")?.addEventListener("click", () => {
+  cart = []; saveCart(); renderCartUI();
+});
 document.getElementById("cartOverlay")?.addEventListener("click", (e) => {
   if (e.target === document.getElementById("cartOverlay")) closeCart();
 });

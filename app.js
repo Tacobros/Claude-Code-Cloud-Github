@@ -71,7 +71,7 @@ async function loadStoreSettings() {
     if (typeof sb === "undefined" || SUPABASE_URL.includes("YOUR_PROJECT_ID")) return;
     const slug = getStoreSlug();
     if (!slug) {
-      window.location.href = "landing.html";
+      window.location.href = "/";
       return;
     }
     let query = sb.from("stores").select(STORE_PUBLIC_COLS);
@@ -158,7 +158,7 @@ async function loadStoreSettings() {
         const parts = host.split(".");
         const minParts = host.endsWith(".pages.dev") ? 4 : 3;
         const rootDomain = parts.length >= minParts ? parts.slice(1).join(".") : host;
-        badgeLink.href = `https://${rootDomain}/landing.html?utm_source=badge`;
+        badgeLink.href = `https://${rootDomain}/?utm_source=badge`;
       }
       productspotBadge.style.display = "";
     }
@@ -253,6 +253,8 @@ async function loadStoreSettings() {
     // WhatsApp links
     updateWALinks();
   } catch (_) {}
+  // La personalización de la tienda ya está aplicada: mostrar la página
+  document.documentElement.classList.remove("ps-boot");
 }
 
 function setMetaTags({ title, description, image, url }) {

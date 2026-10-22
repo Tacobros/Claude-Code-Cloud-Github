@@ -18,6 +18,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="/brand/logo-icon.svg" />
   <link rel="stylesheet" href="styles.css" />
+  <!-- Pantalla de carga: oculta el contenido genérico hasta que la
+       personalización de la tienda (colores, textos, logo) esté aplicada -->
+  <style>
+    html.ps-boot body > * { visibility: hidden; }
+    html.ps-boot body::before { content: ""; position: fixed; inset: 0; background: #f7f8fc; z-index: 9998; }
+    html.ps-boot body::after {
+      content: ""; position: fixed; top: 50%; left: 50%;
+      width: 34px; height: 34px; margin: -17px 0 0 -17px;
+      border-radius: 50%; border: 3px solid #e3e7f0; border-top-color: #e94560;
+      animation: psSpin .7s linear infinite; z-index: 9999;
+    }
+    @keyframes psSpin { to { transform: rotate(360deg); } }
+  </style>
+  <script>
+    // Solo con JS activo (sin JS no hay quien la quite); red de seguridad a los 4s
+    document.documentElement.classList.add('ps-boot');
+    setTimeout(function () { document.documentElement.classList.remove('ps-boot'); }, 4000);
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>

@@ -371,8 +371,12 @@ function groupChoose(g) {
   return Math.max(1, Math.min(parseInt(g.choose) || 1, (g.options || []).length));
 }
 
+// Un grupo "remove" (quitar ingredientes) es opcional y de selección libre
+function groupRequired(g) { return g.mode === "remove" ? 0 : groupChoose(g); }
+function groupMax(g) { return g.mode === "remove" ? (g.options || []).length : groupChoose(g); }
+
 function groupsComplete(p) {
-  return (p.option_groups || []).every((g, gi) => (window._optSel?.[gi] || []).length >= groupChoose(g));
+  return (p.option_groups || []).every((g, gi) => (window._optSel?.[gi] || []).length >= groupRequired(g));
 }
 
 function selectionText(p) {
@@ -380,7 +384,9 @@ function selectionText(p) {
   if (window._selectedSize) parts.push(`${p.variant_label || "Talla"}: ${window._selectedSize}`);
   (p.option_groups || []).forEach((g, gi) => {
     const chosen = (window._optSel?.[gi] || []).map((oi) => g.options[oi]).filter(Boolean);
-    if (chosen.length) parts.push(`${g.label}: ${chosen.join(", ")}`);
+    if (!chosen.length) return;
+    if (g.mode === "remove") parts.push(`${g.label}: sin ${chosen.join(", sin ")}`);
+    else parts.push(`${g.label}: ${chosen.join(", ")}`);
   });
   return parts.join(" · ");
 }
@@ -391,12 +397,18 @@ function toggleOpt(gi, oi, btn) {
   const g = p.option_groups[gi];
   if (!window._optSel) window._optSel = {};
   const sel = window._optSel[gi] || (window._optSel[gi] = []);
-  const max = groupChoose(g);
+  const max = groupMax(g);
   const pos = sel.indexOf(oi);
   if (pos >= 0) {
     sel.splice(pos, 1);
     btn.classList.remove("selected");
   } else {
+    if (g.mode === "remove") {
+      sel.push(oi);
+      btn.classList.add("selected");
+      updateModalSelection();
+      return;
+    }
     if (max === 1) {
       sel.length = 0;
       document.querySelectorAll(`.modal-size[data-g="${gi}"]`).forEach((b) => b.classList.remove("selected"));
@@ -428,7 +440,7 @@ function flashIncompleteGroups() {
   const p = window._currentProduct;
   if (!p) return;
   (p.option_groups || []).forEach((g, gi) => {
-    if ((window._optSel?.[gi] || []).length < groupChoose(g)) {
+    if ((window._optSel?.[gi] || []).length < groupRequired(g)) {
       const el = document.getElementById(`ogTitle-${gi}`);
       if (el) {
         el.classList.add("og-missing");
@@ -489,9 +501,9 @@ function openModal(id) {
     : "";
 
   const groupsHtml = (p.option_groups || []).map((g, gi) => `
-    <div class="modal-section-title" id="ogTitle-${gi}">${escapeHtml(g.label)} <span class="choose-hint">elige ${groupChoose(g)}</span></div>
+    <div class="modal-section-title" id="ogTitle-${gi}">${escapeHtml(g.label)} <span class="choose-hint${g.mode === "remove" ? " choose-hint-opt" : ""}">${g.mode === "remove" ? "toca lo que NO quieres" : `elige ${groupChoose(g)}`}</span></div>
     <div class="modal-sizes">
-      ${(g.options || []).map((o, oi) => `<button class="modal-size" data-g="${gi}" onclick="toggleOpt(${gi},${oi},this)">${escapeHtml(o)}</button>`).join("")}
+      ${(g.options || []).map((o, oi) => `<button class="modal-size" data-g="${gi}" data-mode="${g.mode === "remove" ? "remove" : "pick"}" onclick="toggleOpt(${gi},${oi},this)">${escapeHtml(o)}</button>`).join("")}
     </div>`).join("");
 
   const content = document.getElementById("modalContent");

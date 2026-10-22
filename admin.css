@@ -1166,3 +1166,12 @@ tr.row-selected { background: #0d2240 !important; }
 .home-order-date { font-size: .72rem; color: var(--gray-400); white-space: nowrap; }
 .check-done { color: var(--gray-400); text-decoration: line-through; }
 .check-item { display: flex; align-items: center; gap: 8px; }
+
+/* ── Orden manual de productos ── */
+.move-btns { display: inline-flex; flex-direction: column; gap: 2px; margin-right: 6px; vertical-align: middle; }
+.btn-move {
+  background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 5px;
+  color: var(--gray-600); font-size: .55rem; line-height: 1; padding: 3px 7px;
+  cursor: pointer; transition: background .15s, color .15s;
+}
+.btn-move:hover { background: #fde8ec; color: #c22844; border-color: #f5c2cc; }

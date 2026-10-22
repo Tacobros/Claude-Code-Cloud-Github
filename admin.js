@@ -898,10 +898,15 @@ let wizardChoice = null;
 
 function maybeShowOnboardWizard() {
   if (window._wizardShown) return;
-  if (!storeSettings?.id || allProducts.length > 0) return;
-  let done = "";
-  try { done = localStorage.getItem(`ps_onboard_${storeSettings.id}`) || ""; } catch (_) {}
-  if (done) return;
+  if (!storeSettings?.id) return;
+  // ?onboarding=1 fuerza el asistente (útil para probarlo o volver a verlo)
+  const forced = new URLSearchParams(window.location.search).get("onboarding") === "1";
+  if (!forced) {
+    if (allProducts.length > 0) return;
+    let done = "";
+    try { done = localStorage.getItem(`ps_onboard_${storeSettings.id}`) || ""; } catch (_) {}
+    if (done) return;
+  }
   window._wizardShown = true;
 
   const grid = document.getElementById("wizardGrid");
@@ -924,12 +929,16 @@ function maybeShowOnboardWizard() {
       document.getElementById("wizardApply").style.display = "";
     });
   });
-  document.getElementById("onboardWizard").style.display = "flex";
+  const ov = document.getElementById("onboardWizard");
+  ov.style.display = "";
+  ov.classList.add("open");
 }
 
 function closeWizard() {
   try { localStorage.setItem(`ps_onboard_${storeSettings.id}`, "1"); } catch (_) {}
-  document.getElementById("onboardWizard").style.display = "none";
+  const ov = document.getElementById("onboardWizard");
+  ov.classList.remove("open");
+  ov.style.display = "none";
 }
 
 document.getElementById("wizardSkip")?.addEventListener("click", closeWizard);

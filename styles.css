@@ -1420,6 +1420,7 @@ body {
 /* ── Método de pago en el carrito ── */
 .cart-pay-label { font-weight: 700; font-size: .85rem; margin: 14px 0 8px; color: var(--gray-800); }
 .cart-customer { margin-top: 4px; }
+.modal-body .cart-customer { margin-top: 16px; }
 .cart-field {
   width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
   padding: 10px 12px; margin-bottom: 8px; font-family: inherit;

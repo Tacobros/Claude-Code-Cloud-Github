@@ -752,6 +752,36 @@
             </div>
           </div>
           <div class="settings-card full-width">
+            <h3>Datos del cliente en el pedido</h3>
+            <p class="hint">Elige qué datos de contacto pide tu catálogo antes de enviar un pedido por WhatsApp, y si son obligatorios. Aparecen en el mensaje, en el comprobante y en tu panel de Pedidos.</p>
+            <div class="cust-fields-cfg" id="custFieldsCfg">
+              <label class="cust-field-row">
+                <span>Nombre del cliente</span>
+                <select data-key="name">
+                  <option value="off">No pedir</option>
+                  <option value="optional">Opcional</option>
+                  <option value="required">Obligatorio</option>
+                </select>
+              </label>
+              <label class="cust-field-row">
+                <span>Teléfono</span>
+                <select data-key="phone">
+                  <option value="off">No pedir</option>
+                  <option value="optional">Opcional</option>
+                  <option value="required">Obligatorio</option>
+                </select>
+              </label>
+              <label class="cust-field-row">
+                <span>Dirección de entrega</span>
+                <select data-key="address">
+                  <option value="off">No pedir</option>
+                  <option value="optional">Opcional</option>
+                  <option value="required">Obligatorio</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div class="settings-card full-width">
             <h3>Enlace de tu catálogo</h3>
             <div class="link-display">
               <span id="catalogLink">https://tutienda.github.io/catalogo</span>

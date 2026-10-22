@@ -346,7 +346,7 @@ function renderProducts() {
             ${(p.sizes || []).map((s) => `<span class="size-chip">${escapeHtml(s)}</span>`).join("")}
           </div>
           <div class="product-footer">
-            <div class="product-price">${escapeHtml(p.price)} <span>${escapeHtml(storeCurrency)}</span></div>
+            <div class="product-price">${hasSurcharges(p) ? '<small class="price-from">Desde</small> ' : ""}${escapeHtml(p.price)} <span>${escapeHtml(storeCurrency)}</span></div>
             <button class="btn-add" title="Agregar al pedido" aria-label="Agregar al pedido" onclick="event.stopPropagation(); addToCart(${Number(p.id)}, null, this)">+</button>
             <a class="btn-ask" href="${hasGroups ? "#" : escapeHtml(waLink(p))}" ${hasGroups ? "" : 'target="_blank"'} onclick="event.stopPropagation(); ${hasGroups ? `openModal('${p.id}'); return false;` : `trackOrder(${Number(p.id)}, null)`}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -359,16 +359,34 @@ function renderProducts() {
   }).join("");
 }
 
-function waLink(p, sel = "") {
+function waLink(p, sel = "", priceText = "") {
+  const price = priceText || p.price;
   const msg = sel
-    ? `Hola! Vi el catálogo de ${storeName} y quiero pedir: *${p.name}* (${sel}) - Precio: ${p.price}`
-    : `Hola! Vi el catálogo de ${storeName} y me interesa: *${p.name}* - Precio: ${p.price}`;
+    ? `Hola! Vi el catálogo de ${storeName} y quiero pedir: *${p.name}* (${sel}) - Precio: ${price}`
+    : `Hola! Vi el catálogo de ${storeName} y me interesa: *${p.name}* - Precio: ${price}`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
 
 // ── Selección de variante y grupos de opciones (combos) ──
 function groupChoose(g) {
   return Math.max(1, Math.min(parseInt(g.choose) || 1, (g.options || []).length));
+}
+
+// Opciones: string simple o {n, d} con recargo sobre el precio base
+function optName(o) { return typeof o === "string" ? o : (o?.n || ""); }
+function optDelta(o) { return typeof o === "object" && o ? Number(o.d) || 0 : 0; }
+
+// Precio unitario según lo seleccionado (base + recargos)
+function unitPrice(p) {
+  let total = Number(p.priceNum) || 0;
+  (p.option_groups || []).forEach((g, gi) => {
+    (window._optSel?.[gi] || []).forEach((oi) => { total += optDelta(g.options?.[oi]); });
+  });
+  return Math.max(0, total);
+}
+
+function hasSurcharges(p) {
+  return (p.option_groups || []).some((g) => (g.options || []).some((o) => optDelta(o) > 0));
 }
 
 // Un grupo "remove" (quitar ingredientes) es opcional y de selección libre
@@ -383,7 +401,7 @@ function selectionText(p) {
   const parts = [];
   if (window._selectedSize) parts.push(`${p.variant_label || "Talla"}: ${window._selectedSize}`);
   (p.option_groups || []).forEach((g, gi) => {
-    const chosen = (window._optSel?.[gi] || []).map((oi) => g.options[oi]).filter(Boolean);
+    const chosen = (window._optSel?.[gi] || []).map((oi) => optName(g.options[oi])).filter(Boolean);
     if (!chosen.length) return;
     if (g.mode === "remove") parts.push(`${g.label}: sin ${chosen.join(", sin ")}`);
     else parts.push(`${g.label}: ${chosen.join(", ")}`);
@@ -427,10 +445,14 @@ function updateModalSelection() {
   const p = window._currentProduct;
   if (!p) return;
   const ready = groupsComplete(p);
+  const unit = unitPrice(p);
+  const priceText = `${currencySymbol()}${unit}`;
+  const priceEl = document.getElementById("modalPriceVal");
+  if (priceEl) priceEl.textContent = priceText;
   const wa = document.getElementById("modalWaBtn");
   const add = document.getElementById("modalAddBtn");
   if (wa) {
-    wa.href = waLink(p, selectionText(p));
+    wa.href = waLink(p, selectionText(p), priceText);
     wa.classList.toggle("btn-needs-options", !ready);
   }
   if (add) add.classList.toggle("btn-needs-options", !ready);
@@ -452,13 +474,14 @@ function flashIncompleteGroups() {
 }
 
 // Registra el pedido (botones "Pedir" individuales) para la página Pedidos del admin
-function trackOrder(productId, sel) {
+function trackOrder(productId, sel, unit) {
   const p = liveProducts.find((x) => String(x.id) === String(productId));
   if (!p || !storeDbId) return;
+  const u = unit != null ? unit : p.priceNum;
   sb.from("orders").insert({
     store_id: storeDbId,
-    items: [{ n: p.name, q: 1, v: sel || null, p: p.priceNum }],
-    total: p.priceNum,
+    items: [{ n: p.name, q: 1, v: sel || null, p: u }],
+    total: u,
     currency: storeCurrency,
   }).then(() => {});
   logEvent("whatsapp_click", p.id);
@@ -503,7 +526,7 @@ function openModal(id) {
   const groupsHtml = (p.option_groups || []).map((g, gi) => `
     <div class="modal-section-title" id="ogTitle-${gi}">${escapeHtml(g.label)} <span class="choose-hint${g.mode === "remove" ? " choose-hint-opt" : ""}">${g.mode === "remove" ? "toca lo que NO quieres" : `elige ${groupChoose(g)}`}</span></div>
     <div class="modal-sizes">
-      ${(g.options || []).map((o, oi) => `<button class="modal-size" data-g="${gi}" data-mode="${g.mode === "remove" ? "remove" : "pick"}" onclick="toggleOpt(${gi},${oi},this)">${escapeHtml(o)}</button>`).join("")}
+      ${(g.options || []).map((o, oi) => `<button class="modal-size" data-g="${gi}" data-mode="${g.mode === "remove" ? "remove" : "pick"}" onclick="toggleOpt(${gi},${oi},this)">${escapeHtml(optName(o))}${optDelta(o) ? ` <span class="opt-delta">${optDelta(o) > 0 ? "+" : "−"}${currencySymbol()}${Math.abs(optDelta(o))}</span>` : ""}</button>`).join("")}
     </div>`).join("");
 
   const content = document.getElementById("modalContent");
@@ -516,7 +539,7 @@ function openModal(id) {
       ${sizesHtml}
       ${groupsHtml}
       <div class="modal-price-row">
-        <div class="modal-price">${escapeHtml(p.price)} <small style="font-size:.75rem;color:#9ca3af;font-weight:500">${escapeHtml(storeCurrency)}</small></div>
+        <div class="modal-price"><span id="modalPriceVal">${escapeHtml(p.price)}</span> <small style="font-size:.75rem;color:#9ca3af;font-weight:500">${escapeHtml(storeCurrency)}</small></div>
         <a class="btn-modal-wa" id="modalWaBtn" href="${escapeHtml(waLink(p))}" target="_blank">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Pedir por WhatsApp
@@ -536,7 +559,7 @@ function openModal(id) {
   updateModalSelection();
   document.getElementById("modalWaBtn")?.addEventListener("click", (e) => {
     if (!groupsComplete(p)) { e.preventDefault(); flashIncompleteGroups(); return; }
-    trackOrder(p.id, selectionText(p) || null);
+    trackOrder(p.id, selectionText(p) || null, unitPrice(p));
   });
 
   logEvent("product_view", p.id);
@@ -779,14 +802,14 @@ function saveCart() {
   try { sessionStorage.setItem(cartStorageKey(), JSON.stringify(cart)); } catch (_) {}
 }
 
-function addToCart(productId, sel = null, btnEl = null) {
+function addToCart(productId, sel = null, btnEl = null, unit = null) {
   const p = liveProducts.find((x) => String(x.id) === String(productId));
   if (!p) return;
   if ((p.option_groups || []).length > 0 && sel == null) { openModal(p.id); return; }
   const key = `${p.id}|${sel || ""}`;
   const existing = cart.find((i) => i.key === key);
   if (existing) existing.q += 1;
-  else cart.push({ key, id: p.id, n: p.name, v: sel || null, q: 1, p: p.priceNum });
+  else cart.push({ key, id: p.id, n: p.name, v: sel || null, q: 1, p: unit != null ? unit : p.priceNum });
   saveCart();
   renderCartUI();
   if (btnEl) {
@@ -802,7 +825,7 @@ function addToCartFromModal(btnEl) {
   if (!p) return;
   if (!groupsComplete(p)) { flashIncompleteGroups(); return; }
   const sel = selectionText(p);
-  addToCart(p.id, sel || null);
+  addToCart(p.id, sel || null, null, unitPrice(p));
   if (btnEl) {
     const prev = btnEl.textContent;
     btnEl.textContent = "✓ Agregado al pedido";

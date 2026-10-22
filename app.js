@@ -881,7 +881,9 @@ function selectPayMethod(btn) {
 }
 
 // ── Datos del cliente final (nombre, teléfono, dirección de entrega) ──
-function custStorageKey() { return `ps_cust_${storeDbId || "x"}`; }
+// Se guardan en el navegador (localStorage) para que el cliente no tenga que
+// escribirlos de nuevo en próximos pedidos, en esta o en cualquier otra tienda
+const CUST_STORAGE_KEY = "ps_customer";
 
 function getCustomer() {
   return {
@@ -893,13 +895,13 @@ function getCustomer() {
 
 function loadCustomer() {
   let c = {};
-  try { c = JSON.parse(sessionStorage.getItem(custStorageKey())) || {}; } catch (_) {}
+  try { c = JSON.parse(localStorage.getItem(CUST_STORAGE_KEY)) || {}; } catch (_) {}
   const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
   set("custName", c.name); set("custPhone", c.phone); set("custAddress", c.address);
 }
 
 function saveCustomer() {
-  try { sessionStorage.setItem(custStorageKey(), JSON.stringify(getCustomer())); } catch (_) {}
+  try { localStorage.setItem(CUST_STORAGE_KEY, JSON.stringify(getCustomer())); } catch (_) {}
 }
 
 ["custName", "custPhone", "custAddress"].forEach((id) => {

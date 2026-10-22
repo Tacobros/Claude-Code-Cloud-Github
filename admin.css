@@ -804,6 +804,8 @@ tr.row-selected { background: #0d2240 !important; }
 }
 
 .category-chip button:hover { opacity: 1; }
+.category-chip .chip-move { font-size: 9px; opacity: .55; }
+.category-chip .chip-move:disabled { opacity: .15; cursor: default; }
 
 .add-category-row {
   display: flex;

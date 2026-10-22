@@ -1403,3 +1403,16 @@ body {
   cursor: pointer; padding: 4px 6px; text-decoration: underline; font-family: inherit;
 }
 .btn-empty-cart:hover { color: #c22844; }
+
+/* ── Inventario en el catálogo ── */
+.stock-chip {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  font-size: .62rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 99px;
+}
+.stock-chip.out { background: rgba(15,23,42,.85); color: #f8fafc; }
+.stock-chip.low { background: #ffb454; color: #431407; }
+.sold-out-label { opacity: .55; cursor: default; pointer-events: none; }
+.product-card:has(.stock-chip.out) .product-image img { filter: grayscale(.7); opacity: .75; }
+.modal-soldout { display: inline-block; background: rgba(15,23,42,.08); color: var(--gray-600); font-size: .78rem; font-weight: 700; border-radius: 99px; padding: 4px 12px; margin: 6px 0 2px; }
+.modal-lowstock { display: inline-block; background: rgba(255,180,84,.18); color: #b45309; font-size: .78rem; font-weight: 700; border-radius: 99px; padding: 4px 12px; margin: 6px 0 2px; }

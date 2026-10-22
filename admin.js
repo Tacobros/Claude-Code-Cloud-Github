@@ -539,7 +539,7 @@ function renderTable() {
       <td class="td-emoji">${thumb ? `<img src="${escapeHtml(thumb)}" class="td-img" alt="${escapeHtml(p.name)}" />` : `<span style="display:inline-flex;color:#94a3b8;">${psIcon("image", 20)}</span>`}</td>
       <td class="td-name">
         <strong>${escapeHtml(p.name)}</strong>
-        <small>${currencySymbol()}${escapeHtml(p.price)} ${escapeHtml(storeCurrencyCode())}${sizes}</small>
+        <small>${currencySymbol()}${escapeHtml(p.price)} ${escapeHtml(storeCurrencyCode())}${sizes}${p.stock != null ? ` · <span style="${p.stock === 0 ? "color:#c22844;font-weight:700;" : (p.stock <= 3 ? "color:#b45309;font-weight:700;" : "color:#6b7280;")}">${p.stock === 0 ? "Agotado" : `Stock: ${p.stock}`}</span>` : ""}</small>
       </td>
       <td><span class="badge badge-${escapeHtml(p.category)}">${escapeHtml(getCategoryLabel(p.category))}</span></td>
       <td class="${p.available ? 'status-on' : 'status-off'}">${p.available ? "✓ Visible" : "✗ Oculto"}</td>
@@ -683,6 +683,7 @@ function openEditModal(id) {
   document.getElementById("pName").value = p.name || "";
   document.getElementById("pCategory").value = p.category || "";
   document.getElementById("pPrice").value = p.price || "";
+  document.getElementById("pStock").value = p.stock ?? "";
   document.getElementById("pDesc").value = p.description || "";
   document.getElementById("pBadge").value = p.badge || "";
   document.getElementById("pAvailable").checked = p.available !== false;
@@ -738,6 +739,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     name: document.getElementById("pName").value.trim(),
     category: document.getElementById("pCategory").value || null,
     price: parseInt(document.getElementById("pPrice").value),
+    stock: document.getElementById("pStock").value === "" ? null : Math.max(0, parseInt(document.getElementById("pStock").value) || 0),
     description: document.getElementById("pDesc").value.trim(),
     badge: document.getElementById("pBadge").value || null,
     available: document.getElementById("pAvailable").checked,
@@ -1416,6 +1418,8 @@ async function loadAnalytics() {
     document.getElementById('statViews').textContent = '—';
     document.getElementById('statWA').textContent = '—';
     document.getElementById('statProductViews').textContent = '—';
+    ['statOrders','statTicket','statConv'].forEach((id) => { const e = document.getElementById(id); if (e) e.textContent = '—'; });
+    ['chartHours','chartDays','chartSeries'].forEach((id) => { const e = document.getElementById(id); if (e) e.innerHTML = '<p class="an-empty">Disponible en Starter y Pro</p>'; });
     document.getElementById('analyticsRange').textContent = '';
     document.getElementById('topProductsList').innerHTML = `
       <div style="text-align:center;padding:40px 24px;">
@@ -1448,6 +1452,38 @@ async function loadAnalytics() {
   document.getElementById("statWA").textContent           = wa;
   document.getElementById("statProductViews").textContent = prodViews;
 
+  // Conversión: % de vistas del catálogo que terminan en clic de WhatsApp
+  const convEl = document.getElementById("statConv");
+  if (convEl) convEl.textContent = views > 0 ? `${Math.min(100, Math.round((wa / views) * 100))}%` : "—";
+
+  // Pedidos de los últimos 30 días
+  let orders = [];
+  if (storeSettings?.id) {
+    const { data: od } = await sb.from("orders")
+      .select("total, created_at, status")
+      .eq("store_id", storeSettings.id)
+      .gte("created_at", since)
+      .limit(1000);
+    orders = od || [];
+  }
+  const activos = orders.filter((o) => o.status !== "dismissed");
+  const ordersEl = document.getElementById("statOrders");
+  if (ordersEl) ordersEl.textContent = activos.length;
+  const ticketEl = document.getElementById("statTicket");
+  if (ticketEl) {
+    const conTotal = activos.filter((o) => Number(o.total) > 0);
+    ticketEl.textContent = conTotal.length
+      ? `${currencySymbol()}${Math.round(conTotal.reduce((s2, o) => s2 + Number(o.total), 0) / conTotal.length)}`
+      : "—";
+  }
+
+  // Intención de compra (clics de WhatsApp + pedidos) por hora y por día
+  const intentDates = events.filter((e) => e.event_type === "whatsapp_click").map((e) => new Date(e.created_at))
+    .concat(activos.map((o) => new Date(o.created_at)));
+  renderHourChart(intentDates);
+  renderDayChart(intentDates);
+  renderSeriesChart(events);
+
   // Top products
   const counts = {};
   events.filter(e => e.event_type === "product_view" && e.product_id).forEach(e => {
@@ -1475,6 +1511,70 @@ async function loadAnalytics() {
         </div>
       </div>`;
   }).join("");
+}
+
+// ── Gráficas de estadísticas (barras CSS, sin librerías) ──
+function anBars(el, cols, color) {
+  if (!el) return;
+  const max = Math.max(1, ...cols.map((c) => c.v));
+  if (!cols.some((c) => c.v > 0)) {
+    el.innerHTML = '<p class="an-empty">Aún no hay suficiente actividad.</p>';
+    return;
+  }
+  el.innerHTML = cols.map((c) => `
+    <div class="an-col" title="${escapeHtml(c.title)}">
+      <div class="an-bars"><div class="an-bar" style="height:${Math.round((c.v / max) * 100)}%;background:${c.color || color};"></div></div>
+      <div class="an-x">${escapeHtml(c.x)}</div>
+    </div>`).join("");
+}
+
+function renderHourChart(dates) {
+  const byHour = Array(24).fill(0);
+  dates.forEach((d) => { byHour[d.getHours()] += 1; });
+  anBars(document.getElementById("chartHours"), byHour.map((v, h) => ({
+    v, x: h % 3 === 0 ? `${h}` : "", title: `${h}:00 — ${v} pedido${v !== 1 ? "s" : ""}/clic${v !== 1 ? "s" : ""}`,
+  })), "var(--accent)");
+}
+
+function renderDayChart(dates) {
+  const names = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+  const byDay = Array(7).fill(0);
+  dates.forEach((d) => { byDay[d.getDay()] += 1; });
+  // semana empezando en lunes
+  const order = [1, 2, 3, 4, 5, 6, 0];
+  anBars(document.getElementById("chartDays"), order.map((dow) => ({
+    v: byDay[dow], x: names[dow], title: `${names[dow]}: ${byDay[dow]}`,
+  })), "var(--accent)");
+}
+
+function renderSeriesChart(events) {
+  const el = document.getElementById("chartSeries");
+  if (!el) return;
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
+    days.push({ key: d.toDateString(), label: d.toLocaleDateString("es", { day: "2-digit", month: "short" }), views: 0, wa: 0 });
+  }
+  const idx = Object.fromEntries(days.map((d, i) => [d.key, i]));
+  events.forEach((e) => {
+    const k = new Date(e.created_at).toDateString();
+    if (!(k in idx)) return;
+    if (e.event_type === "catalog_view") days[idx[k]].views += 1;
+    if (e.event_type === "whatsapp_click") days[idx[k]].wa += 1;
+  });
+  const max = Math.max(1, ...days.map((d) => Math.max(d.views, d.wa)));
+  if (!days.some((d) => d.views > 0 || d.wa > 0)) {
+    el.innerHTML = '<p class="an-empty">Aún no hay suficiente actividad.</p>';
+    return;
+  }
+  el.innerHTML = days.map((d, i) => `
+    <div class="an-col" title="${escapeHtml(d.label)}: ${d.views} vistas, ${d.wa} clics">
+      <div class="an-bars">
+        <div class="an-bar" style="height:${Math.round((d.views / max) * 100)}%;background:#5b8ab5;"></div>
+        <div class="an-bar" style="height:${Math.round((d.wa / max) * 100)}%;background:#25d366;"></div>
+      </div>
+      <div class="an-x">${i % 2 === 0 ? escapeHtml(d.label.split(" ")[0]) : ""}</div>
+    </div>`).join("");
 }
 
 function loadPlanPage() {
@@ -1608,6 +1708,22 @@ async function loadHome() {
       </span>`).join("");
   }
 
+  const lowAlert = document.getElementById("lowStockAlert");
+  if (lowAlert) {
+    const lows = allProducts.filter((p) => p.stock != null && p.stock <= 3);
+    if (lows.length) {
+      lowAlert.style.display = "";
+      lowAlert.innerHTML = `
+        <div class="low-stock-card">
+          <h4>${psIcon("zap", 16)} Inventario bajo</h4>
+          <ul>${lows.map((p) => `<li><strong>${escapeHtml(p.name)}</strong>: ${p.stock === 0 ? "agotado" : `quedan ${p.stock}`}</li>`).join("")}</ul>
+        </div>`;
+    } else {
+      lowAlert.style.display = "none";
+      lowAlert.innerHTML = "";
+    }
+  }
+
   if (storeSettings?.id) {
     const { data: orders } = await sb.from("orders")
       .select("items,total,currency,created_at")
@@ -1660,7 +1776,7 @@ async function loadOrders() {
   if (!storeSettings?.id) { el.innerHTML = `<div class="loading">Guarda la configuración de tu tienda primero.</div>`; return; }
   el.innerHTML = `<div class="loading">Cargando pedidos...</div>`;
   const { data, error } = await sb.from("orders")
-    .select("id, items, total, currency, created_at")
+    .select("id, items, total, currency, created_at, status")
     .eq("store_id", storeSettings.id)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -1669,6 +1785,7 @@ async function loadOrders() {
     el.innerHTML = `<div class="loading">Aún no hay pedidos. Comparte tu enlace o tu código QR para recibir los primeros.</div>`;
     return;
   }
+  window._loadedOrders = data;
   const rows = data.map((o) => {
     const items = Array.isArray(o.items) ? o.items : [];
     const list = items.map((it) =>
@@ -1676,13 +1793,53 @@ async function loadOrders() {
     ).join("");
     const fecha = new Date(o.created_at).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
     const sym = CURRENCY_SYMBOLS[o.currency] || "";
+    const status = o.status || "pending";
+    const estado = status === "confirmed"
+      ? `<span class="order-status confirmed">✓ Confirmada</span>`
+      : status === "dismissed"
+        ? `<span class="order-status dismissed">Descartada</span>`
+        : `<span class="order-status pending">Pendiente</span>
+           <div class="order-actions">
+             <button class="btn-order-ok" onclick="setOrderStatus(${Number(o.id)}, 'confirmed')" title="La venta se concretó: descuenta inventario">Confirmar venta</button>
+             <button class="btn-order-no" onclick="setOrderStatus(${Number(o.id)}, 'dismissed')" title="Solo fue consulta: no descuenta nada">Descartar</button>
+           </div>`;
     return `<tr class="order-row">
       <td class="order-date">${escapeHtml(fecha)}</td>
       <td><ul class="order-items">${list || "<li>—</li>"}</ul></td>
       <td class="order-total">${o.total != null ? `${sym}${escapeHtml(o.total)} ${escapeHtml(o.currency || "")}` : "—"}</td>
+      <td>${estado}</td>
     </tr>`;
   }).join("");
-  el.innerHTML = `<table><thead><tr><th style="width:120px;">Fecha</th><th>Pedido</th><th style="width:130px;">Total</th></tr></thead><tbody>${rows}</tbody></table>`;
+  el.innerHTML = `<table><thead><tr><th style="width:120px;">Fecha</th><th>Pedido</th><th style="width:110px;">Total</th><th style="width:150px;">Estado</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// Confirmar venta = descontar inventario; descartar = sin efecto.
+// Solo transiciona pedidos pendientes (el filtro .eq evita doble descuento).
+async function setOrderStatus(orderId, status) {
+  const order = (window._loadedOrders || []).find((o) => Number(o.id) === Number(orderId));
+  if (!order || (order.status || "pending") !== "pending") return;
+  const { data: updated, error } = await sb.from("orders")
+    .update({ status }).eq("id", orderId).eq("status", "pending").select("id");
+  if (error || !updated || !updated.length) {
+    showToast("No se pudo actualizar el pedido", "error");
+    return;
+  }
+  order.status = status;
+  if (status === "confirmed") await deductStock(order.items);
+  showToast(status === "confirmed" ? "Venta confirmada ✓ Inventario actualizado" : "Pedido descartado", "success");
+  loadOrders();
+  loadProducts();
+}
+
+async function deductStock(items) {
+  for (const it of Array.isArray(items) ? items : []) {
+    const pid = it.id;
+    const q = Number(it.q) || 1;
+    if (!pid) continue; // pedidos antiguos sin id de producto
+    const { data: prod } = await sb.from("products").select("id, stock").eq("id", pid).single();
+    if (!prod || prod.stock == null) continue;
+    await sb.from("products").update({ stock: Math.max(0, prod.stock - q) }).eq("id", pid);
+  }
 }
 
 // ===== QR DEL CATÁLOGO =====

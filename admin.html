@@ -353,6 +353,8 @@
           <button class="btn-primary btn-outline-secondary" onclick="exportCSV()" style="margin-right:8px;background:transparent;border:1.5px solid #374151;color:#9ca3af;font-size:.85rem;">⬇ CSV</button>
           <button class="btn-primary" id="btnAddProduct">+ Agregar producto</button>
         </div>
+        <div id="lowStockAlert" style="display:none;"></div>
+
         <!-- Onboarding banner: visible only when store has 0 products -->
         <div id="onboardingBanner" style="display:none;background:linear-gradient(135deg,#0d2240,#1e3a5f);border:1px solid #2d4a6b;border-radius:14px;padding:24px 28px;margin-bottom:20px;">
           <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
@@ -789,6 +791,43 @@
             <div style="font-size:.8rem;color:#6b7280;margin-top:4px;">Vistas de productos</div>
           </div>
         </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
+          <div class="settings-card" style="text-align:center;padding:24px 16px;">
+            <div id="statOrders" style="font-size:2.2rem;font-weight:800;color:#5b8ab5;">—</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:4px;">Pedidos recibidos</div>
+          </div>
+          <div class="settings-card" style="text-align:center;padding:24px 16px;">
+            <div id="statTicket" style="font-size:2.2rem;font-weight:800;color:#8b5cf6;">—</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:4px;">Ticket promedio</div>
+          </div>
+          <div class="settings-card" style="text-align:center;padding:24px 16px;">
+            <div id="statConv" style="font-size:2.2rem;font-weight:800;color:#14b8a6;">—</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:4px;">Visitas que van a WhatsApp</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:28px;">
+          <div class="settings-card">
+            <h3>¿A qué hora te buscan?</h3>
+            <p class="hint" style="margin-top:2px;">Pedidos y clics de WhatsApp por hora del día</p>
+            <div id="chartHours" class="an-chart"></div>
+          </div>
+          <div class="settings-card">
+            <h3>Días con más movimiento</h3>
+            <p class="hint" style="margin-top:2px;">Pedidos y clics de WhatsApp por día de la semana</p>
+            <div id="chartDays" class="an-chart"></div>
+          </div>
+        </div>
+
+        <div class="settings-card" style="margin-bottom:28px;">
+          <h3>Últimos 14 días</h3>
+          <p class="hint" style="margin-top:2px;">
+            <span class="an-dot" style="background:#5b8ab5;"></span> Vistas del catálogo &nbsp;·&nbsp;
+            <span class="an-dot" style="background:#25d366;"></span> Clics de WhatsApp
+          </p>
+          <div id="chartSeries" class="an-chart"></div>
+        </div>
+
         <div class="settings-card">
           <h3>Productos más vistos</h3>
           <div id="topProductsList" style="margin-top:16px;">
@@ -843,6 +882,11 @@
           <div class="field">
             <label>Precio (GTQ) *</label>
             <input type="number" id="pPrice" placeholder="220" min="1" required />
+          </div>
+          <div class="field">
+            <label>Inventario (opcional)</label>
+            <input type="number" id="pStock" min="0" placeholder="Vacío = sin control de stock" />
+            <small>Se descuenta al confirmar pedidos. Al llegar a 0, el catálogo muestra «Agotado» y bloquea el pedido solo.</small>
           </div>
           <div class="field span-2">
             <label>Descripción</label>

@@ -1391,3 +1391,6 @@ body {
   border-color: #64748b;
   color: #94a3b8;
 }
+
+.opt-delta { font-size: .72em; font-weight: 700; opacity: .75; margin-left: 2px; }
+.price-from { font-size: .62em; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: .04em; }

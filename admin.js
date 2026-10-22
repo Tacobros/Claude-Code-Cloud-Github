@@ -605,7 +605,7 @@ function renderOptionGroups() {
             oninput="updateOptionGroup(${i},'choose',this.value)" />
         </label>`}
       </div>
-      <input type="text" placeholder="${isRemove ? "Ingredientes separados por coma (ej: Pepinillos, Cebolla, Tomate)" : "Opciones separadas por coma (ej: Coca-Cola, Fresa, Horchata)"}" maxlength="200"
+      <input type="text" placeholder="${isRemove ? "Ingredientes separados por coma (ej: Pepinillos, Cebolla, Tomate)" : "Opciones separadas por coma · con recargo opcional (ej: 1/2 lb, 1 lb +15)"}" maxlength="200"
         value="${escapeHtml(g.optionsText ?? (g.options || []).join(", "))}" oninput="updateOptionGroup(${i},'optionsText',this.value)" />
     </div>
   `;
@@ -633,11 +633,27 @@ document.getElementById("btnAddOptionGroup")?.addEventListener("click", () => {
   renderOptionGroups();
 });
 
+// "1 lb +15" → {n: "1 lb", d: 15} · "Extra queso +10" · "Pequeño -5"
+function parseOption(txt) {
+  const m = txt.match(/^(.*?)\s*([+-]\s*\d+(?:\.\d+)?)\s*$/);
+  if (m && m[1].trim()) {
+    const d = parseFloat(m[2].replace(/\s+/g, ""));
+    if (!Number.isNaN(d) && d !== 0) return { n: m[1].trim(), d };
+  }
+  return txt;
+}
+
+function optionToText(o) {
+  if (typeof o === "string") return o;
+  return o.d ? `${o.n} ${o.d > 0 ? "+" : ""}${o.d}` : o.n;
+}
+
 function cleanOptionGroups() {
   return productOptionGroups
     .map((g) => {
-      const options = String(g.optionsText ?? (g.options || []).join(","))
-        .split(",").map((s) => s.trim()).filter(Boolean).slice(0, 20);
+      const options = String(g.optionsText ?? (g.options || []).map(optionToText).join(","))
+        .split(",").map((s) => s.trim()).filter(Boolean).slice(0, 20)
+        .map(parseOption);
       const choose = Math.max(1, Math.min(10, parseInt(g.choose) || 1));
       const mode = g.mode === "remove" ? "remove" : "pick";
       return { label: String(g.label || "").trim(), mode, choose: mode === "remove" ? 0 : Math.min(choose, options.length || 1), options };
@@ -679,7 +695,7 @@ function openEditModal(id) {
 
   productOptionGroups = (p.option_groups || []).map((g) => ({
     label: g.label || "", mode: g.mode === "remove" ? "remove" : "pick",
-    choose: g.choose || 1, optionsText: (g.options || []).join(", "),
+    choose: g.choose || 1, optionsText: (g.options || []).map(optionToText).join(", "),
   }));
   renderOptionGroups();
 

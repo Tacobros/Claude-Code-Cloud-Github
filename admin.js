@@ -1130,10 +1130,22 @@ function renderCustomCategories() {
   }
   list.innerHTML = customCategories.map((c, i) => `
     <span class="category-chip">
+      <button type="button" class="chip-move" onclick="moveCategory(${i}, -1)" title="Mover antes" aria-label="Mover antes" ${i === 0 ? "disabled" : ""}>◀</button>
       ${escapeHtml(c)}
+      <button type="button" class="chip-move" onclick="moveCategory(${i}, 1)" title="Mover después" aria-label="Mover después" ${i === customCategories.length - 1 ? "disabled" : ""}>▶</button>
       <button type="button" onclick="removeCategory(${i})" title="Eliminar">✕</button>
     </span>
   `).join("");
+}
+
+// El orden de esta lista es el orden de los filtros en el catálogo público
+function moveCategory(index, dir) {
+  const j = index + dir;
+  if (j < 0 || j >= customCategories.length) return;
+  [customCategories[index], customCategories[j]] = [customCategories[j], customCategories[index]];
+  renderCustomCategories();
+  populateCategorySelects();
+  persistCategories();
 }
 
 // Guarda las categorías al instante: antes solo se persistían al presionar

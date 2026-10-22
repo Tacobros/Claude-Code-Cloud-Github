@@ -282,7 +282,7 @@ async function loadProducts() {
       renderProducts();
       return;
     }
-    let productsQuery = sb.from("products").select("*").eq("available", true).order("created_at", { ascending: false });
+    let productsQuery = sb.from("products").select("*").eq("available", true).order("sort_order", { ascending: true, nullsFirst: true }).order("created_at", { ascending: false });
     if (storeUserId) productsQuery = productsQuery.eq("user_id", storeUserId);
     const { data } = await productsQuery;
     if (data && data.length > 0) {

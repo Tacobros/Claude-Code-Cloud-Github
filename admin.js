@@ -468,6 +468,7 @@ async function loadProducts(user) {
     .from("products")
     .select("*")
     .eq("user_id", user.id)
+    .order("sort_order", { ascending: true, nullsFirst: true })
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -476,7 +477,36 @@ async function loadProducts(user) {
   }
 
   allProducts = data || [];
+  await ensureSortOrders();
   renderTable();
+}
+
+// Normaliza sort_order a 1..n (productos nuevos entran con 0 = primero)
+async function ensureSortOrders() {
+  const updates = [];
+  allProducts.forEach((p, i) => {
+    const want = i + 1;
+    if (p.sort_order !== want) { p.sort_order = want; updates.push(p); }
+  });
+  if (!updates.length) return;
+  await Promise.all(updates.map((p) =>
+    sb.from("products").update({ sort_order: p.sort_order }).eq("id", p.id)
+  ));
+}
+
+async function moveProduct(id, dir) {
+  const i = allProducts.findIndex((p) => Number(p.id) === Number(id));
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= allProducts.length) return;
+  const a = allProducts[i], b = allProducts[j];
+  [a.sort_order, b.sort_order] = [b.sort_order, a.sort_order];
+  [allProducts[i], allProducts[j]] = [b, a];
+  renderTable();
+  const [r1, r2] = await Promise.all([
+    sb.from("products").update({ sort_order: a.sort_order }).eq("id", a.id),
+    sb.from("products").update({ sort_order: b.sort_order }).eq("id", b.id),
+  ]);
+  if (r1.error || r2.error) showToast("No se pudo guardar el orden", "error");
 }
 
 function renderTable() {
@@ -514,6 +544,10 @@ function renderTable() {
       <td><span class="badge badge-${escapeHtml(p.category)}">${escapeHtml(getCategoryLabel(p.category))}</span></td>
       <td class="${p.available ? 'status-on' : 'status-off'}">${p.available ? "✓ Visible" : "✗ Oculto"}</td>
       <td class="td-actions">
+        <span class="move-btns">
+          <button class="btn-move" onclick="moveProduct(${Number(p.id)}, -1)" title="Subir en el catálogo" aria-label="Subir">▲</button>
+          <button class="btn-move" onclick="moveProduct(${Number(p.id)}, 1)" title="Bajar en el catálogo" aria-label="Bajar">▼</button>
+        </span>
         <button class="btn-edit" onclick="openEditModal(${Number(p.id)})">Editar</button>
         <button class="btn-delete" onclick="askDelete(${Number(p.id)})">Eliminar</button>
       </td>
@@ -628,7 +662,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     error = res.error;
   } else {
     const { data: { user } } = await sb.auth.getUser();
-    const res = await sb.from("products").insert({ ...payload, user_id: user.id });
+    const res = await sb.from("products").insert({ ...payload, user_id: user.id, sort_order: 0 });
     error = res.error;
   }
 
@@ -1102,10 +1136,21 @@ function renderCustomCategories() {
   `).join("");
 }
 
+// Guarda las categorías al instante: antes solo se persistían al presionar
+// "Guardar configuración" y se perdían al salir (reporte del primer beta)
+async function persistCategories() {
+  if (!storeSettings?.id) return;
+  const { error } = await sb.from("stores")
+    .update({ custom_categories: customCategories })
+    .eq("id", storeSettings.id);
+  if (error) showToast("No se pudo guardar la categoría: " + error.message, "error");
+}
+
 function removeCategory(index) {
   customCategories.splice(index, 1);
   renderCustomCategories();
   populateCategorySelects();
+  persistCategories();
 }
 
 document.getElementById("btnAddCategory").addEventListener("click", () => {
@@ -1120,6 +1165,7 @@ document.getElementById("btnAddCategory").addEventListener("click", () => {
   input.value = "";
   renderCustomCategories();
   populateCategorySelects();
+  persistCategories();
 });
 
 document.getElementById("newCategoryInput").addEventListener("keydown", (e) => {

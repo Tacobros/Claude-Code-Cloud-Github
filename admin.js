@@ -67,7 +67,7 @@ function currencySymbol() {
 // Columnas de `stores` legibles desde el navegador (deben coincidir con
 // el GRANT de 006_secure_stores_and_currency.sql — select("*") ya no funciona)
 const STORE_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
-  plan, status, currency, accent_color, logo_url,
+  plan, status, currency, accent_color, logo_url, payment_methods,
   hero_badge, hero_title, hero_subtitle, hero_image_url,
   catalog_title, catalog_subtitle, cta_title, cta_desc,
   custom_categories, show_gallery,
@@ -479,6 +479,7 @@ async function loadProducts(user) {
   allProducts = data || [];
   await ensureSortOrders();
   renderTable();
+  maybeShowOnboardWizard();
 }
 
 // Normaliza sort_order a 1..n (productos nuevos entran con 0 = primero)
@@ -800,6 +801,173 @@ document.getElementById("confirmDelete").addEventListener("click", async () => {
   loadProducts();
 });
 
+// ===== ASISTENTE DE PLANTILLA (primer inicio) =====
+const BUSINESS_TEMPLATES = {
+  comida: {
+    nombre: "Comida y restaurante", desc: "Combos, platos, bebidas", icon: "cart",
+    categorias: ["Combos", "Platos fuertes", "Snacks", "Bebidas", "Postres"],
+    textos: {
+      hero_badge: "Pide por WhatsApp", hero_title: "Tu antojo, a un mensaje de distancia",
+      hero_subtitle: "Explora nuestro menú, arma tu pedido y recíbelo donde estés.",
+      catalog_title: "Menú", catalog_subtitle: "Explora nuestros platillos",
+      cta_title: "¿Listo para ordenar?", cta_desc: "Escríbenos por WhatsApp y empezamos a preparar tu pedido.",
+      about_title: "¿Por qué pedir con nosotros?",
+      about1_icon: "🍔", about1_title: "Hecho al momento", about1_desc: "Preparamos tu pedido al recibirlo",
+      about2_icon: "🚚", about2_title: "Entrega a domicilio", about2_desc: "Llegamos a tu zona",
+      about3_icon: "💬", about3_title: "Pedido por WhatsApp", about3_desc: "Sin apps ni registros",
+    },
+    productos: [
+      { name: "Combo de la casa (ejemplo)", price: 50, category: "Combos", description: "Edita este producto: es un ejemplo de combo con elección de bebida.", option_groups: [{ label: "Bebida", mode: "pick", choose: 1, options: ["Coca-Cola", "Té frío", "Agua pura"] }] },
+      { name: "Plato especial (ejemplo)", price: 40, category: "Platos fuertes", description: "Edita este producto: ejemplo con ingredientes que el cliente puede quitar.", option_groups: [{ label: "Ingredientes", mode: "remove", choose: 0, options: ["Cebolla", "Tomate", "Picante"] }] },
+    ],
+  },
+  reposteria: {
+    nombre: "Repostería y panadería", desc: "Pasteles, postres, pan", icon: "sparkles",
+    categorias: ["Pasteles", "Cupcakes", "Galletas", "Postres", "Por encargo"],
+    textos: {
+      hero_badge: "Hecho en casa", hero_title: "Dulces que alegran cualquier día",
+      hero_subtitle: "Pedidos por encargo y entrega a domicilio. Elige tu antojo y escríbenos.",
+      catalog_title: "Nuestro catálogo", catalog_subtitle: "Todo horneado con ingredientes de verdad",
+      cta_title: "¿Celebras algo pronto?", cta_desc: "Cuéntanos por WhatsApp qué necesitas y lo preparamos.",
+      about_title: "¿Por qué elegirnos?",
+      about1_icon: "🎂", about1_title: "Por encargo", about1_desc: "Personalizamos tu pedido",
+      about2_icon: "🌾", about2_title: "Ingredientes reales", about2_desc: "Horneado del día",
+      about3_icon: "🚚", about3_title: "Entrega a domicilio", about3_desc: "Coordina por WhatsApp",
+    },
+    productos: [
+      { name: "Pastel por encargo (ejemplo)", price: 250, category: "Pasteles", description: "Edita este producto: ejemplo con tamaño que cambia el precio.", option_groups: [{ label: "Tamaño", mode: "pick", choose: 1, options: ["8 porciones", { n: "12 porciones", d: 100 }] }] },
+      { name: "Caja de cupcakes (ejemplo)", price: 120, category: "Cupcakes", description: "Edita este producto: ejemplo con elección de sabores.", option_groups: [{ label: "Sabores", mode: "pick", choose: 2, options: ["Vainilla", "Chocolate", "Fresa", "Limón"] }] },
+    ],
+  },
+  ropa: {
+    nombre: "Ropa y accesorios", desc: "Prendas, calzado, extras", icon: "store",
+    categorias: ["Mujer", "Hombre", "Niños", "Accesorios", "Ofertas"],
+    textos: {
+      hero_badge: "Nueva colección", hero_title: "Estrena sin salir de casa",
+      hero_subtitle: "Mira el catálogo, elige tu talla y pide por WhatsApp. Así de fácil.",
+      catalog_title: "Catálogo", catalog_subtitle: "Explora las prendas disponibles",
+      cta_title: "¿Viste algo que te gustó?", cta_desc: "Escríbenos por WhatsApp para apartarlo hoy mismo.",
+      about_title: "Compra con confianza",
+      about1_icon: "📏", about1_title: "Guía de tallas", about1_desc: "Te ayudamos a elegir la tuya",
+      about2_icon: "🔄", about2_title: "Cambios sencillos", about2_desc: "Coordinamos por WhatsApp",
+      about3_icon: "🚚", about3_title: "Envíos", about3_desc: "A todo el país",
+    },
+    productos: [
+      { name: "Playera básica (ejemplo)", price: 80, category: "Mujer", description: "Edita este producto: ejemplo con tallas.", variant_label: "Talla", sizes: ["S", "M", "L", "XL"] },
+      { name: "Conjunto 2 piezas (ejemplo)", price: 150, category: "Ofertas", description: "Edita este producto: ejemplo de conjunto con color por pieza.", option_groups: [{ label: "Color de la blusa", mode: "pick", choose: 1, options: ["Negro", "Blanco", "Beige"] }, { label: "Color del pantalón", mode: "pick", choose: 1, options: ["Negro", "Azul"] }] },
+    ],
+  },
+  belleza: {
+    nombre: "Belleza y cuidado", desc: "Cosméticos, skincare", icon: "droplet",
+    categorias: ["Maquillaje", "Cuidado de piel", "Cabello", "Fragancias", "Kits"],
+    textos: {
+      hero_badge: "Productos originales", hero_title: "Tu rutina de belleza, a domicilio",
+      hero_subtitle: "Catálogo siempre actualizado. Pide por WhatsApp y recibe en tu puerta.",
+      catalog_title: "Catálogo", catalog_subtitle: "Encuentra tus favoritos",
+      cta_title: "¿Dudas sobre un producto?", cta_desc: "Escríbenos y te asesoramos sin compromiso.",
+      about_title: "¿Por qué comprarnos?",
+      about1_icon: "✅", about1_title: "100% originales", about1_desc: "Productos garantizados",
+      about2_icon: "💬", about2_title: "Asesoría personal", about2_desc: "Te ayudamos a elegir",
+      about3_icon: "🚚", about3_title: "Entrega rápida", about3_desc: "Coordina por WhatsApp",
+    },
+    productos: [
+      { name: "Labial (ejemplo)", price: 60, category: "Maquillaje", description: "Edita este producto: ejemplo con tonos.", variant_label: "Tono", sizes: ["Nude", "Rojo", "Rosa"] },
+      { name: "Kit de skincare (ejemplo)", price: 180, category: "Kits", description: "Edita este producto: ejemplo de kit armable.", option_groups: [{ label: "Tipo de piel", mode: "pick", choose: 1, options: ["Grasa", "Seca", "Mixta"] }] },
+    ],
+  },
+  tienda: {
+    nombre: "Tienda general", desc: "Variedad de productos", icon: "box",
+    categorias: ["Novedades", "Hogar", "Tecnología", "Ofertas"],
+    textos: {
+      hero_badge: "Bienvenido", hero_title: "Todo lo que buscas, en un solo lugar",
+      hero_subtitle: "Explora el catálogo y haz tu pedido por WhatsApp en un minuto.",
+      catalog_title: "Catálogo", catalog_subtitle: "Explora nuestros productos",
+      cta_title: "¿Listo para hacer tu pedido?", cta_desc: "Escríbenos por WhatsApp y coordinamos la entrega.",
+      about_title: "¿Por qué elegirnos?",
+      about1_icon: "✅", about1_title: "Calidad garantizada", about1_desc: "Productos seleccionados",
+      about2_icon: "💬", about2_title: "Atención directa", about2_desc: "Respuesta rápida por WhatsApp",
+      about3_icon: "🚚", about3_title: "Entrega a domicilio", about3_desc: "Coordina tu envío",
+    },
+    productos: [
+      { name: "Producto de ejemplo", price: 100, category: "Novedades", description: "Edita este producto o elimínalo: es solo un ejemplo para que veas cómo se ve tu catálogo." },
+    ],
+  },
+};
+
+let wizardChoice = null;
+
+function maybeShowOnboardWizard() {
+  if (window._wizardShown) return;
+  if (!storeSettings?.id || allProducts.length > 0) return;
+  let done = "";
+  try { done = localStorage.getItem(`ps_onboard_${storeSettings.id}`) || ""; } catch (_) {}
+  if (done) return;
+  window._wizardShown = true;
+
+  const grid = document.getElementById("wizardGrid");
+  grid.innerHTML = Object.entries(BUSINESS_TEMPLATES).map(([key, t]) => `
+    <button type="button" class="wizard-opt" data-key="${key}">
+      <span class="wz-ico">${psIcon(t.icon, 22)}</span>
+      <strong>${t.nombre}</strong>
+      <small>${t.desc}</small>
+    </button>`).join("");
+  grid.querySelectorAll(".wizard-opt").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      grid.querySelectorAll(".wizard-opt").forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      wizardChoice = btn.dataset.key;
+      const t = BUSINESS_TEMPLATES[wizardChoice];
+      const prev = document.getElementById("wizardPreview");
+      prev.style.display = "";
+      prev.className = "wizard-preview";
+      prev.innerHTML = `Tu catálogo quedará con: <strong>categorías</strong> ${t.categorias.join(", ")} · <strong>textos de bienvenida</strong> adaptados a tu rubro · <strong>${t.productos.length} producto${t.productos.length !== 1 ? "s" : ""} de ejemplo</strong> (ocultos, para que los edites antes de publicar). Todo se puede cambiar después.`;
+      document.getElementById("wizardApply").style.display = "";
+    });
+  });
+  document.getElementById("onboardWizard").style.display = "flex";
+}
+
+function closeWizard() {
+  try { localStorage.setItem(`ps_onboard_${storeSettings.id}`, "1"); } catch (_) {}
+  document.getElementById("onboardWizard").style.display = "none";
+}
+
+document.getElementById("wizardSkip")?.addEventListener("click", closeWizard);
+
+document.getElementById("wizardApply")?.addEventListener("click", async () => {
+  const t = BUSINESS_TEMPLATES[wizardChoice];
+  if (!t || !storeSettings?.id) { closeWizard(); return; }
+  const btn = document.getElementById("wizardApply");
+  btn.disabled = true;
+  btn.textContent = "Aplicando...";
+
+  const { error: e1 } = await sb.from("stores")
+    .update({ custom_categories: t.categorias, ...t.textos })
+    .eq("id", storeSettings.id);
+
+  const { data: { user } } = await sb.auth.getUser();
+  let e2 = null;
+  for (const prod of t.productos) {
+    const res = await sb.from("products").insert({
+      user_id: user.id, available: false, sort_order: 0, sizes: [],
+      ...prod,
+    });
+    if (res.error) e2 = res.error;
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Aplicar plantilla";
+  if (e1 || e2) {
+    showToast("Hubo un problema al aplicar la plantilla: " + (e1 || e2).message, "error");
+    return;
+  }
+  closeWizard();
+  showToast("¡Plantilla aplicada! Edita los productos de ejemplo y publícalos ✓", "success");
+  await loadSettings();
+  await loadProducts();
+  document.querySelector('.nav-item[data-page="products"]')?.click();
+});
+
 // ===== BULK ACTIONS =====
 function getSelectedIds() {
   return [...document.querySelectorAll('#productsTable input[type=checkbox]:checked')]
@@ -885,6 +1053,7 @@ async function loadSettings(user) {
 
   if (data) {
     storeSettings = data;
+    maybeShowOnboardWizard();
     document.getElementById("storeName").value = data.name || "";
     document.getElementById("storeSlug").value = data.slug || "";
     updateCatalogLink(data.slug || "");
@@ -895,6 +1064,9 @@ async function loadSettings(user) {
     document.getElementById("storeDesc").value = data.description || "";
     document.getElementById("storeAccent").value = data.accent_color || "#e94560";
     document.getElementById("storeAccentHex").textContent = data.accent_color || "#e94560";
+    document.querySelectorAll("#payMethods input").forEach((cb) => {
+      cb.checked = (data.payment_methods || []).includes(cb.value);
+    });
     document.getElementById("storeHeroBadge").value = data.hero_badge || "";
     document.getElementById("storeHeroTitle").value = data.hero_title || "";
     document.getElementById("storeHeroSubtitle").value = data.hero_subtitle || "";
@@ -1136,6 +1308,7 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     description: document.getElementById("storeDesc").value.trim(),
     accent_color: document.getElementById("storeAccent").value,
     custom_categories: customCategories,
+    payment_methods: [...document.querySelectorAll("#payMethods input:checked")].map((cb) => cb.value),
     show_gallery: document.getElementById("showGallery").checked,
     gallery1_img: document.getElementById("gallery1Img").value || null,
     gallery1_title: document.getElementById("gallery1Title").value.trim() || null,
@@ -1776,7 +1949,7 @@ async function loadOrders() {
   if (!storeSettings?.id) { el.innerHTML = `<div class="loading">Guarda la configuración de tu tienda primero.</div>`; return; }
   el.innerHTML = `<div class="loading">Cargando pedidos...</div>`;
   const { data, error } = await sb.from("orders")
-    .select("id, items, total, currency, created_at, status, token")
+    .select("id, items, total, currency, created_at, status, token, payment_method")
     .eq("store_id", storeSettings.id)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -1793,6 +1966,7 @@ async function loadOrders() {
     ).join("");
     const fecha = new Date(o.created_at).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
     const sym = CURRENCY_SYMBOLS[o.currency] || "";
+    const pago = o.payment_method ? `<div style="font-size:.72rem;color:#6b7280;margin-top:4px;">Pago: <strong>${escapeHtml(o.payment_method)}</strong></div>` : "";
     const status = o.status || "pending";
     const estado = status === "confirmed"
       ? `<span class="order-status confirmed">✓ Confirmada</span>`
@@ -1805,7 +1979,7 @@ async function loadOrders() {
            </div>`;
     return `<tr class="order-row">
       <td class="order-date">${escapeHtml(fecha)}</td>
-      <td><ul class="order-items">${list || "<li>—</li>"}</ul></td>
+      <td><ul class="order-items">${list || "<li>—</li>"}</ul>${pago}</td>
       <td class="order-total">${o.total != null ? `${sym}${escapeHtml(o.total)} ${escapeHtml(o.currency || "")}` : "—"}</td>
       <td>${estado}
         <button class="btn-order-pdf" onclick="downloadOrderPDF(${Number(o.id)})" title="Descargar comprobante PDF">
@@ -1891,7 +2065,9 @@ function downloadOrderPDF(orderId) {
   doc.text(`Pedido #${o.id} · ${fecha}`, M, y);
   const estadoTxt = o.status === "confirmed" ? "Venta confirmada" : o.status === "dismissed" ? "Descartado" : "Pendiente";
   doc.text(estadoTxt, W - M, y, { align: "right" });
-  y += 9;
+  y += 5;
+  if (o.payment_method) { doc.text(`Método de pago: ${o.payment_method}`, M, y); y += 5; }
+  y += 4;
 
   // Ítems
   const items = Array.isArray(o.items) ? o.items : [];

@@ -737,8 +737,18 @@
             <p class="hint">Crea las categorías de tu negocio (ej: Pasteles, Bebidas, Ropa). Aparecerán como filtros en tu catálogo y como opciones al crear productos.</p>
             <div id="customCategoriesList" class="categories-list"></div>
             <div class="add-category-row">
-              <input type="text" id="newCategoryInput" placeholder="Ej: Bundesliga, Serie A..." maxlength="40" />
+              <input type="text" id="newCategoryInput" placeholder="Ej: Pasteles, Bebidas, Ropa..." maxlength="40" />
               <button type="button" class="btn-primary" id="btnAddCategory">+ Agregar</button>
+            </div>
+          </div>
+          <div class="settings-card full-width">
+            <h3>Métodos de pago</h3>
+            <p class="hint">Opcional: si eliges al menos uno, tus clientes indicarán cómo pagarán al enviar su pedido (aparece en el mensaje de WhatsApp y en el comprobante).</p>
+            <div class="pay-methods" id="payMethods">
+              <label class="pay-chip"><input type="checkbox" value="Efectivo" /> Efectivo</label>
+              <label class="pay-chip"><input type="checkbox" value="Tarjeta" /> Tarjeta</label>
+              <label class="pay-chip"><input type="checkbox" value="Transferencia" /> Transferencia</label>
+              <label class="pay-chip"><input type="checkbox" value="Contra entrega" /> Contra entrega</label>
             </div>
           </div>
           <div class="settings-card full-width">
@@ -947,6 +957,20 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="supabase.js"></script>
+  <!-- ASISTENTE DE PLANTILLA (primer inicio) -->
+  <div class="modal-overlay" id="onboardWizard" style="display:none;">
+    <div class="modal wizard-modal">
+      <h2 style="margin-bottom:4px;">¿Qué tipo de negocio tienes?</h2>
+      <p style="color:#6b7280;font-size:.875rem;margin-bottom:18px;">Te dejamos el catálogo pre-armado: categorías, textos y un par de productos de ejemplo que puedes editar. Nada es definitivo.</p>
+      <div class="wizard-grid" id="wizardGrid"></div>
+      <div id="wizardPreview" style="display:none;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;">
+        <button type="button" class="btn-secondary" id="wizardSkip">Empezar desde cero</button>
+        <button type="button" class="btn-primary" id="wizardApply" style="display:none;">Aplicar plantilla</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="icons.js"></script>
   <script src="admin.js"></script>

@@ -134,6 +134,7 @@
           <div class="accent-line" style="background:${esc(accent)};"></div>
           <div class="sheet-body">
             <div class="order-meta"><span>Pedido #${esc(o.id)} · ${esc(fecha)}</span>${estado}</div>
+            ${o.payment_method ? `<div class="order-meta" style="margin-top:-10px;"><span>Método de pago: <strong>${esc(o.payment_method)}</strong></span></div>` : ""}
             ${items || '<p style="color:var(--muted);font-size:.85rem;">Sin productos.</p>'}
             <div class="total-row"><span>Total</span><strong>${esc(sym)}${esc(o.total ?? "—")} ${esc(o.currency || "")}</strong></div>
             <div class="actions">

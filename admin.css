@@ -1229,3 +1229,32 @@ tr.row-selected { background: #0d2240 !important; }
   cursor: pointer; font-family: inherit;
 }
 .btn-order-pdf:hover { border-color: #e94560; color: #c22844; }
+
+/* ── Métodos de pago ── */
+.pay-methods { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.pay-chip {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  border: 1.5px solid var(--gray-200); border-radius: 99px; padding: 8px 16px;
+  font-size: .85rem; font-weight: 600; color: var(--gray-600); user-select: none;
+}
+.pay-chip:has(input:checked) { border-color: #e94560; background: #fde8ec; color: #c22844; }
+.pay-chip input { accent-color: #e94560; }
+
+/* ── Asistente de plantilla ── */
+.wizard-modal { max-width: 560px; }
+.wizard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.wizard-opt {
+  border: 1.5px solid var(--gray-200); border-radius: 12px; padding: 16px 12px;
+  text-align: center; cursor: pointer; background: #fff; font-family: inherit;
+  transition: border-color .15s, transform .15s;
+}
+.wizard-opt:hover { border-color: #e94560; transform: translateY(-1px); }
+.wizard-opt.selected { border-color: #e94560; background: #fde8ec; }
+.wizard-opt .wz-ico { color: #e94560; margin-bottom: 8px; display: block; }
+.wizard-opt strong { display: block; font-size: .85rem; color: var(--gray-800); }
+.wizard-opt small { display: block; font-size: .7rem; color: var(--gray-400); margin-top: 3px; }
+.wizard-preview {
+  background: var(--gray-50, #f9fafb); border: 1px solid var(--gray-200); border-radius: 12px;
+  padding: 14px 16px; margin-top: 14px; font-size: .82rem; color: var(--gray-600); line-height: 1.6;
+}
+.wizard-preview strong { color: var(--gray-800); }

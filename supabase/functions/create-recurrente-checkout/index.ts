@@ -8,9 +8,17 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const RECURRENTE_KEY = Deno.env.get("RECURRENTE_SECRET_KEY") || "";
 
-const PLANS: Record<string, { name: string; amount: number }> = {
-  starter: { name: "ProductSpot Starter (mensual)", amount: 4000 },
-  pro: { name: "ProductSpot Pro (mensual)", amount: 8000 },
+const PLANS: Record<string, { name: string; amount: number; image: string }> = {
+  starter: {
+    name: "ProductSpot Starter (mensual)",
+    amount: 4000,
+    image: "https://productspot.pages.dev/brand/plan-starter.png",
+  },
+  pro: {
+    name: "ProductSpot Pro (mensual)",
+    amount: 8000,
+    image: "https://productspot.pages.dev/brand/plan-pro.png",
+  },
 };
 
 const SITE = "https://productspot.pages.dev";
@@ -48,6 +56,7 @@ Deno.serve(async (req) => {
     body: JSON.stringify({
       items: [{
         name: p.name,
+        image_url: p.image,
         currency: "GTQ",
         amount_in_cents: p.amount,
         quantity: 1,

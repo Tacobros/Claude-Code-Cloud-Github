@@ -364,9 +364,13 @@ function renderProducts() {
 
 function waLink(p, sel = "", priceText = "") {
   const price = priceText || p.price;
-  const msg = sel
-    ? `Hola! Vi el catálogo de ${storeName} y quiero pedir: *${p.name}* (${sel}) - Precio: ${price}`
-    : `Hola! Vi el catálogo de ${storeName} y me interesa: *${p.name}* - Precio: ${price}`;
+  let msg;
+  if (sel) {
+    const detalles = sel.split(" · ").map((part) => `   › ${part}`).join("\n");
+    msg = `Hola! Vi el catálogo de *${storeName}* y quiero pedir:\n\n*${p.name}* — ${price}\n${detalles}`;
+  } else {
+    msg = `Hola! Vi el catálogo de *${storeName}* y me interesa:\n\n*${p.name}* — ${price}`;
+  }
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -861,10 +865,12 @@ function removeCartItem(index) {
 
 function cartWaLink() {
   const lines = cart.map((i) => {
-    const variant = i.v ? ` (${i.v})` : "";
-    return `• ${i.q}× ${i.n}${variant} — ${currencySymbol()}${i.p} c/u`;
+    const head = `*${i.q}× ${i.n}* — ${currencySymbol()}${i.p} c/u`;
+    if (!i.v) return head;
+    const detalles = i.v.split(" · ").map((part) => `   › ${part}`).join("\n");
+    return `${head}\n${detalles}`;
   });
-  const msg = `Hola! Vi el catálogo de ${storeName} y quiero hacer este pedido:\n${lines.join("\n")}\n\nTotal: *${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
+  const msg = `Hola! Vi el catálogo de *${storeName}* y quiero hacer este pedido:\n\n${lines.join("\n\n")}\n──────────\n*Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
 

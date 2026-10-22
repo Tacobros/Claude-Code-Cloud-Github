@@ -1221,3 +1221,11 @@ tr.row-selected { background: #0d2240 !important; }
 .low-stock-card h4 { margin: 0 0 8px; font-size: .9rem; color: #9a3412; display: flex; align-items: center; gap: 8px; }
 .low-stock-card ul { margin: 0; padding-left: 18px; font-size: .83rem; color: #7c2d12; }
 .low-stock-card li { margin-bottom: 3px; }
+
+.btn-order-pdf {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;
+  background: none; border: 1px solid var(--gray-200); border-radius: 7px;
+  padding: 4px 9px; font-size: .7rem; font-weight: 700; color: var(--gray-600);
+  cursor: pointer; font-family: inherit;
+}
+.btn-order-pdf:hover { border-color: #e94560; color: #c22844; }

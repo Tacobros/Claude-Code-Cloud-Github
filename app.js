@@ -481,16 +481,18 @@ function flashIncompleteGroups() {
 }
 
 // Registra el pedido (botones "Pedir" individuales) para la página Pedidos del admin
-function trackOrder(productId, sel, unit) {
+function trackOrder(productId, sel, unit, token) {
   const p = liveProducts.find((x) => String(x.id) === String(productId));
   if (!p || !storeDbId) return;
   const u = unit != null ? unit : p.priceNum;
-  sb.from("orders").insert({
+  const row = {
     store_id: storeDbId,
     items: [{ id: p.id, n: p.name, q: 1, v: sel || null, p: u }],
     total: u,
     currency: storeCurrency,
-  }).then(() => {});
+  };
+  if (token) row.token = token;
+  sb.from("orders").insert(row).then(() => {});
   logEvent("whatsapp_click", p.id);
 }
 
@@ -568,7 +570,15 @@ function openModal(id) {
   document.getElementById("modalWaBtn")?.addEventListener("click", (e) => {
     if (p.stock === 0) { e.preventDefault(); return; }
     if (!groupsComplete(p)) { e.preventDefault(); flashIncompleteGroups(); return; }
-    trackOrder(p.id, selectionText(p) || null, unitPrice(p));
+    // Enlace al comprobante: se genera el token aquí y se reescribe el href
+    // antes de que el navegador procese la navegación
+    const token = storeDbId ? genOrderToken() : null;
+    if (token) {
+      const base = waLink(p, selectionText(p), `${currencySymbol()}${unitPrice(p)}`);
+      const extra = encodeURIComponent(`\n\nVer pedido completo:\n${receiptUrl(token)}`);
+      e.currentTarget.href = base + extra;
+    }
+    trackOrder(p.id, selectionText(p) || null, unitPrice(p), token);
   });
 
   logEvent("product_view", p.id);
@@ -845,6 +855,30 @@ function addToCartFromModal(btnEl) {
   }
 }
 
+// Token del comprobante: viaja en el mensaje y se guarda con el pedido
+function genOrderToken() {
+  try { return crypto.randomUUID().replace(/-/g, ""); }
+  catch (_) { return Array.from({ length: 32 }, () => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join(""); }
+}
+
+function cartTokenKey() { return `ps_cart_token_${storeDbId || "x"}`; }
+function getCartToken() {
+  let t = "";
+  try { t = sessionStorage.getItem(cartTokenKey()) || ""; } catch (_) {}
+  if (!t || t.length < 20) {
+    t = genOrderToken();
+    try { sessionStorage.setItem(cartTokenKey(), t); } catch (_) {}
+  }
+  return t;
+}
+function clearCartToken() {
+  try { sessionStorage.removeItem(cartTokenKey()); } catch (_) {}
+}
+
+function receiptUrl(token) {
+  return `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, "")}pedido?t=${token}`;
+}
+
 function cartCount() { return cart.reduce((s, i) => s + i.q, 0); }
 function cartTotal() { return cart.reduce((s, i) => s + (Number(i.p) || 0) * i.q, 0); }
 
@@ -870,7 +904,8 @@ function cartWaLink() {
     const detalles = i.v.split(" · ").map((part) => `   › ${part}`).join("\n");
     return `${head}\n${detalles}`;
   });
-  const msg = `Hola! Vi el catálogo de *${storeName}* y quiero hacer este pedido:\n\n${lines.join("\n\n")}\n──────────\n*Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
+  let msg = `Hola! Vi el catálogo de *${storeName}* y quiero hacer este pedido:\n\n${lines.join("\n\n")}\n──────────\n*Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
+  if (storeDbId) msg += `\n\nVer pedido completo:\n${receiptUrl(getCartToken())}`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -951,6 +986,7 @@ document.getElementById("btnSendCart")?.addEventListener("click", () => {
   if (storeDbId) {
     sb.from("orders").insert({
       store_id: storeDbId,
+      token: getCartToken(),
       items: cart.map((i) => ({ id: i.id, n: i.n, q: i.q, v: i.v, p: i.p })),
       total: cartTotal(),
       currency: storeCurrency,
@@ -958,7 +994,7 @@ document.getElementById("btnSendCart")?.addEventListener("click", () => {
     logEvent("whatsapp_click");
   }
   // El pedido ya va en camino a WhatsApp: se limpia para evitar envíos duplicados
-  setTimeout(() => { cart = []; saveCart(); renderCartUI(); }, 800);
+  setTimeout(() => { cart = []; clearCartToken(); saveCart(); renderCartUI(); }, 800);
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeCart();

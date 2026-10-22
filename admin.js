@@ -1776,7 +1776,7 @@ async function loadOrders() {
   if (!storeSettings?.id) { el.innerHTML = `<div class="loading">Guarda la configuración de tu tienda primero.</div>`; return; }
   el.innerHTML = `<div class="loading">Cargando pedidos...</div>`;
   const { data, error } = await sb.from("orders")
-    .select("id, items, total, currency, created_at, status")
+    .select("id, items, total, currency, created_at, status, token")
     .eq("store_id", storeSettings.id)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -1810,7 +1810,10 @@ async function loadOrders() {
       <td>${estado}
         <button class="btn-order-pdf" onclick="downloadOrderPDF(${Number(o.id)})" title="Descargar comprobante PDF">
           ${psIcon("card", 12)} PDF
-        </button>
+        </button>${o.token ? `
+        <a class="btn-order-pdf" href="pedido?t=${escapeHtml(o.token)}" target="_blank" title="Ver comprobante en línea" style="text-decoration:none;">
+          ${psIcon("eye", 12)} Ver
+        </a>` : ""}
       </td>
     </tr>`;
   }).join("");

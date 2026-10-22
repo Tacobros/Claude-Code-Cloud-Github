@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Pedido — ProductSpot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/brand/logo-icon.svg" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --coral: #e94560; --navy: #0f172a; --ink: #1f2937; --muted: #6b7280; --line: #e5e7eb; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(160deg, #0f172a 0%, #1a2440 100%);
+      min-height: 100vh;
+      padding: 28px 16px 48px;
+      color: var(--ink);
+    }
+    .sheet {
+      max-width: 520px; margin: 0 auto; background: #fff;
+      border-radius: 18px; overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,.35);
+    }
+    .sheet-head {
+      background: var(--navy); color: #f8fafc; padding: 22px 24px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    }
+    .sheet-head h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; letter-spacing: -0.02em; line-height: 1.2; }
+    .sheet-head small { display: block; color: #aab2c5; font-size: .76rem; font-weight: 400; margin-top: 3px; }
+    .store-logo { width: 42px; height: 42px; border-radius: 10px; object-fit: contain; background: #fff; flex-shrink: 0; }
+    .accent-line { height: 5px; background: var(--coral); }
+    .sheet-body { padding: 22px 24px; }
+    .order-meta { display: flex; justify-content: space-between; align-items: center; font-size: .78rem; color: var(--muted); margin-bottom: 18px; flex-wrap: wrap; gap: 6px; }
+    .status { font-weight: 700; border-radius: 99px; padding: 3px 11px; font-size: .7rem; }
+    .status.pending   { background: #fef3c7; color: #92400e; }
+    .status.confirmed { background: #dcfce7; color: #166534; }
+    .status.dismissed { background: #f3f4f6; color: #9ca3af; }
+    .item { padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .item:last-of-type { border-bottom: none; }
+    .item-row { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; font-size: .95rem; }
+    .item-row .price { white-space: nowrap; color: var(--ink); }
+    .item-opts { margin-top: 5px; font-size: .8rem; color: var(--muted); line-height: 1.55; }
+    .item-opts div::before { content: "› "; color: var(--coral); font-weight: 700; }
+    .total-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      border-top: 2px solid var(--navy); margin-top: 14px; padding-top: 14px;
+    }
+    .total-row span { font-weight: 700; }
+    .total-row strong { font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; color: var(--coral); letter-spacing: -0.02em; }
+    .actions { display: flex; gap: 10px; margin-top: 22px; }
+    .btn {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      border-radius: 10px; padding: 12px 14px; font-weight: 700; font-size: .85rem;
+      text-decoration: none; cursor: pointer; font-family: inherit; border: none;
+      transition: transform .18s cubic-bezier(.22,1,.36,1), background .18s;
+    }
+    .btn-print { background: var(--navy); color: #fff; }
+    .btn-print:hover { transform: translateY(-1px); }
+    .btn-cat { background: #f3f4f6; color: var(--ink); }
+    .btn-cat:hover { background: #e5e7eb; }
+    .sheet-foot {
+      border-top: 1px solid var(--line); margin-top: 22px; padding-top: 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      font-size: .7rem; color: var(--muted);
+    }
+    .ps-brand { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); text-decoration: none; }
+    .ps-brand b { color: var(--ink); font-weight: 700; }
+    .ps-brand b em { font-style: normal; color: var(--coral); }
+    .state { max-width: 520px; margin: 60px auto; text-align: center; color: #cbd5e1; font-size: .95rem; line-height: 1.6; }
+    .state a { color: #ffb454; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .sheet { box-shadow: none; border-radius: 0; max-width: none; }
+      .actions { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="state">Cargando pedido…</div>
+
+  <script src="supabase.js"></script>
+  <script>
+    const CURRENCY_SYMBOLS = {
+      GTQ: "Q", USD: "$", MXN: "$", HNL: "L", NIO: "C$", CRC: "₡", PAB: "B/.",
+      DOP: "RD$", COP: "$", PEN: "S/", CLP: "$", ARS: "$", BOB: "Bs", UYU: "$U",
+      PYG: "₲", BRL: "R$", EUR: "€",
+    };
+    function esc(v) {
+      return String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+    }
+
+    async function init() {
+      const app = document.getElementById("app");
+      const token = new URLSearchParams(location.search).get("t") || "";
+      const fail = () => {
+        app.className = "state";
+        app.innerHTML = `Este pedido no existe o el enlace está incompleto.<br/><a href="landing.html">Ir a ProductSpot →</a>`;
+      };
+      if (token.length < 20) { fail(); return; }
+
+      const { data, error } = await sb.rpc("get_order_public", { p_token: token });
+      if (error || !data || !data.order) { fail(); return; }
+      const o = data.order;
+      const st = data.store || {};
+      const sym = CURRENCY_SYMBOLS[o.currency] || "";
+      const accent = /^#[0-9a-fA-F]{6}$/.test(st.accent_color || "") ? st.accent_color : "#e94560";
+      const fecha = new Date(o.created_at).toLocaleString("es", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      const estado = o.status === "confirmed"
+        ? '<span class="status confirmed">✓ Confirmado</span>'
+        : o.status === "dismissed"
+          ? '<span class="status dismissed">Descartado</span>'
+          : '<span class="status pending">Pendiente</span>';
+      const items = (Array.isArray(o.items) ? o.items : []).map((it) => `
+        <div class="item">
+          <div class="item-row">
+            <span>${Number(it.q) || 1}× ${esc(it.n || "Producto")}</span>
+            ${it.p != null ? `<span class="price">${esc(sym)}${esc(it.p)} c/u</span>` : ""}
+          </div>
+          ${it.v ? `<div class="item-opts">${String(it.v).split(" · ").map((part) => `<div>${esc(part)}</div>`).join("")}</div>` : ""}
+        </div>`).join("");
+
+      document.title = `Pedido #${o.id} — ${st.name || "ProductSpot"}`;
+      app.className = "";
+      app.innerHTML = `
+        <div class="sheet">
+          <div class="sheet-head">
+            <h1>${esc(st.name || "Mi tienda")}<small>Comprobante de pedido</small></h1>
+            ${st.logo_url ? `<img class="store-logo" src="${esc(st.logo_url)}" alt="" />` : ""}
+          </div>
+          <div class="accent-line" style="background:${esc(accent)};"></div>
+          <div class="sheet-body">
+            <div class="order-meta"><span>Pedido #${esc(o.id)} · ${esc(fecha)}</span>${estado}</div>
+            ${items || '<p style="color:var(--muted);font-size:.85rem;">Sin productos.</p>'}
+            <div class="total-row"><span>Total</span><strong>${esc(sym)}${esc(o.total ?? "—")} ${esc(o.currency || "")}</strong></div>
+            <div class="actions">
+              <button class="btn btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
+              ${st.slug ? `<a class="btn btn-cat" href="index.html?s=${esc(st.slug)}">Ver catálogo</a>` : ""}
+            </div>
+            <div class="sheet-foot">
+              <a class="ps-brand" href="landing.html" target="_blank">
+                <svg width="16" height="16" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="9" fill="#0f172a"/><rect x="2" y="34" width="28" height="28" rx="9" fill="#0f172a"/><rect x="34" y="34" width="28" height="28" rx="9" fill="#0f172a"/><circle cx="48" cy="16" r="14" fill="#e94560"/></svg>
+                Hecho con <b>Product<em>Spot</em></b>
+              </a>
+              ${st.whatsapp ? `<span>WhatsApp: +${esc(st.whatsapp)}</span>` : ""}
+            </div>
+          </div>
+        </div>`;
+    }
+    init();
+  </script>
+</body>
+</html>

@@ -1919,7 +1919,7 @@ function loadPlanPage() {
       </div>`;
   }).join('');
 
-  const emailNote = `<p class="plan-manage-link">El pago se procesa de forma segura con <strong>Recurrente</strong> en quetzales. <strong>Usa el mismo correo de tu cuenta ProductSpot</strong> al pagar: así tu plan se activa automáticamente.</p>`;
+  const emailNote = `<p class="plan-manage-link">El pago se procesa de forma segura con <strong>Recurrente</strong>, en quetzales y con cobro mensual automático. Tu plan se activa solo al confirmarse el pago.</p>`;
   const manageLink = currentPlan !== 'free'
     ? `<p class="plan-manage-link">¿Necesitas cancelar o cambiar tu método de pago? Administra tu suscripción en <a href="https://app.recurrente.com" target="_blank" rel="noopener">app.recurrente.com</a> con el correo con el que pagaste.</p>`
     : '';
@@ -1927,19 +1927,22 @@ function loadPlanPage() {
   el.innerHTML = `<div class="plan-grid">${cards}</div>${emailNote}${manageLink}`;
 }
 
-// Enlaces de pago de Recurrente (suscripción mensual en GTQ). El webhook
-// recurrente-webhook activa el plan al confirmarse el pago, haciendo match
-// por el correo del comprador.
+// El checkout lo crea el servidor (Edge Function create-recurrente-checkout)
+// ya vinculado al usuario: el webhook activa el plan exacto al confirmarse el
+// pago. Si la función falla, el enlace de pago público queda de respaldo
+// (ahí el match es por correo del comprador).
 const RECURRENTE_PLAN_LINKS = {
   starter: 'https://app.recurrente.com/s/productspot/productspot-starter',
   pro: 'https://app.recurrente.com/s/productspot/productspot-pro',
 };
 
-function upgradePlan(plan) {
-  const link = RECURRENTE_PLAN_LINKS[plan];
-  if (!link) return;
+async function upgradePlan(plan) {
+  if (!RECURRENTE_PLAN_LINKS[plan]) return;
   showToast('Abriendo pago seguro…');
-  window.location.href = link;
+  const { data, error } = await sb.functions.invoke('create-recurrente-checkout', {
+    body: { plan },
+  });
+  window.location.href = (!error && data?.url) ? data.url : RECURRENTE_PLAN_LINKS[plan];
 }
 
 // ===== INICIO =====

@@ -36,11 +36,20 @@ Deno.serve(async (req) => {
       e.email || e.data?.customer?.email || "",
   ).trim().toLowerCase();
 
-  // El producto puede venir en distintas rutas según el evento; con los ids
-  // conocidos basta con buscarlos en el payload completo
-  let plan: string | null = null;
-  for (const [pid, p] of Object.entries(PLAN_BY_PRODUCT)) {
-    if (raw.includes(pid)) plan = p;
+  // Metadata del checkout creado por create-recurrente-checkout: identifica
+  // al usuario y el plan sin depender del correo con el que pagó
+  const meta = e.checkout?.metadata || e.metadata || e.data?.metadata || {};
+  const psUserId = typeof meta.ps_user_id === "string" && meta.ps_user_id.length >= 32
+    ? meta.ps_user_id
+    : null;
+
+  let plan: string | null = ["starter", "pro"].includes(meta.plan) ? meta.plan : null;
+  if (!plan) {
+    // El producto puede venir en distintas rutas según el evento; con los ids
+    // conocidos basta con buscarlos en el payload completo
+    for (const [pid, p] of Object.entries(PLAN_BY_PRODUCT)) {
+      if (raw.includes(pid)) plan = p;
+    }
   }
 
   const isSuccess = /succeeded|paid|completed/i.test(type);
@@ -53,13 +62,20 @@ Deno.serve(async (req) => {
 
   let result = "logged";
   try {
-    if (email && isSuccess && plan) {
-      const { data: uid } = await admin.rpc("get_user_id_by_email", { p_email: email });
+    if (isSuccess && plan && (psUserId || email)) {
+      let uid: string | null = psUserId;
+      if (!uid && email) {
+        const { data } = await admin.rpc("get_user_id_by_email", { p_email: email });
+        uid = data;
+      }
       if (uid) {
-        const { error } = await admin.from("stores")
+        const { data: updated, error } = await admin.from("stores")
           .update({ plan, status: "active" })
-          .eq("user_id", uid);
-        result = error ? `update_error: ${error.message}` : `plan_applied: ${plan}`;
+          .eq("user_id", uid)
+          .select("id");
+        result = error
+          ? `update_error: ${error.message}`
+          : (updated && updated.length ? `plan_applied: ${plan}` : "no_store_match");
       } else {
         result = "no_user_match";
       }

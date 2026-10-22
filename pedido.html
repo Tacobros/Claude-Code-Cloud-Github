@@ -104,7 +104,7 @@
       const token = new URLSearchParams(location.search).get("t") || "";
       const fail = () => {
         app.className = "state";
-        app.innerHTML = `Este pedido no existe o el enlace está incompleto.<br/><a href="landing.html">Ir a ProductSpot →</a>`;
+        app.innerHTML = `Este pedido no existe o el enlace está incompleto.<br/><a href="/">Ir a ProductSpot →</a>`;
       };
       if (token.length < 20) { fail(); return; }
 
@@ -155,7 +155,7 @@
               ${st.slug ? `<a class="btn btn-cat" href="index.html?s=${esc(st.slug)}">Ver catálogo</a>` : ""}
             </div>
             <div class="sheet-foot">
-              <a class="ps-brand" href="landing.html" target="_blank">
+              <a class="ps-brand" href="/" target="_blank">
                 <svg width="16" height="16" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="9" fill="#0f172a"/><rect x="2" y="34" width="28" height="28" rx="9" fill="#0f172a"/><rect x="34" y="34" width="28" height="28" rx="9" fill="#0f172a"/><circle cx="48" cy="16" r="14" fill="#e94560"/></svg>
                 Hecho con <b>Product<em>Spot</em></b>
               </a>

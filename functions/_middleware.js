@@ -42,12 +42,31 @@ function injectMeta(html, { title, description, image, url }) {
     .replace("</head>", `  ${tags}\n</head>`);
 }
 
-export async function onRequest({ request, next }) {
+// ¿El hostname apunta a la tienda de un cliente? (misma regla que app.js:
+// cliente.productspot.pages.dev = 4 partes; cliente.productspot.com = 3)
+function hasStoreSubdomain(hostname) {
+  const parts = hostname.split(".");
+  if (hostname.endsWith(".pages.dev")) return parts.length >= 4 && parts[0] !== "www";
+  return parts.length >= 3 && parts[0] !== "www";
+}
+
+export async function onRequest({ request, next, env }) {
   const url = new URL(request.url);
 
-  // Only intercept HTML requests for index.html (or root paths with ?s=)
   const isIndex = url.pathname === "/" || url.pathname === "/index.html";
   const slug    = url.searchParams.get("s");
+
+  // La landing ES la página principal: canonicaliza /landing.html → /
+  if (url.pathname === "/landing.html" || url.pathname === "/landing") {
+    if (!hasStoreSubdomain(url.hostname)) {
+      return Response.redirect(`${url.origin}/${url.search}`, 301);
+    }
+  }
+
+  // Raíz sin tienda: servir la landing directamente (sin cambiar la URL)
+  if (isIndex && !slug && !hasStoreSubdomain(url.hostname)) {
+    return env.ASSETS.fetch(new URL("/landing.html", url.origin));
+  }
 
   if (!isIndex || !slug) return next();
 

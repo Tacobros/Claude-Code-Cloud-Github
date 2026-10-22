@@ -325,7 +325,7 @@ function showSuccess(immediate, slug) {
   const msg = document.getElementById("successMsg");
   if (immediate) {
     if (selectedPlan && selectedPlan !== 'free') {
-      msg.textContent = `Tu catálogo "${slug}" está listo. Te redirigimos a PayPal para completar tu suscripción ${selectedPlan}…`;
+      msg.textContent = `Tu catálogo "${slug}" está listo. Te llevamos al pago seguro para activar tu plan ${selectedPlan}…`;
       setTimeout(() => {
         window.location.href = `admin.html?checkout=${selectedPlan}`;
       }, 2000);

@@ -1394,3 +1394,12 @@ body {
 
 .opt-delta { font-size: .72em; font-weight: 700; opacity: .75; margin-left: 2px; }
 .price-from { font-size: .62em; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── Barra de pedido temporal ── */
+.cart-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.cart-panel-head h3 { margin: 0; }
+.btn-empty-cart {
+  background: none; border: none; color: var(--gray-400); font-size: .78rem; font-weight: 600;
+  cursor: pointer; padding: 4px 6px; text-decoration: underline; font-family: inherit;
+}
+.btn-empty-cart:hover { color: #c22844; }

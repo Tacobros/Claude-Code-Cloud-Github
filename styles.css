@@ -1383,3 +1383,11 @@ body {
 .og-missing { color: #e94560 !important; animation: og-shake .4s ease; }
 @keyframes og-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 @media (prefers-reduced-motion: reduce) { .og-missing { animation: none; } }
+
+.choose-hint-opt { background: rgba(148,163,184,.14); color: #94a3b8; }
+.modal-size[data-mode="remove"].selected {
+  text-decoration: line-through;
+  background: rgba(148,163,184,.18);
+  border-color: #64748b;
+  color: #94a3b8;
+}

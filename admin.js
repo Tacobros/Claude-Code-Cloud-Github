@@ -586,21 +586,30 @@ function renderOptionGroups() {
     list.innerHTML = "";
     return;
   }
-  list.innerHTML = productOptionGroups.map((g, i) => `
+  list.innerHTML = productOptionGroups.map((g, i) => {
+    const isRemove = g.mode === "remove";
+    return `
     <div class="og-row">
       <div class="og-row-top">
-        <input type="text" placeholder="Nombre del grupo (ej: Bebida)" maxlength="30"
+        <input type="text" placeholder="${isRemove ? "Nombre del grupo (ej: Ingredientes)" : "Nombre del grupo (ej: Bebida)"}" maxlength="30"
           value="${escapeHtml(g.label || "")}" oninput="updateOptionGroup(${i},'label',this.value)" />
-        <label class="og-choose">Elige
-          <input type="number" min="1" max="10" value="${Number(g.choose) || 1}"
-            oninput="updateOptionGroup(${i},'choose',this.value)" />
-        </label>
         <button type="button" class="og-del" onclick="removeOptionGroup(${i})" title="Eliminar grupo" aria-label="Eliminar grupo">✕</button>
       </div>
-      <input type="text" placeholder="Opciones separadas por coma (ej: Coca-Cola, Fresa, Horchata)" maxlength="200"
+      <div class="og-row-top">
+        <select class="og-mode" onchange="updateOptionGroupMode(${i}, this.value)">
+          <option value="pick" ${isRemove ? "" : "selected"}>El cliente elige</option>
+          <option value="remove" ${isRemove ? "selected" : ""}>El cliente puede quitar (ej: ingredientes)</option>
+        </select>
+        ${isRemove ? "" : `<label class="og-choose">Elige
+          <input type="number" min="1" max="10" value="${Number(g.choose) || 1}"
+            oninput="updateOptionGroup(${i},'choose',this.value)" />
+        </label>`}
+      </div>
+      <input type="text" placeholder="${isRemove ? "Ingredientes separados por coma (ej: Pepinillos, Cebolla, Tomate)" : "Opciones separadas por coma (ej: Coca-Cola, Fresa, Horchata)"}" maxlength="200"
         value="${escapeHtml(g.optionsText ?? (g.options || []).join(", "))}" oninput="updateOptionGroup(${i},'optionsText',this.value)" />
     </div>
-  `).join("");
+  `;
+  }).join("");
 }
 
 function updateOptionGroup(i, key, value) {
@@ -609,6 +618,12 @@ function updateOptionGroup(i, key, value) {
 
 function removeOptionGroup(i) {
   productOptionGroups.splice(i, 1);
+  renderOptionGroups();
+}
+
+function updateOptionGroupMode(i, mode) {
+  if (!productOptionGroups[i]) return;
+  productOptionGroups[i].mode = mode;
   renderOptionGroups();
 }
 
@@ -624,7 +639,8 @@ function cleanOptionGroups() {
       const options = String(g.optionsText ?? (g.options || []).join(","))
         .split(",").map((s) => s.trim()).filter(Boolean).slice(0, 20);
       const choose = Math.max(1, Math.min(10, parseInt(g.choose) || 1));
-      return { label: String(g.label || "").trim(), choose: Math.min(choose, options.length || 1), options };
+      const mode = g.mode === "remove" ? "remove" : "pick";
+      return { label: String(g.label || "").trim(), mode, choose: mode === "remove" ? 0 : Math.min(choose, options.length || 1), options };
     })
     .filter((g) => g.label && g.options.length > 0);
 }
@@ -662,7 +678,8 @@ function openEditModal(id) {
   document.getElementById("pSizesText").value = (p.sizes || []).join(", ");
 
   productOptionGroups = (p.option_groups || []).map((g) => ({
-    label: g.label || "", choose: g.choose || 1, optionsText: (g.options || []).join(", "),
+    label: g.label || "", mode: g.mode === "remove" ? "remove" : "pick",
+    choose: g.choose || 1, optionsText: (g.options || []).join(", "),
   }));
   renderOptionGroups();
 

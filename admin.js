@@ -1625,6 +1625,38 @@ function exportCSV() {
 
 // ===== PLAN PAGE =====
 // ===== ANALYTICS =====
+// Rango del histórico de estadísticas (Pro). Por defecto: últimos 30 días.
+let anRange = { days: 30, from: null, to: null };
+
+document.querySelectorAll(".an-rbtn[data-days]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    anRange = { days: parseInt(btn.dataset.days), from: null, to: null };
+    document.querySelectorAll(".an-rbtn").forEach((b) => b.classList.toggle("active", b === btn));
+    loadAnalytics();
+  });
+});
+
+document.getElementById("anApply")?.addEventListener("click", () => {
+  const from = document.getElementById("anFrom").value;
+  const to = document.getElementById("anTo").value;
+  if (!from || !to || from > to) { showToast("Elige un rango de fechas válido", "error"); return; }
+  anRange = { days: null, from, to };
+  document.querySelectorAll(".an-rbtn[data-days]").forEach((b) => b.classList.remove("active"));
+  loadAnalytics();
+});
+
+function anBounds() {
+  if (anRange.from && anRange.to) {
+    const since = new Date(`${anRange.from}T00:00:00`);
+    const until = new Date(`${anRange.to}T23:59:59`);
+    return { since, until, label: `${since.toLocaleDateString("es", { day: "2-digit", month: "short" })} — ${until.toLocaleDateString("es", { day: "2-digit", month: "short", year: "numeric" })}` };
+  }
+  const days = anRange.days || 30;
+  const until = new Date();
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  return { since, until, label: `Últimos ${days} días` };
+}
+
 async function loadAnalytics() {
   if (currentPlan === 'free') {
     document.getElementById('statViews').textContent = '—';
@@ -1646,13 +1678,24 @@ async function loadAnalytics() {
     return;
   }
 
-  document.getElementById('analyticsRange').textContent = 'Últimos 30 días';
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  // El filtro por fechas es Pro; Starter ve los últimos 30 días fijos
+  const isPro = currentPlan === 'pro';
+  const controls = document.getElementById('anRangeControls');
+  const proHint = document.getElementById('anProHint');
+  if (controls) controls.style.display = isPro ? 'flex' : 'none';
+  if (proHint) proHint.style.display = (!isPro && currentPlan === 'starter') ? '' : 'none';
+  if (!isPro) anRange = { days: 30, from: null, to: null };
+
+  const bounds = anBounds();
+  document.getElementById('analyticsRange').textContent = bounds.label;
+  const since = bounds.since.toISOString();
+  const until = bounds.until.toISOString();
 
   const { data: events } = await sb
     .from("store_events")
     .select("event_type, product_id, created_at")
-    .gte("created_at", since);
+    .gte("created_at", since)
+    .lte("created_at", until);
 
   if (!events) return;
 
@@ -1675,6 +1718,7 @@ async function loadAnalytics() {
       .select("total, created_at, status")
       .eq("store_id", storeSettings.id)
       .gte("created_at", since)
+      .lte("created_at", until)
       .limit(1000);
     orders = od || [];
   }
@@ -1694,7 +1738,7 @@ async function loadAnalytics() {
     .concat(activos.map((o) => new Date(o.created_at)));
   renderHourChart(intentDates);
   renderDayChart(intentDates);
-  renderSeriesChart(events);
+  renderSeriesChart(events, bounds);
 
   // Top products
   const counts = {};
@@ -1759,33 +1803,40 @@ function renderDayChart(dates) {
   })), "var(--accent)");
 }
 
-function renderSeriesChart(events) {
+function renderSeriesChart(events, bounds) {
   const el = document.getElementById("chartSeries");
   if (!el) return;
+  const start = new Date(bounds.since); start.setHours(0, 0, 0, 0);
+  const end = new Date(bounds.until); end.setHours(0, 0, 0, 0);
+  const totalDays = Math.max(1, Math.round((end - start) / 86400000) + 1);
+  // Diario hasta 35 días; después, agrupado por semana
+  const bucketDays = totalDays <= 35 ? 1 : 7;
   const days = [];
-  for (let i = 13; i >= 0; i--) {
-    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
-    days.push({ key: d.toDateString(), label: d.toLocaleDateString("es", { day: "2-digit", month: "short" }), views: 0, wa: 0 });
+  for (let t = new Date(start); t <= end; t.setDate(t.getDate() + bucketDays)) {
+    const d = new Date(t);
+    days.push({ start: d.getTime(), label: d.toLocaleDateString("es", { day: "2-digit", month: "short" }), views: 0, wa: 0 });
   }
-  const idx = Object.fromEntries(days.map((d, i) => [d.key, i]));
+  const bucketMs = bucketDays * 86400000;
   events.forEach((e) => {
-    const k = new Date(e.created_at).toDateString();
-    if (!(k in idx)) return;
-    if (e.event_type === "catalog_view") days[idx[k]].views += 1;
-    if (e.event_type === "whatsapp_click") days[idx[k]].wa += 1;
+    const ts = new Date(e.created_at).getTime();
+    const i = Math.floor((ts - start.getTime()) / bucketMs);
+    if (i < 0 || i >= days.length) return;
+    if (e.event_type === "catalog_view") days[i].views += 1;
+    if (e.event_type === "whatsapp_click") days[i].wa += 1;
   });
   const max = Math.max(1, ...days.map((d) => Math.max(d.views, d.wa)));
   if (!days.some((d) => d.views > 0 || d.wa > 0)) {
     el.innerHTML = '<p class="an-empty">Aún no hay suficiente actividad.</p>';
     return;
   }
+  const labelEvery = Math.max(1, Math.ceil(days.length / 8));
   el.innerHTML = days.map((d, i) => `
-    <div class="an-col" title="${escapeHtml(d.label)}: ${d.views} vistas, ${d.wa} clics">
+    <div class="an-col" title="${escapeHtml(d.label)}${bucketDays > 1 ? " (semana)" : ""}: ${d.views} vistas, ${d.wa} clics">
       <div class="an-bars">
         <div class="an-bar" style="height:${Math.round((d.views / max) * 100)}%;background:#5b8ab5;"></div>
         <div class="an-bar" style="height:${Math.round((d.wa / max) * 100)}%;background:#25d366;"></div>
       </div>
-      <div class="an-x">${i % 2 === 0 ? escapeHtml(d.label.split(" ")[0]) : ""}</div>
+      <div class="an-x">${i % labelEvery === 0 ? escapeHtml(d.label) : ""}</div>
     </div>`).join("");
 }
 

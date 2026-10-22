@@ -1258,3 +1258,18 @@ tr.row-selected { background: #0d2240 !important; }
   padding: 14px 16px; margin-top: 14px; font-size: .82rem; color: var(--gray-600); line-height: 1.6;
 }
 .wizard-preview strong { color: var(--gray-800); }
+
+/* ── Rango de fechas en Estadísticas (Pro) ── */
+.an-range { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+.an-rbtn {
+  background: var(--white, #fff); border: 1.5px solid var(--gray-200); border-radius: 99px;
+  padding: 7px 14px; font-size: .78rem; font-weight: 700; color: var(--gray-600);
+  cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
+}
+.an-rbtn:hover { border-color: #e94560; }
+.an-rbtn.active { background: #e94560; border-color: #e94560; color: #fff; }
+.an-custom { display: inline-flex; align-items: center; gap: 6px; }
+.an-custom input[type=date] {
+  border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 6px 8px;
+  font-size: .78rem; font-family: inherit; color: var(--gray-800, #1f2937);
+}

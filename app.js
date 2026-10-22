@@ -815,6 +815,7 @@ function cartStorageKey() { return `ps_cart_${storeDbId || "x"}`; }
 function loadCart() {
   try { cart = JSON.parse(sessionStorage.getItem(cartStorageKey())) || []; } catch (_) { cart = []; }
   if (!Array.isArray(cart)) cart = [];
+  loadCustomer();
   renderCartUI();
 }
 
@@ -879,6 +880,37 @@ function selectPayMethod(btn) {
   renderCartUI();
 }
 
+// ── Datos del cliente final (nombre, teléfono, dirección de entrega) ──
+function custStorageKey() { return `ps_cust_${storeDbId || "x"}`; }
+
+function getCustomer() {
+  return {
+    name: (document.getElementById("custName")?.value || "").trim(),
+    phone: (document.getElementById("custPhone")?.value || "").trim(),
+    address: (document.getElementById("custAddress")?.value || "").trim(),
+  };
+}
+
+function loadCustomer() {
+  let c = {};
+  try { c = JSON.parse(sessionStorage.getItem(custStorageKey())) || {}; } catch (_) {}
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+  set("custName", c.name); set("custPhone", c.phone); set("custAddress", c.address);
+}
+
+function saveCustomer() {
+  try { sessionStorage.setItem(custStorageKey(), JSON.stringify(getCustomer())); } catch (_) {}
+}
+
+["custName", "custPhone", "custAddress"].forEach((id) => {
+  document.getElementById(id)?.addEventListener("input", (e) => {
+    e.target.classList.remove("field-missing");
+    saveCustomer();
+    const sendBtn = document.getElementById("btnSendCart");
+    if (sendBtn) sendBtn.href = cartWaLink();
+  });
+});
+
 // Token del comprobante: viaja en el mensaje y se guarda con el pedido
 function genOrderToken() {
   try { return crypto.randomUUID().replace(/-/g, ""); }
@@ -930,6 +962,12 @@ function cartWaLink() {
   });
   let msg = `Hola! Vi el catálogo de *${storeName}* y quiero hacer este pedido:\n\n${lines.join("\n\n")}\n──────────\n*Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
   if (selectedPayMethod) msg += `\nPago: *${selectedPayMethod}*`;
+  const c = getCustomer();
+  const datos = [];
+  if (c.name) datos.push(`Nombre: ${c.name}`);
+  if (c.phone) datos.push(`Teléfono: ${c.phone}`);
+  if (c.address) datos.push(`Entregar en: ${c.address}`);
+  if (datos.length) msg += `\n\n${datos.join("\n")}`;
   if (storeDbId) msg += `\n\nVer pedido completo:\n${receiptUrl(getCartToken())}`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
@@ -1009,6 +1047,13 @@ document.getElementById("cartOverlay")?.addEventListener("click", (e) => {
 });
 document.getElementById("btnSendCart")?.addEventListener("click", (e) => {
   if (cart.length === 0) return;
+  const cust = getCustomer();
+  if (!cust.name) {
+    e.preventDefault();
+    const field = document.getElementById("custName");
+    if (field) { field.classList.add("field-missing"); field.scrollIntoView({ block: "nearest", behavior: "smooth" }); field.focus(); }
+    return;
+  }
   if (storePayMethods.length && !selectedPayMethod) {
     e.preventDefault();
     const lbl = document.getElementById("cartPayLabel");
@@ -1023,6 +1068,9 @@ document.getElementById("btnSendCart")?.addEventListener("click", (e) => {
       total: cartTotal(),
       currency: storeCurrency,
       payment_method: selectedPayMethod || null,
+      customer_name: cust.name.slice(0, 120) || null,
+      customer_phone: cust.phone.slice(0, 30) || null,
+      customer_address: cust.address.slice(0, 300) || null,
     }).then(() => {});
     logEvent("whatsapp_click");
   }

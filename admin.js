@@ -2040,7 +2040,7 @@ async function loadOrders() {
   if (!storeSettings?.id) { el.innerHTML = `<div class="loading">Guarda la configuración de tu tienda primero.</div>`; return; }
   el.innerHTML = `<div class="loading">Cargando pedidos...</div>`;
   const { data, error } = await sb.from("orders")
-    .select("id, items, total, currency, created_at, status, token, payment_method")
+    .select("id, items, total, currency, created_at, status, token, payment_method, customer_name, customer_phone, customer_address")
     .eq("store_id", storeSettings.id)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -2058,6 +2058,12 @@ async function loadOrders() {
     const fecha = new Date(o.created_at).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
     const sym = CURRENCY_SYMBOLS[o.currency] || "";
     const pago = o.payment_method ? `<div style="font-size:.72rem;color:#6b7280;margin-top:4px;">Pago: <strong>${escapeHtml(o.payment_method)}</strong></div>` : "";
+    const clienteParts = [];
+    if (o.customer_name) clienteParts.push(`<strong>${escapeHtml(o.customer_name)}</strong>`);
+    if (o.customer_phone) clienteParts.push(escapeHtml(o.customer_phone));
+    const cliente = (clienteParts.length || o.customer_address)
+      ? `<div style="font-size:.72rem;color:#6b7280;margin-top:4px;">${clienteParts.length ? `Cliente: ${clienteParts.join(" · ")}` : ""}${o.customer_address ? `${clienteParts.length ? "<br/>" : ""}Entrega: ${escapeHtml(o.customer_address)}` : ""}</div>`
+      : "";
     const status = o.status || "pending";
     const estado = status === "confirmed"
       ? `<span class="order-status confirmed">✓ Confirmada</span>`
@@ -2070,7 +2076,7 @@ async function loadOrders() {
            </div>`;
     return `<tr class="order-row">
       <td class="order-date">${escapeHtml(fecha)}</td>
-      <td><ul class="order-items">${list || "<li>—</li>"}</ul>${pago}</td>
+      <td><ul class="order-items">${list || "<li>—</li>"}</ul>${cliente}${pago}</td>
       <td class="order-total">${o.total != null ? `${sym}${escapeHtml(o.total)} ${escapeHtml(o.currency || "")}` : "—"}</td>
       <td>${estado}
         <button class="btn-order-pdf" onclick="downloadOrderPDF(${Number(o.id)})" title="Descargar comprobante PDF">
@@ -2158,6 +2164,15 @@ function downloadOrderPDF(orderId) {
   doc.text(estadoTxt, W - M, y, { align: "right" });
   y += 5;
   if (o.payment_method) { doc.text(`Método de pago: ${o.payment_method}`, M, y); y += 5; }
+  const custLines = [];
+  if (o.customer_name) custLines.push(`Cliente: ${o.customer_name}${o.customer_phone ? ` · Tel: ${o.customer_phone}` : ""}`);
+  else if (o.customer_phone) custLines.push(`Tel: ${o.customer_phone}`);
+  if (o.customer_address) custLines.push(`Entregar en: ${o.customer_address}`);
+  custLines.forEach((line) => {
+    const wrapped = doc.splitTextToSize(line, W - M * 2);
+    doc.text(wrapped, M, y);
+    y += wrapped.length * 4.6;
+  });
   y += 4;
 
   // Ítems

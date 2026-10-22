@@ -1188,3 +1188,36 @@ tr.row-selected { background: #0d2240 !important; }
 .og-choose input { width: 54px; }
 .og-del { background: none; border: none; color: var(--gray-400, #9ca3af); cursor: pointer; font-size: .85rem; padding: 4px; }
 .og-del:hover { color: #c22844; }
+
+/* ── Gráficas de estadísticas (barras CSS) ── */
+.an-chart { display: flex; align-items: flex-end; gap: 3px; height: 130px; margin-top: 16px; }
+.an-col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+.an-bars { flex: 1; display: flex; align-items: flex-end; gap: 2px; }
+.an-bar { flex: 1; border-radius: 3px 3px 0 0; min-height: 2px; background: var(--accent); }
+.an-x { font-size: .58rem; color: #6b7280; text-align: center; margin-top: 5px; white-space: nowrap; overflow: hidden; }
+.an-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: -1px; }
+.an-empty { color: #6b7280; font-size: .85rem; padding: 30px 0; text-align: center; width: 100%; align-self: center; }
+
+/* ── Pedidos: estado + acciones ── */
+.order-status { font-size: .72rem; font-weight: 700; border-radius: 99px; padding: 3px 10px; white-space: nowrap; }
+.order-status.pending   { background: #fef3c7; color: #92400e; }
+.order-status.confirmed { background: #dcfce7; color: #166534; }
+.order-status.dismissed { background: var(--gray-100); color: var(--gray-400); }
+.order-actions { display: flex; gap: 6px; margin-top: 6px; }
+.btn-order-ok, .btn-order-no {
+  border: none; border-radius: 7px; padding: 5px 10px; font-size: .72rem; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.btn-order-ok { background: #16a34a; color: #fff; }
+.btn-order-ok:hover { background: #15803d; }
+.btn-order-no { background: var(--gray-100); color: var(--gray-600); }
+.btn-order-no:hover { background: var(--gray-200); }
+
+/* ── Alerta de stock bajo (Inicio) ── */
+.low-stock-card {
+  background: #fff7ed; border: 1px solid #fed7aa; border-radius: 14px;
+  padding: 16px 20px; margin-bottom: 20px;
+}
+.low-stock-card h4 { margin: 0 0 8px; font-size: .9rem; color: #9a3412; display: flex; align-items: center; gap: 8px; }
+.low-stock-card ul { margin: 0; padding-left: 18px; font-size: .83rem; color: #7c2d12; }
+.low-stock-card li { margin-bottom: 3px; }

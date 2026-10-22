@@ -329,11 +329,14 @@ function renderProducts() {
 
   grid.innerHTML = filtered.map((p, i) => {
     const hasGroups = (p.option_groups || []).length > 0;
+    const soldOut = p.stock === 0;
+    const lowStock = p.stock != null && p.stock > 0 && p.stock <= 3;
     const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
     return `
       <div class="product-card" onclick="openModal(${Number(p.id)})" style="--i:${i}">
         ${p.badge ? `<div class="product-badge ${escapeHtml(p.badge)}">${escapeHtml(p.badgeText)}</div>` : ""}
         <div class="product-image">
+          ${soldOut ? '<span class="stock-chip out">Agotado</span>' : (lowStock ? `<span class="stock-chip low">¡Quedan ${p.stock}!</span>` : "")}
           ${thumb
             ? `<img src="${escapeHtml(thumb)}" alt="${escapeHtml(p.name)}" class="product-img" loading="lazy" />`
             : `<div class="product-img-placeholder">${psIcon("image", 34)}</div>`}
@@ -347,11 +350,11 @@ function renderProducts() {
           </div>
           <div class="product-footer">
             <div class="product-price">${hasSurcharges(p) ? '<small class="price-from">Desde</small> ' : ""}${escapeHtml(p.price)} <span>${escapeHtml(storeCurrency)}</span></div>
-            <button class="btn-add" title="Agregar al pedido" aria-label="Agregar al pedido" onclick="event.stopPropagation(); addToCart(${Number(p.id)}, null, this)">+</button>
-            <a class="btn-ask" href="${hasGroups ? "#" : escapeHtml(waLink(p))}" ${hasGroups ? "" : 'target="_blank"'} onclick="event.stopPropagation(); ${hasGroups ? `openModal('${p.id}'); return false;` : `trackOrder(${Number(p.id)}, null)`}">
+            ${soldOut ? "" : `<button class="btn-add" title="Agregar al pedido" aria-label="Agregar al pedido" onclick="event.stopPropagation(); addToCart(${Number(p.id)}, null, this)">+</button>`}
+            ${soldOut ? '<span class="btn-ask sold-out-label">Agotado</span>' : `<a class="btn-ask" href="${hasGroups ? "#" : escapeHtml(waLink(p))}" ${hasGroups ? "" : 'target="_blank"'} onclick="event.stopPropagation(); ${hasGroups ? `openModal('${p.id}'); return false;` : `trackOrder(${Number(p.id)}, null)`}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               Pedir
-            </a>
+            </a>`}
           </div>
         </div>
       </div>
@@ -444,7 +447,7 @@ function toggleOpt(gi, oi, btn) {
 function updateModalSelection() {
   const p = window._currentProduct;
   if (!p) return;
-  const ready = groupsComplete(p);
+  const ready = groupsComplete(p) && p.stock !== 0;
   const unit = unitPrice(p);
   const priceText = `${currencySymbol()}${unit}`;
   const priceEl = document.getElementById("modalPriceVal");
@@ -480,7 +483,7 @@ function trackOrder(productId, sel, unit) {
   const u = unit != null ? unit : p.priceNum;
   sb.from("orders").insert({
     store_id: storeDbId,
-    items: [{ n: p.name, q: 1, v: sel || null, p: u }],
+    items: [{ id: p.id, n: p.name, q: 1, v: sel || null, p: u }],
     total: u,
     currency: storeCurrency,
   }).then(() => {});
@@ -535,6 +538,7 @@ function openModal(id) {
     <div class="modal-body">
       <div class="modal-league">${escapeHtml(p.league)}</div>
       <div class="modal-name">${escapeHtml(p.name)}</div>
+      ${p.stock === 0 ? '<div class="modal-soldout">Agotado por el momento</div>' : (p.stock != null && p.stock <= 3 ? `<div class="modal-lowstock">¡Quedan solo ${p.stock}!</div>` : "")}
       <div class="modal-desc">${escapeHtml(p.desc)}</div>
       ${sizesHtml}
       ${groupsHtml}
@@ -558,6 +562,7 @@ function openModal(id) {
   window._currentProduct = p;
   updateModalSelection();
   document.getElementById("modalWaBtn")?.addEventListener("click", (e) => {
+    if (p.stock === 0) { e.preventDefault(); return; }
     if (!groupsComplete(p)) { e.preventDefault(); flashIncompleteGroups(); return; }
     trackOrder(p.id, selectionText(p) || null, unitPrice(p));
   });
@@ -805,6 +810,7 @@ function saveCart() {
 function addToCart(productId, sel = null, btnEl = null, unit = null) {
   const p = liveProducts.find((x) => String(x.id) === String(productId));
   if (!p) return;
+  if (p.stock === 0) return; // agotado
   if ((p.option_groups || []).length > 0 && sel == null) { openModal(p.id); return; }
   const key = `${p.id}|${sel || ""}`;
   const existing = cart.find((i) => i.key === key);
@@ -824,6 +830,7 @@ function addToCart(productId, sel = null, btnEl = null, unit = null) {
 function addToCartFromModal(btnEl) {
   const p = window._currentProduct;
   if (!p) return;
+  if (p.stock === 0) return;
   if (!groupsComplete(p)) { flashIncompleteGroups(); return; }
   const sel = selectionText(p);
   addToCart(p.id, sel || null, null, unitPrice(p));
@@ -938,7 +945,7 @@ document.getElementById("btnSendCart")?.addEventListener("click", () => {
   if (storeDbId) {
     sb.from("orders").insert({
       store_id: storeDbId,
-      items: cart.map((i) => ({ n: i.n, q: i.q, v: i.v, p: i.p })),
+      items: cart.map((i) => ({ id: i.id, n: i.n, q: i.q, v: i.v, p: i.p })),
       total: cartTotal(),
       currency: storeCurrency,
     }).then(() => {});

@@ -222,6 +222,12 @@
         <button type="button" class="btn-empty-cart" id="btnEmptyCart">Vaciar</button>
       </div>
       <div class="cart-items" id="cartItems"></div>
+      <div class="cart-customer" id="cartCustomer">
+        <div class="cart-pay-label" id="custLabel">Datos de entrega</div>
+        <input type="text" id="custName" class="cart-field" maxlength="80" placeholder="Tu nombre *" autocomplete="name" />
+        <input type="tel" id="custPhone" class="cart-field" maxlength="25" placeholder="Tu teléfono (opcional)" autocomplete="tel" />
+        <textarea id="custAddress" class="cart-field" maxlength="240" rows="2" placeholder="Dirección de entrega (si es a domicilio)" autocomplete="street-address"></textarea>
+      </div>
       <div id="cartPayment" style="display:none;"></div>
       <div class="cart-total-row"><span>Total</span><strong id="cartTotal"></strong></div>
       <a class="btn-send-cart" id="btnSendCart" target="_blank" rel="noopener">

@@ -38,6 +38,12 @@
     .status.pending   { background: #fef3c7; color: #92400e; }
     .status.confirmed { background: #dcfce7; color: #166534; }
     .status.dismissed { background: #f3f4f6; color: #9ca3af; }
+    .cust-box {
+      background: #f8fafc; border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 18px; font-size: .82rem; line-height: 1.65;
+    }
+    .cust-box .cust-title { font-weight: 700; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 4px; }
+    .cust-box div span { color: var(--muted); }
     .item { padding: 12px 0; border-bottom: 1px solid var(--line); }
     .item:last-of-type { border-bottom: none; }
     .item-row { display: flex; justify-content: space-between; gap: 12px; font-weight: 700; font-size: .95rem; }
@@ -135,6 +141,13 @@
           <div class="sheet-body">
             <div class="order-meta"><span>Pedido #${esc(o.id)} · ${esc(fecha)}</span>${estado}</div>
             ${o.payment_method ? `<div class="order-meta" style="margin-top:-10px;"><span>Método de pago: <strong>${esc(o.payment_method)}</strong></span></div>` : ""}
+            ${(o.customer_name || o.customer_phone || o.customer_address) ? `
+            <div class="cust-box">
+              <div class="cust-title">Datos de entrega</div>
+              ${o.customer_name ? `<div><span>Cliente:</span> <strong>${esc(o.customer_name)}</strong></div>` : ""}
+              ${o.customer_phone ? `<div><span>Teléfono:</span> ${esc(o.customer_phone)}</div>` : ""}
+              ${o.customer_address ? `<div><span>Dirección:</span> ${esc(o.customer_address)}</div>` : ""}
+            </div>` : ""}
             ${items || '<p style="color:var(--muted);font-size:.85rem;">Sin productos.</p>'}
             <div class="total-row"><span>Total</span><strong>${esc(sym)}${esc(o.total ?? "—")} ${esc(o.currency || "")}</strong></div>
             <div class="actions">

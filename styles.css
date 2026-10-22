@@ -1419,6 +1419,16 @@ body {
 
 /* ── Método de pago en el carrito ── */
 .cart-pay-label { font-weight: 700; font-size: .85rem; margin: 14px 0 8px; color: var(--gray-800); }
+.cart-customer { margin-top: 4px; }
+.cart-field {
+  width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
+  padding: 10px 12px; margin-bottom: 8px; font-family: inherit;
+  font-size: .85rem; color: var(--gray-800); background: #fff;
+  transition: border-color .18s; resize: none;
+}
+.cart-field:focus { outline: none; border-color: var(--accent, #e94560); }
+.cart-field::placeholder { color: #9ca3af; }
+.cart-field.field-missing { border-color: #c22844; animation: og-shake .4s ease; }
 .cart-pay-label.pay-missing { color: #c22844; animation: og-shake .4s ease; }
 .cart-pay-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
 .cart-pay-chip {

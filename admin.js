@@ -1919,35 +1919,27 @@ function loadPlanPage() {
       </div>`;
   }).join('');
 
+  const emailNote = `<p class="plan-manage-link">El pago se procesa de forma segura con <strong>Recurrente</strong> en quetzales. <strong>Usa el mismo correo de tu cuenta ProductSpot</strong> al pagar: así tu plan se activa automáticamente.</p>`;
   const manageLink = currentPlan !== 'free'
-    ? `<p class="plan-manage-link">¿Necesitas cancelar o cambiar tu método de pago? <a href="#" onclick="openBillingPortal();return false;">Administrar en PayPal →</a></p>`
+    ? `<p class="plan-manage-link">¿Necesitas cancelar o cambiar tu método de pago? Administra tu suscripción en <a href="https://app.recurrente.com" target="_blank" rel="noopener">app.recurrente.com</a> con el correo con el que pagaste.</p>`
     : '';
 
-  el.innerHTML = `<div class="plan-grid">${cards}</div>${manageLink}`;
+  el.innerHTML = `<div class="plan-grid">${cards}</div>${emailNote}${manageLink}`;
 }
 
-async function upgradePlan(plan) {
-  showToast('Redirigiendo a PayPal…');
-  const { data, error } = await sb.functions.invoke('create-paypal-subscription', {
-    body: { type: 'checkout', plan },
-  });
-  if (error || !data?.url) {
-    showToast('Error al iniciar el pago: ' + (error?.message || 'sin URL'), 'error');
-    return;
-  }
-  window.location.href = data.url;
-}
+// Enlaces de pago de Recurrente (suscripción mensual en GTQ). El webhook
+// recurrente-webhook activa el plan al confirmarse el pago, haciendo match
+// por el correo del comprador.
+const RECURRENTE_PLAN_LINKS = {
+  starter: 'https://app.recurrente.com/s/productspot/productspot-starter',
+  pro: 'https://app.recurrente.com/s/productspot/productspot-pro',
+};
 
-async function openBillingPortal() {
-  showToast('Abriendo PayPal…');
-  const { data, error } = await sb.functions.invoke('create-paypal-subscription', {
-    body: { type: 'portal' },
-  });
-  if (error || !data?.url) {
-    showToast('Error al abrir el portal: ' + (error?.message || 'sin URL'), 'error');
-    return;
-  }
-  window.location.href = data.url;
+function upgradePlan(plan) {
+  const link = RECURRENTE_PLAN_LINKS[plan];
+  if (!link) return;
+  showToast('Abriendo pago seguro…');
+  window.location.href = link;
 }
 
 // ===== INICIO =====

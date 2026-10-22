@@ -1372,3 +1372,14 @@ body {
   animation: spot-pop var(--motion-base) var(--ease-spring);
 }
 @keyframes spot-pop { 0% { transform: scale(.4); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+/* ── Grupos de opciones (combos) ── */
+.choose-hint {
+  font-size: .66rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  background: rgba(233,69,96,.1); color: #e94560;
+  border-radius: 99px; padding: 2px 9px; margin-left: 8px; vertical-align: 2px;
+}
+.btn-needs-options { opacity: .5; }
+.og-missing { color: #e94560 !important; animation: og-shake .4s ease; }
+@keyframes og-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) { .og-missing { animation: none; } }

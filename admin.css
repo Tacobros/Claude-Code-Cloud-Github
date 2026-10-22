@@ -1177,3 +1177,14 @@ tr.row-selected { background: #0d2240 !important; }
   cursor: pointer; transition: background .15s, color .15s;
 }
 .btn-move:hover { background: #fde8ec; color: #c22844; border-color: #f5c2cc; }
+
+/* ── Grupos de opciones (combos) ── */
+.og-list { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.og-row { background: var(--gray-50, #f9fafb); border: 1px solid var(--gray-200); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.og-row input[type=text] { width: 100%; }
+.og-row-top { display: flex; gap: 8px; align-items: center; }
+.og-row-top input[type=text] { flex: 1; }
+.og-choose { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; color: var(--gray-600); white-space: nowrap; }
+.og-choose input { width: 54px; }
+.og-del { background: none; border: none; color: var(--gray-400, #9ca3af); cursor: pointer; font-size: .85rem; padding: 4px; }
+.og-del:hover { color: #c22844; }

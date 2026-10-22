@@ -576,6 +576,59 @@ document.getElementById("adminSearch").addEventListener("input", renderTable);
 document.getElementById("adminFilter").addEventListener("change", renderTable);
 
 // ===== PRODUCT FORM MODAL =====
+// ===== GRUPOS DE OPCIONES (combos / conjuntos) =====
+let productOptionGroups = [];
+
+function renderOptionGroups() {
+  const list = document.getElementById("optionGroupsList");
+  if (!list) return;
+  if (!productOptionGroups.length) {
+    list.innerHTML = "";
+    return;
+  }
+  list.innerHTML = productOptionGroups.map((g, i) => `
+    <div class="og-row">
+      <div class="og-row-top">
+        <input type="text" placeholder="Nombre del grupo (ej: Bebida)" maxlength="30"
+          value="${escapeHtml(g.label || "")}" oninput="updateOptionGroup(${i},'label',this.value)" />
+        <label class="og-choose">Elige
+          <input type="number" min="1" max="10" value="${Number(g.choose) || 1}"
+            oninput="updateOptionGroup(${i},'choose',this.value)" />
+        </label>
+        <button type="button" class="og-del" onclick="removeOptionGroup(${i})" title="Eliminar grupo" aria-label="Eliminar grupo">✕</button>
+      </div>
+      <input type="text" placeholder="Opciones separadas por coma (ej: Coca-Cola, Fresa, Horchata)" maxlength="200"
+        value="${escapeHtml(g.optionsText ?? (g.options || []).join(", "))}" oninput="updateOptionGroup(${i},'optionsText',this.value)" />
+    </div>
+  `).join("");
+}
+
+function updateOptionGroup(i, key, value) {
+  if (productOptionGroups[i]) productOptionGroups[i][key] = value;
+}
+
+function removeOptionGroup(i) {
+  productOptionGroups.splice(i, 1);
+  renderOptionGroups();
+}
+
+document.getElementById("btnAddOptionGroup")?.addEventListener("click", () => {
+  if (productOptionGroups.length >= 5) { showToast("Máximo 5 grupos por producto", "error"); return; }
+  productOptionGroups.push({ label: "", choose: 1, optionsText: "" });
+  renderOptionGroups();
+});
+
+function cleanOptionGroups() {
+  return productOptionGroups
+    .map((g) => {
+      const options = String(g.optionsText ?? (g.options || []).join(","))
+        .split(",").map((s) => s.trim()).filter(Boolean).slice(0, 20);
+      const choose = Math.max(1, Math.min(10, parseInt(g.choose) || 1));
+      return { label: String(g.label || "").trim(), choose: Math.min(choose, options.length || 1), options };
+    })
+    .filter((g) => g.label && g.options.length > 0);
+}
+
 function openAddModal() {
   document.getElementById("productModalTitle").textContent = "Nuevo producto";
   document.getElementById("productForm").reset();
@@ -584,6 +637,8 @@ function openAddModal() {
   document.getElementById("formError").style.display = "none";
   currentImageUrls = [];
   renderImageGrid();
+  productOptionGroups = [];
+  renderOptionGroups();
   document.getElementById("productModalOverlay").classList.add("open");
 }
 
@@ -605,6 +660,11 @@ function openEditModal(id) {
 
   document.getElementById("pVariantLabel").value = p.variant_label || "";
   document.getElementById("pSizesText").value = (p.sizes || []).join(", ");
+
+  productOptionGroups = (p.option_groups || []).map((g) => ({
+    label: g.label || "", choose: g.choose || 1, optionsText: (g.options || []).join(", "),
+  }));
+  renderOptionGroups();
 
   document.getElementById("formError").style.display = "none";
   document.getElementById("productModalOverlay").classList.add("open");
@@ -650,6 +710,7 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
     available: document.getElementById("pAvailable").checked,
     sizes,
     variant_label: document.getElementById("pVariantLabel").value.trim() || null,
+    option_groups: cleanOptionGroups(),
     image_urls: currentImageUrls,
     image_url: currentImageUrls[0] || null,
   };

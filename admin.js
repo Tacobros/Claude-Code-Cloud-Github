@@ -67,7 +67,7 @@ function currencySymbol() {
 // Columnas de `stores` legibles desde el navegador (deben coincidir con
 // el GRANT de 006_secure_stores_and_currency.sql — select("*") ya no funciona)
 const STORE_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
-  plan, status, currency, accent_color, logo_url, payment_methods, customer_fields,
+  plan, status, plan_paid_until, currency, accent_color, logo_url, payment_methods, customer_fields,
   hero_badge, hero_title, hero_subtitle, hero_image_url,
   catalog_title, catalog_subtitle, cta_title, cta_desc,
   custom_categories, show_gallery,
@@ -1920,11 +1920,15 @@ function loadPlanPage() {
   }).join('');
 
   const emailNote = `<p class="plan-manage-link">El pago se procesa de forma segura con <strong>Recurrente</strong>, en quetzales y con cobro mensual automático. Tu plan se activa solo al confirmarse el pago.</p>`;
+  // Las tiendas con plan manual (betas) tienen plan_paid_until nulo: no vencen
+  const renewalLine = (currentPlan !== 'free' && storeSettings?.plan_paid_until)
+    ? `<p class="plan-manage-link">Suscripción activa · pagada hasta el <strong>${new Date(storeSettings.plan_paid_until).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}</strong> (se extiende sola con cada cobro).</p>`
+    : '';
   const manageLink = currentPlan !== 'free'
     ? `<p class="plan-manage-link">¿Necesitas cancelar o cambiar tu método de pago? Administra tu suscripción en <a href="https://app.recurrente.com" target="_blank" rel="noopener">app.recurrente.com</a> con el correo con el que pagaste.</p>`
     : '';
 
-  el.innerHTML = `<div class="plan-grid">${cards}</div>${emailNote}${manageLink}`;
+  el.innerHTML = `<div class="plan-grid">${cards}</div>${renewalLine}${emailNote}${manageLink}`;
 }
 
 // El checkout lo crea el servidor (Edge Function create-recurrente-checkout)

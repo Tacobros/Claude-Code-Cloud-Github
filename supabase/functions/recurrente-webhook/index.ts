@@ -69,8 +69,11 @@ Deno.serve(async (req) => {
         uid = data;
       }
       if (uid) {
+        // Cada cobro exitoso extiende la vigencia 35 días (margen para los
+        // reintentos); el cron expire_overdue_plans baja a Free al vencer
+        const paidUntil = new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString();
         const { data: updated, error } = await admin.from("stores")
-          .update({ plan, status: "active" })
+          .update({ plan, status: "active", plan_paid_until: paidUntil })
           .eq("user_id", uid)
           .select("id");
         result = error

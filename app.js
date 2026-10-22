@@ -30,7 +30,7 @@ function currencySymbol() {
 // Columnas públicas de `stores` (deben coincidir con el GRANT de
 // 006_secure_stores_and_currency.sql — select("*") ya no funciona)
 const STORE_PUBLIC_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
-  plan, status, currency, accent_color, logo_url, payment_methods,
+  plan, status, currency, accent_color, logo_url, payment_methods, customer_fields,
   hero_badge, hero_title, hero_subtitle, hero_image_url,
   catalog_title, catalog_subtitle, cta_title, cta_desc,
   custom_categories, show_gallery,
@@ -95,6 +95,7 @@ async function loadStoreSettings() {
     storeUserId = data.user_id;
     storeDbId = data.id;
     storePayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.filter(Boolean) : [];
+    custFieldsCfg = normalizeCustCfg(data.customer_fields);
     logEvent("catalog_view");
 
     document.title = storeName ? `${storeName}` : "Mi tienda";
@@ -329,7 +330,9 @@ function renderProducts() {
   empty.style.display = "none";
 
   grid.innerHTML = filtered.map((p, i) => {
-    const hasGroups = (p.option_groups || []).length > 0;
+    // El pedido directo pasa por la ficha cuando hay opciones que elegir,
+    // datos obligatorios del cliente o método de pago que seleccionar
+    const hasGroups = (p.option_groups || []).length > 0 || anyCustRequired() || storePayMethods.length > 0;
     const soldOut = p.stock === 0;
     const lowStock = p.stock != null && p.stock > 0 && p.stock <= 3;
     const thumb = p.images && p.images.length > 0 ? p.images[0] : null;
@@ -372,6 +375,9 @@ function waLink(p, sel = "", priceText = "") {
   } else {
     msg = `Hola! Vi el catálogo de *${storeName}* y me interesa:\n\n*${p.name}* — ${price}`;
   }
+  if (selectedPayMethod) msg += `\n\nPago: *${selectedPayMethod}*`;
+  const datos = customerMsgLines();
+  if (datos.length) msg += `\n\n${datos.join("\n")}`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -453,6 +459,7 @@ function updateModalSelection() {
   const p = window._currentProduct;
   if (!p) return;
   const ready = groupsComplete(p) && p.stock !== 0;
+  const payOk = !storePayMethods.length || !!selectedPayMethod;
   const unit = unitPrice(p);
   const priceText = `${currencySymbol()}${unit}`;
   const priceEl = document.getElementById("modalPriceVal");
@@ -461,8 +468,10 @@ function updateModalSelection() {
   const add = document.getElementById("modalAddBtn");
   if (wa) {
     wa.href = waLink(p, selectionText(p), priceText);
-    wa.classList.toggle("btn-needs-options", !ready);
+    // el envío directo además exige datos del cliente y método de pago
+    wa.classList.toggle("btn-needs-options", !(ready && customerComplete() && payOk));
   }
+  // agregar a la bolsa solo exige las opciones del producto (los datos se piden al enviar)
   if (add) add.classList.toggle("btn-needs-options", !ready);
 }
 
@@ -491,6 +500,10 @@ function trackOrder(productId, sel, unit, token) {
     items: [{ id: p.id, n: p.name, q: 1, v: sel || null, p: u }],
     total: u,
     currency: storeCurrency,
+    payment_method: selectedPayMethod || null,
+    customer_name: custData.name ? custData.name.slice(0, 120) : null,
+    customer_phone: custData.phone ? custData.phone.slice(0, 30) : null,
+    customer_address: custData.address ? custData.address.slice(0, 300) : null,
   };
   if (token) row.token = token;
   sb.from("orders").insert(row).then(() => {});
@@ -549,6 +562,8 @@ function openModal(id) {
       <div class="modal-desc">${escapeHtml(p.desc)}</div>
       ${sizesHtml}
       ${groupsHtml}
+      ${renderCustomerForm("modal")}
+      <div id="modalPayment">${renderPaymentChipsHtml("modal")}</div>
       <div class="modal-price-row">
         <div class="modal-price"><span id="modalPriceVal">${escapeHtml(p.price)}</span> <small style="font-size:.75rem;color:#9ca3af;font-weight:500">${escapeHtml(storeCurrency)}</small></div>
         <a class="btn-modal-wa" id="modalWaBtn" href="${escapeHtml(waLink(p))}" target="_blank">
@@ -571,6 +586,13 @@ function openModal(id) {
   document.getElementById("modalWaBtn")?.addEventListener("click", (e) => {
     if (p.stock === 0) { e.preventDefault(); return; }
     if (!groupsComplete(p)) { e.preventDefault(); flashIncompleteGroups(); return; }
+    if (!customerComplete()) { e.preventDefault(); flashMissingCustomer("modal"); return; }
+    if (storePayMethods.length && !selectedPayMethod) {
+      e.preventDefault();
+      const lbl = document.getElementById("modalPayLabel");
+      if (lbl) { lbl.classList.add("pay-missing"); lbl.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+      return;
+    }
     // Enlace al comprobante: se genera el token aquí y se reescribe el href
     // antes de que el navegador procese la navegación
     const token = storeDbId ? genOrderToken() : null;
@@ -815,7 +837,6 @@ function cartStorageKey() { return `ps_cart_${storeDbId || "x"}`; }
 function loadCart() {
   try { cart = JSON.parse(sessionStorage.getItem(cartStorageKey())) || []; } catch (_) { cart = []; }
   if (!Array.isArray(cart)) cart = [];
-  loadCustomer();
   renderCartUI();
 }
 
@@ -861,57 +882,111 @@ function addToCartFromModal(btnEl) {
 let storePayMethods = [];
 let selectedPayMethod = "";
 
-function renderPaymentChips() {
-  const wrap = document.getElementById("cartPayment");
-  if (!wrap) return;
-  if (!storePayMethods.length) { wrap.style.display = "none"; wrap.innerHTML = ""; return; }
-  wrap.style.display = "";
-  wrap.innerHTML = `
-    <div class="cart-pay-label" id="cartPayLabel">¿Cómo pagarás?</div>
+// Los mismos chips se dibujan en la bolsa (prefix "cart") y en la ficha del
+// producto (prefix "modal"); la selección es una sola y se sincroniza
+function renderPaymentChipsHtml(prefix) {
+  if (!storePayMethods.length) return "";
+  return `
+    <div class="cart-pay-label" id="${prefix}PayLabel">¿Cómo pagarás?</div>
     <div class="cart-pay-chips">
       ${storePayMethods.map((m) => `<button type="button" class="cart-pay-chip${selectedPayMethod === m ? " selected" : ""}" onclick="selectPayMethod(this)">${escapeHtml(m)}</button>`).join("")}
     </div>`;
 }
 
+function renderPaymentChips() {
+  const wrap = document.getElementById("cartPayment");
+  if (!wrap) return;
+  if (!storePayMethods.length) { wrap.style.display = "none"; wrap.innerHTML = ""; return; }
+  wrap.style.display = "";
+  wrap.innerHTML = renderPaymentChipsHtml("cart");
+}
+
 function selectPayMethod(btn) {
   selectedPayMethod = btn.textContent.trim();
-  document.querySelectorAll(".cart-pay-chip").forEach((b) => b.classList.toggle("selected", b === btn));
+  document.querySelectorAll(".cart-pay-chip").forEach((b) => b.classList.toggle("selected", b.textContent.trim() === selectedPayMethod));
   document.getElementById("cartPayLabel")?.classList.remove("pay-missing");
+  document.getElementById("modalPayLabel")?.classList.remove("pay-missing");
   renderCartUI();
+  if (window._currentProduct) updateModalSelection();
 }
 
-// ── Datos del cliente final (nombre, teléfono, dirección de entrega) ──
-// Se guardan en el navegador (localStorage) para que el cliente no tenga que
-// escribirlos de nuevo en próximos pedidos, en esta o en cualquier otra tienda
+// ── Datos del cliente final (configurables por tienda) ──
+// La tienda decide qué pedir (nombre, teléfono, dirección) y si cada campo es
+// obligatorio. Lo escrito se guarda en el navegador (localStorage) para que el
+// cliente no lo repita en próximos pedidos, en esta o en otra tienda.
 const CUST_STORAGE_KEY = "ps_customer";
+const CUST_FIELD_DEFS = [
+  { key: "name", label: "Nombre", msgLabel: "Nombre", ph: "Tu nombre", type: "text", max: 80, ac: "name" },
+  { key: "phone", label: "Teléfono", msgLabel: "Teléfono", ph: "Tu teléfono", type: "tel", max: 25, ac: "tel" },
+  { key: "address", label: "Dirección", msgLabel: "Entregar en", ph: "Dirección de entrega", type: "textarea", max: 240, ac: "street-address" },
+];
+let custFieldsCfg = { name: "required", phone: "optional", address: "optional" };
+let custData = { name: "", phone: "", address: "" };
+try { custData = { ...custData, ...(JSON.parse(localStorage.getItem(CUST_STORAGE_KEY)) || {}) }; } catch (_) {}
 
-function getCustomer() {
-  return {
-    name: (document.getElementById("custName")?.value || "").trim(),
-    phone: (document.getElementById("custPhone")?.value || "").trim(),
-    address: (document.getElementById("custAddress")?.value || "").trim(),
-  };
-}
-
-function loadCustomer() {
-  let c = {};
-  try { c = JSON.parse(localStorage.getItem(CUST_STORAGE_KEY)) || {}; } catch (_) {}
-  const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
-  set("custName", c.name); set("custPhone", c.phone); set("custAddress", c.address);
-}
-
-function saveCustomer() {
-  try { localStorage.setItem(CUST_STORAGE_KEY, JSON.stringify(getCustomer())); } catch (_) {}
-}
-
-["custName", "custPhone", "custAddress"].forEach((id) => {
-  document.getElementById(id)?.addEventListener("input", (e) => {
-    e.target.classList.remove("field-missing");
-    saveCustomer();
-    const sendBtn = document.getElementById("btnSendCart");
-    if (sendBtn) sendBtn.href = cartWaLink();
+function normalizeCustCfg(raw) {
+  const cfg = {};
+  CUST_FIELD_DEFS.forEach(({ key }) => {
+    const v = raw && raw[key];
+    cfg[key] = (v === "required" || v === "optional" || v === "off")
+      ? v
+      : (key === "name" ? "required" : "optional");
   });
-});
+  return cfg;
+}
+
+function activeCustFields() { return CUST_FIELD_DEFS.filter((f) => custFieldsCfg[f.key] !== "off"); }
+function anyCustRequired() { return CUST_FIELD_DEFS.some((f) => custFieldsCfg[f.key] === "required"); }
+
+// El mismo formulario se dibuja en la bolsa (prefix "cart") y en el popup del
+// producto (prefix "modal"); ambos leen y escriben custData
+function renderCustomerForm(prefix) {
+  const fields = activeCustFields();
+  if (!fields.length) return "";
+  const inputs = fields.map((f) => {
+    const req = custFieldsCfg[f.key] === "required";
+    const ph = `${f.ph}${req ? " *" : " (opcional)"}`;
+    const common = `id="${prefix}Cust_${f.key}" class="cart-field" maxlength="${f.max}" placeholder="${ph}" autocomplete="${f.ac}" data-cust="${f.key}" oninput="custInput(this)"`;
+    return f.type === "textarea"
+      ? `<textarea ${common} rows="2">${escapeHtml(custData[f.key] || "")}</textarea>`
+      : `<input type="${f.type}" ${common} value="${escapeHtml(custData[f.key] || "")}" />`;
+  }).join("");
+  return `<div class="cart-customer"><div class="cart-pay-label">Datos de entrega</div>${inputs}</div>`;
+}
+
+function custInput(el) {
+  const key = el.dataset.cust;
+  if (!key) return;
+  custData[key] = el.value.trim();
+  el.classList.remove("field-missing");
+  try { localStorage.setItem(CUST_STORAGE_KEY, JSON.stringify(custData)); } catch (_) {}
+  // sincroniza la copia del formulario que no se está editando
+  document.querySelectorAll(`[data-cust="${key}"]`).forEach((o) => { if (o !== el) o.value = el.value; });
+  const sendBtn = document.getElementById("btnSendCart");
+  if (sendBtn) sendBtn.href = cartWaLink();
+  if (window._currentProduct) updateModalSelection();
+}
+
+function customerComplete() {
+  return CUST_FIELD_DEFS.every((f) => custFieldsCfg[f.key] !== "required" || (custData[f.key] || "").trim());
+}
+
+function flashMissingCustomer(prefix) {
+  let first = null;
+  CUST_FIELD_DEFS.forEach((f) => {
+    if (custFieldsCfg[f.key] === "required" && !(custData[f.key] || "").trim()) {
+      const el = document.getElementById(`${prefix}Cust_${f.key}`);
+      if (el) { el.classList.add("field-missing"); if (!first) first = el; }
+    }
+  });
+  if (first) { first.scrollIntoView({ block: "nearest", behavior: "smooth" }); first.focus(); }
+}
+
+function customerMsgLines() {
+  return activeCustFields()
+    .map((f) => (custData[f.key] || "").trim() ? `${f.msgLabel}: ${custData[f.key].trim()}` : "")
+    .filter(Boolean);
+}
 
 // Token del comprobante: viaja en el mensaje y se guarda con el pedido
 function genOrderToken() {
@@ -964,11 +1039,7 @@ function cartWaLink() {
   });
   let msg = `Hola! Vi el catálogo de *${storeName}* y quiero hacer este pedido:\n\n${lines.join("\n\n")}\n──────────\n*Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
   if (selectedPayMethod) msg += `\nPago: *${selectedPayMethod}*`;
-  const c = getCustomer();
-  const datos = [];
-  if (c.name) datos.push(`Nombre: ${c.name}`);
-  if (c.phone) datos.push(`Teléfono: ${c.phone}`);
-  if (c.address) datos.push(`Entregar en: ${c.address}`);
+  const datos = customerMsgLines();
   if (datos.length) msg += `\n\n${datos.join("\n")}`;
   if (storeDbId) msg += `\n\nVer pedido completo:\n${receiptUrl(getCartToken())}`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
@@ -1027,6 +1098,8 @@ function flashCartBar() {
 }
 
 function openCart() {
+  const custWrap = document.getElementById("cartCustomer");
+  if (custWrap) custWrap.innerHTML = renderCustomerForm("cart");
   renderPaymentChips();
   renderCartUI();
   document.getElementById("cartOverlay")?.classList.add("open");
@@ -1049,11 +1122,9 @@ document.getElementById("cartOverlay")?.addEventListener("click", (e) => {
 });
 document.getElementById("btnSendCart")?.addEventListener("click", (e) => {
   if (cart.length === 0) return;
-  const cust = getCustomer();
-  if (!cust.name) {
+  if (!customerComplete()) {
     e.preventDefault();
-    const field = document.getElementById("custName");
-    if (field) { field.classList.add("field-missing"); field.scrollIntoView({ block: "nearest", behavior: "smooth" }); field.focus(); }
+    flashMissingCustomer("cart");
     return;
   }
   if (storePayMethods.length && !selectedPayMethod) {
@@ -1070,9 +1141,9 @@ document.getElementById("btnSendCart")?.addEventListener("click", (e) => {
       total: cartTotal(),
       currency: storeCurrency,
       payment_method: selectedPayMethod || null,
-      customer_name: cust.name.slice(0, 120) || null,
-      customer_phone: cust.phone.slice(0, 30) || null,
-      customer_address: cust.address.slice(0, 300) || null,
+      customer_name: custData.name ? custData.name.slice(0, 120) : null,
+      customer_phone: custData.phone ? custData.phone.slice(0, 30) : null,
+      customer_address: custData.address ? custData.address.slice(0, 300) : null,
     }).then(() => {});
     logEvent("whatsapp_click");
   }

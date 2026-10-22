@@ -67,7 +67,7 @@ function currencySymbol() {
 // Columnas de `stores` legibles desde el navegador (deben coincidir con
 // el GRANT de 006_secure_stores_and_currency.sql — select("*") ya no funciona)
 const STORE_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
-  plan, status, currency, accent_color, logo_url, payment_methods,
+  plan, status, currency, accent_color, logo_url, payment_methods, customer_fields,
   hero_badge, hero_title, hero_subtitle, hero_image_url,
   catalog_title, catalog_subtitle, cta_title, cta_desc,
   custom_categories, show_gallery,
@@ -1106,6 +1106,13 @@ async function loadSettings(user) {
     document.querySelectorAll("#payMethods input").forEach((cb) => {
       cb.checked = (data.payment_methods || []).includes(cb.value);
     });
+    const custCfg = data.customer_fields || {};
+    document.querySelectorAll("#custFieldsCfg select").forEach((sel) => {
+      const v = custCfg[sel.dataset.key];
+      sel.value = ["off", "optional", "required"].includes(v)
+        ? v
+        : (sel.dataset.key === "name" ? "required" : "optional");
+    });
     document.getElementById("storeHeroBadge").value = data.hero_badge || "";
     document.getElementById("storeHeroTitle").value = data.hero_title || "";
     document.getElementById("storeHeroSubtitle").value = data.hero_subtitle || "";
@@ -1348,6 +1355,7 @@ document.getElementById("btnSaveSettings").addEventListener("click", async () =>
     accent_color: document.getElementById("storeAccent").value,
     custom_categories: customCategories,
     payment_methods: [...document.querySelectorAll("#payMethods input:checked")].map((cb) => cb.value),
+    customer_fields: Object.fromEntries([...document.querySelectorAll("#custFieldsCfg select")].map((sel) => [sel.dataset.key, sel.value])),
     show_gallery: document.getElementById("showGallery").checked,
     gallery1_img: document.getElementById("gallery1Img").value || null,
     gallery1_title: document.getElementById("gallery1Title").value.trim() || null,

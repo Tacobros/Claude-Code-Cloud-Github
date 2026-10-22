@@ -1240,6 +1240,17 @@ tr.row-selected { background: #0d2240 !important; }
 .pay-chip:has(input:checked) { border-color: #e94560; background: #fde8ec; color: #c22844; }
 .pay-chip input { accent-color: #e94560; }
 
+.cust-fields-cfg { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; max-width: 420px; }
+.cust-field-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-size: .88rem; font-weight: 600; color: #1f2937;
+}
+.cust-field-row select {
+  border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 7px 10px;
+  font-family: inherit; font-size: .82rem; color: #1f2937; background: #fff; cursor: pointer;
+}
+.cust-field-row select:focus { outline: none; border-color: #e94560; }
+
 /* ── Asistente de plantilla ── */
 .wizard-modal { max-width: 560px; padding: 26px 24px 22px; }
 .wizard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }

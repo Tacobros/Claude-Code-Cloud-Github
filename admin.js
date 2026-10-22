@@ -524,7 +524,26 @@ function renderTable() {
   countEl.textContent = `${allProducts.length} productos en tu catálogo`;
 
   const onboarding = document.getElementById("onboardingBanner");
-  if (onboarding) onboarding.style.display = allProducts.length === 0 ? 'block' : 'none';
+  if (onboarding) {
+    const visibles = allProducts.filter((p) => p.available !== false).length;
+    onboarding.style.display = visibles === 0 ? "block" : "none";
+    // Si vienen de una plantilla (hay ejemplos ocultos), el tutorial lo refleja
+    const conEjemplos = visibles === 0 && allProducts.length > 0;
+    const intro = document.getElementById("onboardingIntro");
+    const step1 = document.getElementById("onboardingStep1");
+    const cta = document.getElementById("onboardingCta");
+    if (intro && step1 && cta) {
+      if (conEjemplos) {
+        intro.textContent = "Tu plantilla está aplicada. Sigue estos pasos para salir a vender:";
+        step1.textContent = "Edita los productos de ejemplo (fotos y precios reales) y márcalos como visibles";
+        cta.textContent = "Ver mis productos de ejemplo";
+      } else {
+        intro.textContent = "Tu catálogo está listo. Sigue estos pasos para empezar a recibir pedidos por WhatsApp:";
+        step1.textContent = "Agrega tus primeros productos con fotos y precios";
+        cta.textContent = "+ Agregar mi primer producto";
+      }
+    }
+  }
 
   if (filtered.length === 0) {
     document.getElementById("productsTable").innerHTML = `<div class="loading">No se encontraron productos.</div>`;
@@ -800,6 +819,17 @@ document.getElementById("confirmDelete").addEventListener("click", async () => {
   showToast("Producto eliminado", "success");
   loadProducts();
 });
+
+// Acción del banner de bienvenida según el estado de la tienda
+function onboardingAction() {
+  const visibles = allProducts.filter((p) => p.available !== false).length;
+  if (visibles === 0 && allProducts.length > 0) {
+    document.querySelector('.nav-item[data-page="products"]')?.click();
+  } else {
+    document.querySelector('.nav-item[data-page="products"]')?.click();
+    setTimeout(() => document.getElementById("btnAddProduct")?.click(), 150);
+  }
+}
 
 // ===== ASISTENTE DE PLANTILLA (primer inicio) =====
 const BUSINESS_TEMPLATES = {
@@ -1876,8 +1906,9 @@ async function loadHome() {
 
   const checklist = document.getElementById("homeChecklist");
   if (checklist) {
+    const visibles = allProducts.filter((p) => p.available !== false).length;
     const items = [
-      { done: allProducts.length > 0, label: "Agrega tu primer producto" },
+      { done: visibles > 0, label: allProducts.length > 0 && visibles === 0 ? "Publica tus productos de ejemplo" : "Agrega tu primer producto" },
       { done: !!(storeSettings?.logo_url || storeSettings?.hero_title), label: "Personaliza tu tienda (logo, textos)" },
       { done: false, label: "Comparte tu enlace o tu QR" },
     ];

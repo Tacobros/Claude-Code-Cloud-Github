@@ -30,7 +30,7 @@ function currencySymbol() {
 // Columnas públicas de `stores` (deben coincidir con el GRANT de
 // 006_secure_stores_and_currency.sql — select("*") ya no funciona)
 const STORE_PUBLIC_COLS = `id, user_id, name, slug, whatsapp, wa_message, description,
-  plan, status, currency, accent_color, logo_url,
+  plan, status, currency, accent_color, logo_url, payment_methods,
   hero_badge, hero_title, hero_subtitle, hero_image_url,
   catalog_title, catalog_subtitle, cta_title, cta_desc,
   custom_categories, show_gallery,
@@ -94,6 +94,7 @@ async function loadStoreSettings() {
     storeCurrency = data.currency || "GTQ";
     storeUserId = data.user_id;
     storeDbId = data.id;
+    storePayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.filter(Boolean) : [];
     logEvent("catalog_view");
 
     document.title = storeName ? `${storeName}` : "Mi tienda";
@@ -855,6 +856,29 @@ function addToCartFromModal(btnEl) {
   }
 }
 
+// Métodos de pago aceptados por la tienda (si hay, el cliente elige al enviar)
+let storePayMethods = [];
+let selectedPayMethod = "";
+
+function renderPaymentChips() {
+  const wrap = document.getElementById("cartPayment");
+  if (!wrap) return;
+  if (!storePayMethods.length) { wrap.style.display = "none"; wrap.innerHTML = ""; return; }
+  wrap.style.display = "";
+  wrap.innerHTML = `
+    <div class="cart-pay-label" id="cartPayLabel">¿Cómo pagarás?</div>
+    <div class="cart-pay-chips">
+      ${storePayMethods.map((m) => `<button type="button" class="cart-pay-chip${selectedPayMethod === m ? " selected" : ""}" onclick="selectPayMethod(this)">${escapeHtml(m)}</button>`).join("")}
+    </div>`;
+}
+
+function selectPayMethod(btn) {
+  selectedPayMethod = btn.textContent.trim();
+  document.querySelectorAll(".cart-pay-chip").forEach((b) => b.classList.toggle("selected", b === btn));
+  document.getElementById("cartPayLabel")?.classList.remove("pay-missing");
+  renderCartUI();
+}
+
 // Token del comprobante: viaja en el mensaje y se guarda con el pedido
 function genOrderToken() {
   try { return crypto.randomUUID().replace(/-/g, ""); }
@@ -905,6 +929,7 @@ function cartWaLink() {
     return `${head}\n${detalles}`;
   });
   let msg = `Hola! Vi el catálogo de *${storeName}* y quiero hacer este pedido:\n\n${lines.join("\n\n")}\n──────────\n*Total: ${currencySymbol()}${cartTotal()} ${storeCurrency}*`;
+  if (selectedPayMethod) msg += `\nPago: *${selectedPayMethod}*`;
   if (storeDbId) msg += `\n\nVer pedido completo:\n${receiptUrl(getCartToken())}`;
   return `https://wa.me/${storeWA}?text=${encodeURIComponent(msg)}`;
 }
@@ -962,6 +987,7 @@ function flashCartBar() {
 }
 
 function openCart() {
+  renderPaymentChips();
   renderCartUI();
   document.getElementById("cartOverlay")?.classList.add("open");
 }
@@ -981,8 +1007,14 @@ document.getElementById("btnEmptyCart")?.addEventListener("click", () => {
 document.getElementById("cartOverlay")?.addEventListener("click", (e) => {
   if (e.target === document.getElementById("cartOverlay")) closeCart();
 });
-document.getElementById("btnSendCart")?.addEventListener("click", () => {
+document.getElementById("btnSendCart")?.addEventListener("click", (e) => {
   if (cart.length === 0) return;
+  if (storePayMethods.length && !selectedPayMethod) {
+    e.preventDefault();
+    const lbl = document.getElementById("cartPayLabel");
+    if (lbl) { lbl.classList.add("pay-missing"); lbl.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+    return;
+  }
   if (storeDbId) {
     sb.from("orders").insert({
       store_id: storeDbId,
@@ -990,11 +1022,12 @@ document.getElementById("btnSendCart")?.addEventListener("click", () => {
       items: cart.map((i) => ({ id: i.id, n: i.n, q: i.q, v: i.v, p: i.p })),
       total: cartTotal(),
       currency: storeCurrency,
+      payment_method: selectedPayMethod || null,
     }).then(() => {});
     logEvent("whatsapp_click");
   }
   // El pedido ya va en camino a WhatsApp: se limpia para evitar envíos duplicados
-  setTimeout(() => { cart = []; clearCartToken(); saveCart(); renderCartUI(); }, 800);
+  setTimeout(() => { cart = []; clearCartToken(); selectedPayMethod = ""; saveCart(); renderCartUI(); }, 800);
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeCart();

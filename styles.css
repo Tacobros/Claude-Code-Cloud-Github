@@ -1416,3 +1416,14 @@ body {
 .product-card:has(.stock-chip.out) .product-image img { filter: grayscale(.7); opacity: .75; }
 .modal-soldout { display: inline-block; background: rgba(15,23,42,.08); color: var(--gray-600); font-size: .78rem; font-weight: 700; border-radius: 99px; padding: 4px 12px; margin: 6px 0 2px; }
 .modal-lowstock { display: inline-block; background: rgba(255,180,84,.18); color: #b45309; font-size: .78rem; font-weight: 700; border-radius: 99px; padding: 4px 12px; margin: 6px 0 2px; }
+
+/* ── Método de pago en el carrito ── */
+.cart-pay-label { font-weight: 700; font-size: .85rem; margin: 14px 0 8px; color: var(--gray-800); }
+.cart-pay-label.pay-missing { color: #c22844; animation: og-shake .4s ease; }
+.cart-pay-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.cart-pay-chip {
+  border: 1.5px solid var(--gray-200); background: #fff; border-radius: 99px;
+  padding: 8px 15px; font-size: .8rem; font-weight: 600; color: var(--gray-600);
+  cursor: pointer; font-family: inherit; transition: border-color .15s, background .15s;
+}
+.cart-pay-chip.selected { border-color: var(--accent, #e94560); background: var(--accent, #e94560); color: #fff; }

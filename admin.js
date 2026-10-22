@@ -1807,7 +1807,11 @@ async function loadOrders() {
       <td class="order-date">${escapeHtml(fecha)}</td>
       <td><ul class="order-items">${list || "<li>—</li>"}</ul></td>
       <td class="order-total">${o.total != null ? `${sym}${escapeHtml(o.total)} ${escapeHtml(o.currency || "")}` : "—"}</td>
-      <td>${estado}</td>
+      <td>${estado}
+        <button class="btn-order-pdf" onclick="downloadOrderPDF(${Number(o.id)})" title="Descargar comprobante PDF">
+          ${psIcon("card", 12)} PDF
+        </button>
+      </td>
     </tr>`;
   }).join("");
   el.innerHTML = `<table><thead><tr><th style="width:120px;">Fecha</th><th>Pedido</th><th style="width:110px;">Total</th><th style="width:150px;">Estado</th></tr></thead><tbody>${rows}</tbody></table>`;
@@ -1829,6 +1833,112 @@ async function setOrderStatus(orderId, status) {
   showToast(status === "confirmed" ? "Venta confirmada ✓ Inventario actualizado" : "Pedido descartado", "success");
   loadOrders();
   loadProducts();
+}
+
+// ── Comprobante PDF del pedido (marca del cliente + sello ProductSpot) ──
+function psPdfIsotipo(doc, x, y, s2, tile, accent) {
+  // 2×2: tres cuadros redondeados + disco coral (el "producto bajo el reflector")
+  const u = s2 / 64;
+  doc.setFillColor(...tile);
+  doc.roundedRect(x + 2 * u, y + 2 * u, 28 * u, 28 * u, 9 * u, 9 * u, "F");
+  doc.roundedRect(x + 2 * u, y + 34 * u, 28 * u, 28 * u, 9 * u, 9 * u, "F");
+  doc.roundedRect(x + 34 * u, y + 34 * u, 28 * u, 28 * u, 9 * u, 9 * u, "F");
+  doc.setFillColor(...accent);
+  doc.circle(x + 48 * u, y + 16 * u, 14 * u, "F");
+}
+
+function downloadOrderPDF(orderId) {
+  const o = (window._loadedOrders || []).find((x) => Number(x.id) === Number(orderId));
+  if (!o || typeof window.jspdf === "undefined") { showToast("No se pudo generar el PDF", "error"); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ format: "a5", unit: "mm" });
+  const W = 148;
+  const M = 14;
+  const coral = [233, 69, 96];
+  const navy = [15, 23, 42];
+  const gray = [107, 114, 128];
+  const sym = CURRENCY_SYMBOLS[o.currency] || "";
+  const accent = storeSettings?.accent_color || null;
+
+  // Cabecera con la marca de la tienda
+  doc.setFillColor(...navy);
+  doc.rect(0, 0, W, 34, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(17);
+  doc.text(String(storeSettings?.name || "Mi tienda"), M, 16);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(170, 178, 197);
+  doc.text("Comprobante de pedido", M, 23);
+  psPdfIsotipo(doc, W - M - 12, 9, 12, [248, 250, 252], coral);
+  if (accent && /^#[0-9a-fA-F]{6}$/.test(accent)) {
+    const r = parseInt(accent.slice(1, 3), 16), g = parseInt(accent.slice(3, 5), 16), b = parseInt(accent.slice(5, 7), 16);
+    doc.setFillColor(r, g, b);
+  } else {
+    doc.setFillColor(...coral);
+  }
+  doc.rect(0, 34, W, 1.6, "F");
+
+  // Datos del pedido
+  let y = 46;
+  doc.setTextColor(...gray);
+  doc.setFontSize(8.5);
+  const fecha = new Date(o.created_at).toLocaleString("es", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  doc.text(`Pedido #${o.id} · ${fecha}`, M, y);
+  const estadoTxt = o.status === "confirmed" ? "Venta confirmada" : o.status === "dismissed" ? "Descartado" : "Pendiente";
+  doc.text(estadoTxt, W - M, y, { align: "right" });
+  y += 9;
+
+  // Ítems
+  const items = Array.isArray(o.items) ? o.items : [];
+  items.forEach((it) => {
+    if (y > 182) { doc.addPage(); y = 20; }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.setTextColor(31, 41, 55);
+    const nombre = `${Number(it.q) || 1}×  ${String(it.n || "Producto")}`;
+    doc.text(doc.splitTextToSize(nombre, 92), M, y);
+    if (it.p != null) doc.text(`${sym}${it.p} c/u`, W - M, y, { align: "right" });
+    y += 5.5;
+    if (it.v) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(...gray);
+      String(it.v).split(" · ").forEach((part) => {
+        if (y > 190) { doc.addPage(); y = 20; }
+        doc.text(doc.splitTextToSize(`›  ${part}`, 100), M + 5, y);
+        y += 4.6;
+      });
+    }
+    y += 3.5;
+  });
+
+  // Total
+  y += 2;
+  doc.setDrawColor(229, 231, 235);
+  doc.setLineWidth(0.4);
+  doc.line(M, y, W - M, y);
+  y += 8;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.setTextColor(31, 41, 55);
+  doc.text("Total", M, y);
+  doc.setTextColor(...coral);
+  doc.text(`${sym}${o.total != null ? o.total : "—"} ${o.currency || ""}`, W - M, y, { align: "right" });
+
+  // Pie con sello ProductSpot
+  const fy = 198;
+  doc.setDrawColor(229, 231, 235);
+  doc.line(M, fy - 6, W - M, fy - 6);
+  psPdfIsotipo(doc, M, fy - 3.2, 4.6, [15, 23, 42], coral);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...gray);
+  doc.text("Hecho con ProductSpot · productspot.pages.dev", M + 7, fy);
+  if (storeSettings?.whatsapp) doc.text(`WhatsApp: +${storeSettings.whatsapp}`, W - M, fy, { align: "right" });
+
+  doc.save(`pedido-${o.id}-${(storeSettings?.slug || "tienda")}.pdf`);
 }
 
 async function deductStock(items) {

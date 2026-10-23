@@ -1193,7 +1193,7 @@ async function loadSettings(user) {
 
 const PLAN_LIMITS = {
   free:    { maxProducts: 5,  features: [] },
-  starter: { maxProducts: 50, features: ['logo','color','categories','gallery','about','stats','waMessage','heroExtras'] },
+  starter: { maxProducts: 25, features: ['logo','color','categories','gallery','about','stats','waMessage','heroExtras'] },
   pro:     { maxProducts: Infinity, features: ['logo','color','categories','gallery','about','stats','waMessage','heroExtras'] },
 };
 
@@ -1870,7 +1870,7 @@ function loadPlanPage() {
       price: 'Q40',
       period: '/ mes',
       features: [
-        'Hasta 50 productos',
+        'Hasta 25 productos',
         'Sin sello ProductSpot',
         'Logo y color de marca',
         'Categorías personalizadas',

@@ -165,6 +165,14 @@ async function loadStoreSettings() {
     const footerCopy = document.getElementById("footerCopy");
     if (footerCopy) footerCopy.textContent = storeName ? `© ${new Date().getFullYear()} ${storeName}` : "";
 
+    // Canal de denuncias: reporte directo al equipo de la plataforma
+    const reportLink = document.getElementById("reportStoreLink");
+    if (reportLink) {
+      const asunto = encodeURIComponent(`Reporte de tienda: ${slug}`);
+      const cuerpo = encodeURIComponent(`Tienda reportada: ${window.location.origin}/?s=${slug}\n\nMotivo del reporte:\n`);
+      reportLink.href = `mailto:productspotgt@gmail.com?subject=${asunto}&body=${cuerpo}`;
+    }
+
     // Hero content
     const heroBadge = document.getElementById("heroBadge");
     if (heroBadge) heroBadge.textContent = data.hero_badge || "Bienvenidos";

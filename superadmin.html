@@ -289,6 +289,9 @@
         <a href="#" class="nav-item" data-page="stores">
           <span class="nav-icon" data-icon="store"></span> Tiendas
         </a>
+        <a href="#" class="nav-item" data-page="moderation">
+          <span class="nav-icon" data-icon="eye"></span> Moderación
+        </a>
       </nav>
       <div class="sidebar-user" id="saUserEmail"></div>
       <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
@@ -437,6 +440,23 @@
             </thead>
             <tbody id="storesBody">
               <tr><td colspan="8" class="loading">Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MODERACIÓN -->
+      <div id="pageModeration" class="page">
+        <div class="page-header">
+          <div><h2>Moderación de contenido</h2><p>Productos publicados recientemente en toda la plataforma. Si algo infringe los términos, suspende la tienda desde la pestaña Tiendas.</p></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th style="width:70px;">Foto</th><th>Producto</th><th>Tienda</th><th style="width:90px;">Precio</th><th style="width:140px;">Publicado</th><th style="width:90px;"></th></tr>
+            </thead>
+            <tbody id="moderationBody">
+              <tr><td colspan="6" class="loading">Cargando...</td></tr>
             </tbody>
           </table>
         </div>

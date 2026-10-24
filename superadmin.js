@@ -482,6 +482,50 @@ function renderWeeklyReg(weeks) {
   }).join('');
 }
 
+// ── MODERACIÓN ────────────────────────────────────────────────────────────────
+// Productos visibles publicados en los últimos 14 días, de toda la plataforma
+// (la política pública de products permite leer los que tienen available=true)
+async function loadModeration() {
+  const body = document.getElementById('moderationBody');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="6" class="loading">Cargando…</td></tr>';
+
+  const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const [{ data: prods, error }, { data: stores }] = await Promise.all([
+    sb.from('products')
+      .select('id, user_id, name, description, price, image_url, image_urls, created_at')
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(100),
+    sb.from('stores').select('user_id, name, slug'),
+  ]);
+  if (error) {
+    body.innerHTML = '<tr><td colspan="6" class="empty-state">Error al cargar productos.</td></tr>';
+    return;
+  }
+  if (!prods || prods.length === 0) {
+    body.innerHTML = '<tr><td colspan="6" class="empty-state">Sin productos nuevos en los últimos 14 días.</td></tr>';
+    return;
+  }
+  const byUser = {};
+  (stores || []).forEach(s => { byUser[s.user_id] = s; });
+  const esc = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  body.innerHTML = prods.map(p => {
+    const st = byUser[p.user_id] || {};
+    const img = (p.image_urls && p.image_urls[0]) || p.image_url || '';
+    const fecha = new Date(p.created_at).toLocaleString('es', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    return `<tr>
+      <td>${img ? `<img src="${esc(img)}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;" loading="lazy" />` : '—'}</td>
+      <td><strong>${esc(p.name)}</strong><br/><span style="font-size:.76rem;color:#6b7280;">${esc((p.description || '').slice(0, 90))}</span></td>
+      <td>${esc(st.name || '?')}<br/><span style="font-size:.76rem;color:#6b7280;">${esc(st.slug || '')}</span></td>
+      <td>Q${esc(p.price)}</td>
+      <td style="font-size:.8rem;">${esc(fecha)}</td>
+      <td>${st.slug ? `<a href="/?s=${esc(st.slug)}&p=${Number(p.id)}" target="_blank" rel="noopener" style="font-size:.8rem;">Ver →</a>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
 // ── UI HELPERS ────────────────────────────────────────────────────────────────
 
 function showPage(name) {
@@ -490,9 +534,10 @@ function showPage(name) {
   const pageId = 'page' + name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById(pageId)?.classList.add('active');
   document.querySelectorAll(`[data-page="${name}"]`).forEach(el => el.classList.add('active'));
-  const titles = { dashboard: 'Dashboard', analytics: 'Analíticas', stores: 'Tiendas' };
+  const titles = { dashboard: 'Dashboard', analytics: 'Analíticas', stores: 'Tiendas', moderation: 'Moderación' };
   document.getElementById('topbarTitle').textContent = titles[name] || name;
   if (name === 'analytics') loadPlatformAnalytics();
+  if (name === 'moderation') loadModeration();
   if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
 }
 
